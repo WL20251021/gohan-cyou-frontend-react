@@ -1,0 +1,39 @@
+{
+  "name": "01_todo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.16",
+    "@unocss/reset": "^66.5.5",
+    "antd": "^6.0.0",
+    "axios": "^1.13.2",
+    "dayjs": "^1.11.19",
+    "react": "^19.2.2",
+    "react-dom": "^19.2.2",
+    "react-router": "^7.10.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@iconify/json": "^2.2.405",
+    "@types/node": "^24.10.9",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@unocss/preset-icons": "^66.5.5",
+    "@vitejs/plugin-react-swc": "^4.1.0",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.45.0",
+    "unocss": "^66.5.5",
+    "vite": "^7.1.7"
+  }
+}
