@@ -17,12 +17,14 @@ export function CategoryModal({
   initialData,
   onCancel,
   onSuccess,
+  zIndex,
 }: {
   open: boolean
   mode?: 'add' | 'edit'
   initialData?: CategoryColumn
   onCancel: () => void
   onSuccess?: (category: CategoryColumn) => void
+  zIndex?: number
 }) {
   const [form] = Form.useForm<CategoryColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -101,8 +103,7 @@ export function CategoryModal({
       onOk={handleSaveCategory}
       onCancel={onCancel}
       okText="保存"
-      cancelText="キャンセル"
-    >
+      cancelText="キャンセル"      zIndex={zIndex}    >
       <Form
         form={form}
         className="p-8"

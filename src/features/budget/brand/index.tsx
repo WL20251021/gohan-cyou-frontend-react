@@ -17,12 +17,14 @@ export function BrandAddModal({
   editingRecord = null,
   onCancel,
   onSuccess,
+  zIndex,
 }: {
   open: boolean
   isEditMode?: boolean
   editingRecord?: BrandColumn | null
   onCancel: () => void
   onSuccess?: (newBrand?: BrandColumn) => void
+  zIndex?: number
 }) {
   const [form] = Form.useForm<BrandColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -99,6 +101,7 @@ export function BrandAddModal({
       onCancel={onCancel}
       okText="保存"
       cancelText="キャンセル"
+      zIndex={zIndex}
     >
       <Form
         form={form}

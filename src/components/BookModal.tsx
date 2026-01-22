@@ -16,6 +16,7 @@ interface BookModalProps {
   width?: string | number
   maskClosable?: boolean
   manualFlip?: boolean
+  zIndex?: number
 }
 
 export default function BookModal({
@@ -29,6 +30,7 @@ export default function BookModal({
   footer,
   children,
   manualFlip = false,
+  zIndex,
 }: BookModalProps) {
   const { setFlip } = useBook()
   const [targetParams, setTargetParams] = useState<{
@@ -68,6 +70,7 @@ export default function BookModal({
         flexDirection: 'column',
         padding: '32px 24px',
         justifyContent: 'space-between',
+        zIndex: zIndex,
       }}
     >
       {/* 1. Title Area (Big, Bold, Boxed) */}
@@ -155,6 +158,7 @@ export default function BookModal({
         backgroundSize: '25px 25px',
         overflowY: 'auto',
         padding: '32px 40px',
+        zIndex: zIndex,
       }}
     >
       {children}
