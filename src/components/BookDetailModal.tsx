@@ -67,9 +67,14 @@ export default function BookDetailModal({
   const sidebarContent = (
     <div
       style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#fffcf0',
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
         padding: '32px 24px',
         justifyContent: 'space-between',
       }}
@@ -198,7 +203,15 @@ export default function BookDetailModal({
     <div
       style={
         {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
           height: '100%',
+          backgroundColor: 'var(--color-paper-white)',
+          backgroundImage:
+            'linear-gradient(var(--color-line-blue) 1px, transparent 1px), linear-gradient(90deg, var(--color-line-blue) 1px, transparent 1px)',
+          backgroundSize: '25px 25px',
           padding: '48px',
           overflowY: 'auto',
           '--doodle-card-row-justify': rowJustify,
