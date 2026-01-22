@@ -19,19 +19,25 @@ export default function Register() {
         return register(values)
       })
       .then((res) => {
-        if (res?.data?.access_token) {
-          // トークンを保存
-          window.document.cookie = `jwt=${res.data.access_token}; path=/; max-age=${res.data.max_age}`
-          notification.success({
-            title: '登録成功',
-            description: 'ログインページにリダイレクトします',
-            placement: 'bottomRight',
-          })
-          // ダッシュボードにリダイレクト
-          navigate('/')
-        } else {
-          throw new Error('トークンが取得できませんでした')
-        }
+        // if (res?.data?.access_token) {
+        //   // トークンを保存
+        //   window.document.cookie = `jwt=${res.data.access_token}; path=/; max-age=${res.data.max_age}`
+        //   notification.success({
+        //     title: '登録成功',
+        //     description: 'ログインページにリダイレクトします',
+        //     placement: 'bottomRight',
+        //   })
+        //   // ダッシュボードにリダイレクト
+        //   navigate('/')
+        // } else {
+        //   throw new Error('トークンが取得できませんでした')
+        // }
+        notification.success({
+          title: '登録成功',
+          description: 'ログインページにリダイレクトします',
+          placement: 'bottomRight',
+        })
+        navigate('/login')
       })
       .catch((error) => {
         console.error(error)
@@ -124,12 +130,6 @@ export default function Register() {
               placeholder="パスワード確認"
               size="large"
             />
-          </Form.Item>
-          <Form.Item
-            name="nickname"
-            label="ニックネーム"
-          >
-            <Input size="large" />
           </Form.Item>
           <Form.Item>
             <Button

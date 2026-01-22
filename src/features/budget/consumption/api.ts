@@ -39,19 +39,3 @@ export function deleteConsumption(ids: number[]) {
     data: ids,
   })
 }
-
-/* other */
-
-export function getConsumptionStatistics() {
-  return request({
-    url: 'budget/consumption/statistics',
-    method: 'get',
-  })
-}
-
-export function getConsumptionByPurchasement(purchasementId: number) {
-  return request({
-    url: `budget/consumption/purchasement/${purchasementId}`,
-    method: 'get',
-  })
-}

@@ -21,7 +21,7 @@ service.interceptors.request.use(
       ?.split('=')[1]
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
-    } else if (config.url !== 'auth/login' && config.url !== 'auth/register') {
+    } else if (config.url !== '/auth/login' && config.url !== '/auth/register') {
       Promise.reject(new Error('No token found'))
       window.location.href = '/login'
     }

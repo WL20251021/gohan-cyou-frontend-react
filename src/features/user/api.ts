@@ -4,7 +4,7 @@ import { UserColumn } from './columns'
 // ログイン
 export function login(data: { username: string; password: string }) {
   return request({
-    url: 'auth/login',
+    url: '/auth/login',
     method: 'post',
     data,
   })
@@ -13,7 +13,7 @@ export function login(data: { username: string; password: string }) {
 // ユーザー登録
 export function register(data: Partial<UserColumn> & { password: string }) {
   return request({
-    url: 'auth/register',
+    url: '/auth/register',
     method: 'post',
     data,
   })
@@ -30,7 +30,7 @@ export function getUsers() {
 // ユーザー情報取得
 export function getUser(id: number) {
   return request({
-    url: `user/${id}`,
+    url: `/user/${id}`,
     method: 'get',
   })
 }
@@ -38,7 +38,7 @@ export function getUser(id: number) {
 // ユーザー情報更新
 export function updateUser(id: number, data: Partial<UserColumn>) {
   return request({
-    url: `user/${id}`,
+    url: `/user/${id}`,
     method: 'put',
     data,
   })
@@ -47,7 +47,7 @@ export function updateUser(id: number, data: Partial<UserColumn>) {
 // ユーザー削除
 export function deleteUser(ids: number[]) {
   return request({
-    url: 'user/',
+    url: `/user/`,
     method: 'delete',
     data: ids,
   })
@@ -56,7 +56,7 @@ export function deleteUser(ids: number[]) {
 // パスワード変更
 export function updatePassword(userId: number, data: { password: string }) {
   return request({
-    url: `user/password`,
+    url: `/user/password`,
     method: 'put',
     data: { id: userId, newPassword: data.password },
   })

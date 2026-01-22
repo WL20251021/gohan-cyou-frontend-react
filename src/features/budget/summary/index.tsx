@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card, DatePicker, Statistic, Row, Col, Table, Spin, message } from 'antd'
-import { ShoppingCartOutlined, CalendarOutlined } from '@ant-design/icons'
+import { CalendarOutlined } from '@ant-design/icons'
 import dayjs, { Dayjs } from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
@@ -9,6 +9,7 @@ import { getPurchasements } from '../purchasement/api'
 import { PurchasementColumn } from '../purchasement/columns'
 import { getConsumption } from '../consumption/api'
 import { ConsumptionColumn } from '../consumption/columns'
+import PageHeader from '../../../components/PageHeader'
 
 dayjs.extend(isoWeek)
 dayjs.extend(isSameOrAfter)
@@ -227,162 +228,165 @@ export default function PurchasementSummaryPage() {
   ]
 
   return (
-    <div style={{ padding: '24px', backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
-      <h1 style={{ marginBottom: '24px', fontSize: '24px', fontWeight: 'bold' }}>
-        <ShoppingCartOutlined style={{ marginRight: '8px' }} />
-        支出合計
-      </h1>
+    <div className="book-page-container">
+      <PageHeader title="支出合計" />
 
-      {/* 日付選択 */}
-      <Card style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <CalendarOutlined style={{ fontSize: '20px' }} />
-          <span style={{ fontWeight: 'bold' }}>基準日:</span>
-          <DatePicker
-            value={selectedDate}
-            onChange={handleDateChange}
-            format="YYYY-MM-DD"
-            style={{ width: '200px' }}
-            allowClear={false}
-          />
-        </div>
-      </Card>
+      <div className="book-page-content">
+        {/* 日付選択 */}
+        <Card style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <CalendarOutlined style={{ fontSize: '20px' }} />
+            <span style={{ fontWeight: 'bold' }}>基準日:</span>
+            <DatePicker
+              value={selectedDate}
+              onChange={handleDateChange}
+              format="YYYY-MM-DD"
+              style={{ width: '200px' }}
+              allowClear={false}
+            />
+          </div>
+        </Card>
 
-      {/* 統計カード */}
-      <Spin spinning={loading}>
-        <Row
-          gutter={[16, 16]}
-          style={{ marginBottom: '24px' }}
-        >
-          <Col
-            xs={24}
-            sm={8}
+        {/* 統計カード */}
+        <Spin spinning={loading}>
+          <Row
+            gutter={[16, 16]}
+            style={{ marginBottom: '24px' }}
           >
-            <Card>
-              <Statistic
-                title={`1日の支出 (${selectedDate.format('YYYY-MM-DD')})`}
-                value={summaryData.daily}
-                precision={0}
-                suffix="円"
-                valueStyle={{ color: '#3f8600' }}
-              />
-              <div style={{ marginTop: '8px', color: '#666' }}>{dailyDetails.length}件の購入</div>
-            </Card>
-          </Col>
-          <Col
-            xs={24}
-            sm={8}
+            <Col
+              xs={24}
+              sm={8}
+            >
+              <Card>
+                <Statistic
+                  title={`1日の支出 (${selectedDate.format('YYYY-MM-DD')})`}
+                  value={summaryData.daily}
+                  precision={0}
+                  suffix="円"
+                  valueStyle={{ color: '#3f8600' }}
+                />
+                <div style={{ marginTop: '8px', color: '#666' }}>{dailyDetails.length}件の購入</div>
+              </Card>
+            </Col>
+            <Col
+              xs={24}
+              sm={8}
+            >
+              <Card>
+                <Statistic
+                  title={`1週間の支出 (${weekStart.format('MM/DD')} - ${weekEnd.format('MM/DD')})`}
+                  value={summaryData.weekly}
+                  precision={0}
+                  suffix="円"
+                  valueStyle={{ color: '#1890ff' }}
+                />
+                <div style={{ marginTop: '8px', color: '#666' }}>
+                  {weeklyDetails.length}件の購入
+                </div>
+              </Card>
+            </Col>
+            <Col
+              xs={24}
+              sm={8}
+            >
+              <Card>
+                <Statistic
+                  title={`1ヶ月の支出 (${monthStart.format('YYYY-MM')})`}
+                  value={summaryData.monthly}
+                  precision={0}
+                  suffix="円"
+                  valueStyle={{ color: '#cf1322' }}
+                />
+                <div style={{ marginTop: '8px', color: '#666' }}>
+                  {monthlyDetails.length}件の購入
+                </div>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* 詳細テーブル */}
+          <Card
+            title="1日の支出詳細"
+            style={{ marginBottom: '16px' }}
           >
-            <Card>
-              <Statistic
-                title={`1週間の支出 (${weekStart.format('MM/DD')} - ${weekEnd.format('MM/DD')})`}
-                value={summaryData.weekly}
-                precision={0}
-                suffix="円"
-                valueStyle={{ color: '#1890ff' }}
-              />
-              <div style={{ marginTop: '8px', color: '#666' }}>{weeklyDetails.length}件の購入</div>
-            </Card>
-          </Col>
-          <Col
-            xs={24}
-            sm={8}
+            <Table
+              columns={columns}
+              dataSource={dailyDetails}
+              rowKey="id"
+              pagination={{ pageSize: 5, size: 'small' }}
+              scroll={{ x: 800 }}
+              size="small"
+            />
+          </Card>
+
+          <Card
+            title="1日の使用記録詳細"
+            style={{ marginBottom: '16px' }}
           >
-            <Card>
-              <Statistic
-                title={`1ヶ月の支出 (${monthStart.format('YYYY-MM')})`}
-                value={summaryData.monthly}
-                precision={0}
-                suffix="円"
-                valueStyle={{ color: '#cf1322' }}
-              />
-              <div style={{ marginTop: '8px', color: '#666' }}>{monthlyDetails.length}件の購入</div>
-            </Card>
-          </Col>
-        </Row>
+            <Table
+              columns={consumptionColumns}
+              dataSource={dailyConsumptions}
+              rowKey="id"
+              pagination={{ pageSize: 5, size: 'small' }}
+              scroll={{ x: 800 }}
+              size="small"
+            />
+          </Card>
 
-        {/* 詳細テーブル */}
-        <Card
-          title="1日の支出詳細"
-          style={{ marginBottom: '16px' }}
-        >
-          <Table
-            columns={columns}
-            dataSource={dailyDetails}
-            rowKey="id"
-            pagination={{ pageSize: 5, size: 'small' }}
-            scroll={{ x: 800 }}
-            size="small"
-          />
-        </Card>
+          <Card
+            title="1週間の支出詳細"
+            style={{ marginBottom: '16px' }}
+          >
+            <Table
+              columns={columns}
+              dataSource={weeklyDetails}
+              rowKey="id"
+              pagination={{ pageSize: 10, size: 'small' }}
+              scroll={{ x: 800 }}
+              size="small"
+            />
+          </Card>
 
-        <Card
-          title="1日の使用記録詳細"
-          style={{ marginBottom: '16px' }}
-        >
-          <Table
-            columns={consumptionColumns}
-            dataSource={dailyConsumptions}
-            rowKey="id"
-            pagination={{ pageSize: 5, size: 'small' }}
-            scroll={{ x: 800 }}
-            size="small"
-          />
-        </Card>
+          <Card
+            title="1週間の使用記録詳細"
+            style={{ marginBottom: '16px' }}
+          >
+            <Table
+              columns={consumptionColumns}
+              dataSource={weeklyConsumptions}
+              rowKey="id"
+              pagination={{ pageSize: 10, size: 'small' }}
+              scroll={{ x: 800 }}
+              size="small"
+            />
+          </Card>
 
-        <Card
-          title="1週間の支出詳細"
-          style={{ marginBottom: '16px' }}
-        >
-          <Table
-            columns={columns}
-            dataSource={weeklyDetails}
-            rowKey="id"
-            pagination={{ pageSize: 10, size: 'small' }}
-            scroll={{ x: 800 }}
-            size="small"
-          />
-        </Card>
+          <Card
+            title="1ヶ月の支出詳細"
+            style={{ marginBottom: '16px' }}
+          >
+            <Table
+              columns={columns}
+              dataSource={monthlyDetails}
+              rowKey="id"
+              pagination={{ pageSize: 10, size: 'small' }}
+              scroll={{ x: 800 }}
+              size="small"
+            />
+          </Card>
 
-        <Card
-          title="1週間の使用記録詳細"
-          style={{ marginBottom: '16px' }}
-        >
-          <Table
-            columns={consumptionColumns}
-            dataSource={weeklyConsumptions}
-            rowKey="id"
-            pagination={{ pageSize: 10, size: 'small' }}
-            scroll={{ x: 800 }}
-            size="small"
-          />
-        </Card>
-
-        <Card
-          title="1ヶ月の支出詳細"
-          style={{ marginBottom: '16px' }}
-        >
-          <Table
-            columns={columns}
-            dataSource={monthlyDetails}
-            rowKey="id"
-            pagination={{ pageSize: 10, size: 'small' }}
-            scroll={{ x: 800 }}
-            size="small"
-          />
-        </Card>
-
-        <Card title="1ヶ月の使用記録詳細">
-          <Table
-            columns={consumptionColumns}
-            dataSource={monthlyConsumptions}
-            rowKey="id"
-            pagination={{ pageSize: 10, size: 'small' }}
-            scroll={{ x: 800 }}
-            size="small"
-          />
-        </Card>
-      </Spin>
+          <Card title="1ヶ月の使用記録詳細">
+            <Table
+              columns={consumptionColumns}
+              dataSource={monthlyConsumptions}
+              rowKey="id"
+              pagination={{ pageSize: 10, size: 'small' }}
+              scroll={{ x: 800 }}
+              size="small"
+            />
+          </Card>
+        </Spin>
+      </div>
     </div>
   )
 }

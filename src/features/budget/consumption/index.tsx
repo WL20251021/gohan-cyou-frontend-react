@@ -7,7 +7,7 @@ import PageHeader from '../../../components/PageHeader'
 import PaginatedGrid from '../../../components/PaginatedGrid'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import { ConsumptionColumn, JPNames } from './columns'
-import { getConsumption, deleteConsumption, getConsumptionStatistics } from './api'
+import { getConsumption, deleteConsumption } from './api'
 import { getPurchasements } from '../purchasement/api'
 import { getAllInventory } from '../inventory/api'
 import { useBookPage } from '../../../hooks/useBookPage'
@@ -51,7 +51,6 @@ export default function Consumption() {
 
   // データ更新時に統計と在庫も更新
   useEffect(() => {
-    fetchStatistics()
     checkInventoryStatus()
   }, [data]) // data changes on fetchSuccess
 
@@ -63,17 +62,6 @@ export default function Consumption() {
       })
       .catch((error) => {
         console.error(error)
-      })
-  }
-
-  // 統計情報取得
-  function fetchStatistics() {
-    getConsumptionStatistics()
-      .then((res) => {
-        setStatistics(res?.data || null)
-      })
-      .catch((error) => {
-        console.error('統計情報取得失敗:', error)
       })
   }
 

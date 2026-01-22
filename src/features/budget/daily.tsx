@@ -1,21 +1,6 @@
 import { useState, useEffect } from 'react'
+import { Card, DatePicker, Button, Space, Statistic, message, Row, Col, Tag } from 'antd'
 import {
-  Card,
-  DatePicker,
-  Button,
-  Space,
-  List,
-  Statistic,
-  message,
-  Row,
-  Col,
-  Tag,
-  Popconfirm,
-} from 'antd'
-
-import {
-  DeleteOutlined,
-  EditOutlined,
   BookOutlined,
   DollarOutlined,
   RiseOutlined,
@@ -34,15 +19,14 @@ import IncomeModal from './income/IncomeModal'
 import { getConsumption, deleteConsumption } from './consumption/api'
 import { ConsumptionColumn } from './consumption/columns'
 import { ConsumptionModal } from './consumption/ConsumptionModal'
-
-// 収入のデータ型はIncomeColumnを使用
+import PageHeader from '../../components/PageHeader'
+import DoodleCard, { DoodleCardRow } from '../../components/DoodleCard'
 
 export default function DailyPurchasementPage() {
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs())
   const [loading, setLoading] = useState(false)
   const [dailyPurchases, setDailyPurchases] = useState<PurchasementColumn[]>([])
   const [totalAmount, setTotalAmount] = useState(0)
-  // removed categories
 
   // 収入関連の状態
   const [dailyIncomes, setDailyIncomes] = useState<IncomeColumn[]>([])
@@ -168,7 +152,6 @@ export default function DailyPurchasementPage() {
   }
 
   // 編集モーダルを開く
-  // DEBUG: 編集ボタン押下時、ウェブページが固まる
   const handleEdit = (record: PurchasementColumn) => {
     setIsEditMode(true)
     setEditingRecord(record)
@@ -184,6 +167,7 @@ export default function DailyPurchasementPage() {
   // 購入記録保存成功時
   const handleSaveSuccess = () => {
     fetchDailyPurchases(selectedDate)
+    handleCancel()
   }
 
   // 収入追加モーダルを開く
@@ -276,462 +260,339 @@ export default function DailyPurchasementPage() {
   }
 
   return (
-    <div style={{ padding: '1rem', backgroundColor: '#f0f2f5', minHeight: '100%' }}>
-      <h1 style={{ marginBottom: '1rem', fontSize: '1.2rem', fontWeight: 'bold' }}>
-        <BookOutlined style={{ marginRight: '8px' }} />
-        1日の家計記入
-      </h1>
+    <div className="book-page-container">
+      <PageHeader
+        title="1日の家計記入"
+        // onAdd is removed because we have multiple add buttons below
+      />
 
-      {/* 日付選択カード */}
-      <Card style={{ marginBottom: '1rem' }}>
+      <div className="book-page-content">
+        {/* 日付選択カード */}
+        <Card style={{ marginBottom: '1rem' }}>
+          <Row
+            gutter={16}
+            align="middle"
+          >
+            <Col
+              flex="auto"
+              style={{ display: 'flex', alignItems: 'center', gap: '16px' }}
+            >
+              <span style={{ fontWeight: 'bold', fontSize: '16px' }}>記入日:</span>
+              <Button
+                icon={<LeftOutlined />}
+                onClick={handlePreviousDay}
+                title="前日"
+              />
+              <DatePicker
+                value={selectedDate}
+                onChange={handleDateChange}
+                format="YYYY年MM月DD日"
+                style={{ width: '200px' }}
+                allowClear={false}
+              />
+              <Button
+                icon={<RightOutlined />}
+                onClick={handleNextDay}
+                title="翌日"
+              />
+            </Col>
+            <Col>
+              <Space>
+                <Button
+                  type="default"
+                  variant="filled"
+                  color="danger"
+                  icon={<FallOutlined />}
+                  onClick={handleAddPurchasement}
+                >
+                  支出を追加
+                </Button>
+                <Button
+                  type="default"
+                  variant="filled"
+                  color="primary"
+                  icon={<RiseOutlined />}
+                  onClick={handleAddIncome}
+                >
+                  収入を追加
+                </Button>
+                <Button
+                  type="default"
+                  variant="filled"
+                  color="purple"
+                  icon={<BookOutlined />}
+                  onClick={handleAddConsumption}
+                >
+                  使用記録を追加
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+        </Card>
+
+        {/* 収支サマリーカード */}
         <Row
           gutter={16}
-          align="middle"
+          style={{ marginBottom: '1rem' }}
         >
+          {/* 支出 */}
           <Col
-            flex="auto"
-            style={{ display: 'flex', alignItems: 'center', gap: '16px' }}
+            xs={24}
+            md={6}
           >
-            <span style={{ fontWeight: 'bold', fontSize: '16px' }}>記入日:</span>
-            <Button
-              icon={<LeftOutlined />}
-              onClick={handlePreviousDay}
-              title="前日"
-            />
-            <DatePicker
-              value={selectedDate}
-              onChange={handleDateChange}
-              format="YYYY年MM月DD日"
-              style={{ width: '200px' }}
-              allowClear={false}
-            />
-            <Button
-              icon={<RightOutlined />}
-              onClick={handleNextDay}
-              title="翌日"
-            />
+            <Card style={{ background: 'linear-gradient(135deg, #FD7979 0%, #FDACAC 100%)' }}>
+              <Statistic
+                title={<span style={{ color: 'white', fontSize: '16px' }}>支出</span>}
+                value={totalAmount}
+                precision={0}
+                suffix="円"
+                valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
+                prefix={<FallOutlined />}
+              />
+              <div
+                style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
+              >
+                {dailyPurchases.length}件
+              </div>
+            </Card>
           </Col>
-          <Col>
-            <Space>
-              <Button
-                type="default"
-                variant="filled"
-                color="danger"
-                icon={<FallOutlined />}
-                onClick={handleAddPurchasement}
+          {/* 収入 */}
+          <Col
+            xs={24}
+            md={6}
+          >
+            <Card style={{ background: 'linear-gradient(135deg, #5AB2FF 0%, #A0DEFF 100%)' }}>
+              <Statistic
+                title={<span style={{ color: 'white', fontSize: '16px' }}>収入</span>}
+                value={totalIncome}
+                precision={0}
+                suffix="円"
+                valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
+                prefix={<RiseOutlined />}
+              />
+              <div
+                style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
               >
-                支出を追加
-              </Button>
-              <Button
-                type="default"
-                variant="filled"
-                color="primary"
-                icon={<RiseOutlined />}
-                onClick={handleAddIncome}
+                {dailyIncomes.length}件
+              </div>
+            </Card>
+          </Col>
+          {/* 使用 */}
+          <Col
+            xs={24}
+            md={6}
+          >
+            <Card style={{ background: 'linear-gradient(135deg, #AA60C8 0%, #D69ADE 100%)' }}>
+              <Statistic
+                title={<span style={{ color: 'white', fontSize: '16px' }}>使用記録</span>}
+                value={dailyConsumptions.length}
+                precision={0}
+                valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
+                prefix={<BookOutlined />}
+              />
+              <div
+                style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
               >
-                収入を追加
-              </Button>
-              <Button
-                type="default"
-                variant="filled"
-                color="purple"
-                icon={<BookOutlined />}
-                onClick={handleAddConsumption}
+                {dailyConsumptions.length}件
+              </div>
+            </Card>
+          </Col>
+          {/* 収支 */}
+          <Col
+            xs={24}
+            md={6}
+          >
+            <Card
+              style={{
+                background:
+                  totalIncome - totalAmount === 0
+                    ? 'linear-gradient(135deg, #4c4c53 0%, #828584 100%)'
+                    : totalIncome - totalAmount > 0
+                      ? 'linear-gradient(135deg, #5AB2FF 0%, #A0DEFF 100%)'
+                      : 'linear-gradient(135deg, #FD8A6B 0%, #FDACAC 100%)',
+              }}
+            >
+              <Statistic
+                title={<span style={{ color: 'white', fontSize: '16px' }}>収支</span>}
+                value={totalIncome - totalAmount}
+                precision={0}
+                suffix="円"
+                valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
+                prefix={<DollarOutlined />}
+              />
+              <div
+                style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
               >
-                使用記録を追加
-              </Button>
-            </Space>
+                {totalIncome - totalAmount >= 0 ? '黒字' : '赤字'}
+              </div>
+            </Card>
           </Col>
         </Row>
-      </Card>
 
-      {/* 収支サマリーカード */}
-      <Row
-        gutter={16}
-        style={{ marginBottom: '1rem' }}
-      >
-        {/* 支出 */}
-        <Col
-          xs={24}
-          md={6}
+        {/* 支出記録リスト */}
+        <Card
+          title="支出記録一覧"
+          loading={loading}
+          style={{ marginBottom: '1rem' }}
+          extra={
+            <Button
+              type="default"
+              variant="filled"
+              color="danger"
+              icon={<FallOutlined />}
+              onClick={handleAddPurchasement}
+            >
+              支出を追加
+            </Button>
+          }
         >
-          <Card style={{ background: 'linear-gradient(135deg, #FD7979 0%, #FDACAC 100%)' }}>
-            <Statistic
-              title={<span style={{ color: 'white', fontSize: '16px' }}>支出</span>}
-              value={totalAmount}
-              precision={0}
-              suffix="円"
-              valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
-              prefix={<FallOutlined />}
-            />
-            <div style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}>
-              {dailyPurchases.length}件
+          {dailyPurchases.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>
+              <FallOutlined style={{ fontSize: '32px', marginBottom: '8 px' }} />
+              <p>この日の購入記録はまだありません</p>
             </div>
-          </Card>
-        </Col>
-        {/* 収入 */}
-        <Col
-          xs={24}
-          md={6}
-        >
-          <Card style={{ background: 'linear-gradient(135deg, #5AB2FF 0%, #A0DEFF 100%)' }}>
-            <Statistic
-              title={<span style={{ color: 'white', fontSize: '16px' }}>収入</span>}
-              value={totalIncome}
-              precision={0}
-              suffix="円"
-              valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
-              prefix={<RiseOutlined />}
-            />
-            <div style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}>
-              {dailyIncomes.length}件
-            </div>
-          </Card>
-        </Col>
-        {/* 使用 */}
-        <Col
-          xs={24}
-          md={6}
-        >
-          <Card style={{ background: 'linear-gradient(135deg, #AA60C8 0%, #D69ADE 100%)' }}>
-            <Statistic
-              title={<span style={{ color: 'white', fontSize: '16px' }}>使用記録</span>}
-              value={dailyConsumptions.length}
-              precision={0}
-              valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
-              prefix={<BookOutlined />}
-            />
-            <div style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}>
-              {dailyConsumptions.length}件
-            </div>
-          </Card>
-        </Col>
-        {/* 収支 */}
-        <Col
-          xs={24}
-          md={6}
-        >
-          <Card
-            style={{
-              background:
-                totalIncome - totalAmount === 0
-                  ? 'linear-gradient(135deg, #4c4c53 0%, #828584 100%)'
-                  : totalIncome - totalAmount > 0
-                    ? 'linear-gradient(135deg, #5AB2FF 0%, #A0DEFF 100%)'
-                    : 'linear-gradient(135deg, #FD8A6B 0%, #FDACAC 100%)',
-            }}
-          >
-            <Statistic
-              title={<span style={{ color: 'white', fontSize: '16px' }}>収支</span>}
-              value={totalIncome - totalAmount}
-              precision={0}
-              suffix="円"
-              valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
-              prefix={<DollarOutlined />}
-            />
-            <div style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}>
-              {totalIncome - totalAmount >= 0 ? '黒字' : '赤字'}
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* 支出記録リスト */}
-      <Card
-        title="支出記録一覧"
-        loading={loading}
-        style={{ marginBottom: '1rem' }}
-        extra={
-          <Button
-            type="default"
-            variant="filled"
-            color="danger"
-            icon={<FallOutlined />}
-            onClick={handleAddPurchasement}
-          >
-            支出を追加
-          </Button>
-        }
-      >
-        {dailyPurchases.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>
-            <FallOutlined style={{ fontSize: '32px', marginBottom: '8 px' }} />
-            <p>この日の購入記録はまだありません</p>
-          </div>
-        ) : (
-          <List
-            itemLayout="horizontal"
-            dataSource={dailyPurchases}
-            renderItem={(item) => (
-              <List.Item
-                actions={[
-                  <Button
-                    type="link"
-                    icon={<EditOutlined />}
-                    onClick={() => handleEdit(item)}
-                  >
-                    編集
-                  </Button>,
-                  <Popconfirm
-                    title="削除確認"
-                    description={`「${item.goods?.goodsName || '不明'}」の購入記録を削除しますか？`}
-                    onConfirm={() => handleDelete(item)}
-                    okText="削除"
-                    cancelText="キャンセル"
-                    okButtonProps={{ danger: true }}
-                  >
-                    <Button
-                      type="link"
-                      danger
-                      icon={<DeleteOutlined />}
-                    >
-                      削除
-                    </Button>
-                  </Popconfirm>,
-                ]}
-              >
-                <List.Item.Meta
-                  title={
-                    <div>
-                      <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                        {item.goods?.goodsName || '商品未設定'}
-                      </span>
-                      {item.store && (
-                        <Tag
-                          color="blue"
-                          style={{ marginLeft: '8px' }}
-                        >
-                          {item.store.storeName}
-                        </Tag>
-                      )}
-                      {item.paymentMethod && (
-                        <Tag
-                          color="green"
-                          style={{ marginLeft: '4px' }}
-                        >
-                          {item.paymentMethod}
-                        </Tag>
-                      )}
-                    </div>
-                  }
-                  description={
-                    <div style={{ marginTop: '8px' }}>
-                      <div>
-                        数量: {item.quantity} {item.quantityUnit} × 単価: {item.unitPrice}{' '}
-                        {item.priceUnit}
-                      </div>
-                      {item.description && (
-                        <div style={{ marginTop: '4px', color: '#666' }}>
-                          メモ: {item.description}
-                        </div>
-                      )}
-                    </div>
-                  }
-                />
-                <div
-                  style={{
-                    fontSize: '20px',
-                    fontWeight: 'bold',
-                    color: '#cf1322',
-                    minWidth: '120px',
-                    textAlign: 'right',
-                  }}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {dailyPurchases.map((item) => (
+                <DoodleCard
+                  key={item.id}
+                  id={item.id}
+                  title={item.goods?.goodsName || '商品未設定'}
+                  onEdit={() => handleEdit(item)}
+                  onDelete={() => handleDelete(item)}
+                  clickable={false}
                 >
-                  ¥{item.totalPrice.toLocaleString()}
-                </div>
-              </List.Item>
-            )}
-          />
-        )}
-      </Card>
+                  <DoodleCardRow
+                    label="店舗"
+                    value={item.store?.storeName || '-'}
+                  />
+                  <DoodleCardRow
+                    label="金額"
+                    value={`¥${item.totalPrice.toLocaleString()}`}
+                    valueStyle={{ color: '#cf1322', fontWeight: 'bold' }}
+                  />
+                  <DoodleCardRow
+                    label="詳細"
+                    value={`${item.quantity}${item.quantityUnit} @${item.unitPrice}${item.priceUnit}`}
+                  />
+                  {item.paymentMethod && (
+                    <DoodleCardRow
+                      label="支払"
+                      value={item.paymentMethod}
+                    />
+                  )}
+                  {item.description && (
+                    <DoodleCardRow
+                      label="メモ"
+                      value={item.description}
+                    />
+                  )}
+                </DoodleCard>
+              ))}
+            </div>
+          )}
+        </Card>
 
-      {/* 収入記録リスト */}
-      <Card
-        title="収入記録一覧"
-        style={{ marginBottom: '1rem' }}
-        extra={
-          <Button
-            type="default"
-            variant="filled"
-            color="primary"
-            icon={<RiseOutlined />}
-            onClick={handleAddIncome}
-          >
-            収入を追加
-          </Button>
-        }
-      >
-        {dailyIncomes.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>
-            <RiseOutlined style={{ fontSize: '32px', marginBottom: '8px' }} />
-            <p>この日の収入記録はまだありません</p>
-          </div>
-        ) : (
-          <List
-            itemLayout="horizontal"
-            dataSource={dailyIncomes}
-            renderItem={(item) => (
-              <List.Item
-                actions={[
-                  <Button
-                    type="link"
-                    icon={<EditOutlined />}
-                    onClick={() => handleEditIncome(item)}
-                  >
-                    編集
-                  </Button>,
-                  <Popconfirm
-                    title="削除確認"
-                    description={`「${JPIncomeCategory[item.category as keyof typeof JPIncomeCategory] || '不明'}」の収入記録を削除しますか？`}
-                    onConfirm={() => handleDeleteIncome(item)}
-                    okText="削除"
-                    cancelText="キャンセル"
-                    okButtonProps={{ danger: true }}
-                  >
-                    <Button
-                      type="link"
-                      danger
-                      icon={<DeleteOutlined />}
-                    >
-                      削除
-                    </Button>
-                  </Popconfirm>,
-                ]}
-              >
-                <List.Item.Meta
-                  title={
-                    <div>
-                      <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                        {JPIncomeCategory[item.category as keyof typeof JPIncomeCategory] || '-'}
-                      </span>
-                      <Tag
-                        color="green"
-                        style={{ marginLeft: '8px' }}
-                      >
-                        収入
-                      </Tag>
-                    </div>
-                  }
-                  description={
-                    item.description ? (
-                      <div style={{ marginTop: '4px', color: '#666' }}>
-                        メモ: {item.description}
-                      </div>
-                    ) : null
-                  }
-                />
-                <div
-                  style={{
-                    fontSize: '20px',
-                    fontWeight: 'bold',
-                    color: '#52c41a',
-                    minWidth: '120px',
-                    textAlign: 'right',
-                  }}
+        {/* 収入記録リスト */}
+        <Card
+          title="収入記録一覧"
+          style={{ marginBottom: '1rem' }}
+          extra={
+            <Button
+              type="default"
+              variant="filled"
+              color="primary"
+              icon={<RiseOutlined />}
+              onClick={handleAddIncome}
+            >
+              収入を追加
+            </Button>
+          }
+        >
+          {dailyIncomes.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>
+              <RiseOutlined style={{ fontSize: '32px', marginBottom: '8px' }} />
+              <p>この日の収入記録はまだありません</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {dailyIncomes.map((item) => (
+                <DoodleCard
+                  key={item.id}
+                  id={item.id}
+                  title={JPIncomeCategory[item.category as keyof typeof JPIncomeCategory] || '収入'}
+                  onEdit={() => handleEditIncome(item)}
+                  onDelete={() => handleDeleteIncome(item)}
+                  clickable={false}
                 >
-                  +{item.amount.toLocaleString()} 円
-                </div>
-              </List.Item>
-            )}
-          />
-        )}
-      </Card>
+                  <DoodleCardRow
+                    label="金額"
+                    value={`+${item.amount.toLocaleString()} 円`}
+                    valueStyle={{ color: '#52c41a', fontWeight: 'bold' }}
+                  />
+                  {item.description && (
+                    <DoodleCardRow
+                      label="メモ"
+                      value={item.description}
+                    />
+                  )}
+                </DoodleCard>
+              ))}
+            </div>
+          )}
+        </Card>
 
-      {/* 使用記録リスト */}
-      <Card
-        title="使用記録一覧"
-        extra={
-          <Button
-            type="default"
-            variant="filled"
-            color="purple"
-            icon={<BookOutlined />}
-            onClick={handleAddConsumption}
-          >
-            使用記録を追加
-          </Button>
-        }
-      >
-        {dailyConsumptions.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>
-            <BookOutlined style={{ fontSize: '32px', marginBottom: '8px' }} />
-            <p>この日の使用記録はまだありません</p>
-          </div>
-        ) : (
-          <List
-            itemLayout="horizontal"
-            dataSource={dailyConsumptions}
-            renderItem={(item) => (
-              <List.Item
-                actions={[
-                  <Button
-                    type="link"
-                    icon={<EditOutlined />}
-                    onClick={() => handleEditConsumption(item)}
-                  >
-                    編集
-                  </Button>,
-                  <Popconfirm
-                    title="削除確認"
-                    description={`「${item.purchasement?.goods?.goodsName || '不明'}」の使用記録を削除しますか？`}
-                    onConfirm={() => handleDeleteConsumption(item)}
-                    okText="削除"
-                    cancelText="キャンセル"
-                    okButtonProps={{ danger: true }}
-                  >
-                    <Button
-                      type="link"
-                      danger
-                      icon={<DeleteOutlined />}
-                    >
-                      削除
-                    </Button>
-                  </Popconfirm>,
-                ]}
-              >
-                <List.Item.Meta
-                  title={
-                    <div>
-                      <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                        {item.purchasement?.goods?.goodsName || '商品未設定'}
-                      </span>
-                      {item.purchasement?.store && (
-                        <Tag
-                          color="blue"
-                          style={{ marginLeft: '8px' }}
-                        >
-                          {item.purchasement.store.name}
-                        </Tag>
-                      )}
-                      {item.purchasement?.brand && (
-                        <Tag
-                          color="purple"
-                          style={{ marginLeft: '4px' }}
-                        >
-                          {item.purchasement.brand.name}
-                        </Tag>
-                      )}
-                    </div>
-                  }
-                  description={
-                    <div style={{ marginTop: '8px' }}>
-                      <div>
-                        使用量: {item.quantity} {item.quantityUnit}
-                      </div>
-                      <div style={{ color: '#666', marginTop: '4px' }}>
-                        購入日: {dayjs(item.purchasement?.purchaseDate).format('YYYY年MM月DD日')}
-                      </div>
-                      {item.note && (
-                        <div style={{ marginTop: '4px', color: '#666' }}>メモ: {item.note}</div>
-                      )}
-                    </div>
-                  }
-                />
-              </List.Item>
-            )}
-          />
-        )}
-      </Card>
+        {/* 使用記録リスト */}
+        <Card
+          title="使用記録一覧"
+          extra={
+            <Button
+              type="default"
+              variant="filled"
+              color="purple"
+              icon={<BookOutlined />}
+              onClick={handleAddConsumption}
+            >
+              使用記録を追加
+            </Button>
+          }
+        >
+          {dailyConsumptions.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>
+              <BookOutlined style={{ fontSize: '32px', marginBottom: '8px' }} />
+              <p>この日の使用記録はまだありません</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {dailyConsumptions.map((item) => (
+                <DoodleCard
+                  key={item.id}
+                  id={item.id}
+                  title={item.purchasement?.goods?.goodsName || '商品未設定'}
+                  onEdit={() => handleEditConsumption(item)}
+                  onDelete={() => handleDeleteConsumption(item)}
+                  clickable={false}
+                >
+                  <DoodleCardRow
+                    label="店舗"
+                    value={item.purchasement?.store?.name || '-'}
+                  />
+                  <DoodleCardRow
+                    label="使用量"
+                    value={`${item.quantity} ${item.quantityUnit}`}
+                  />
+                  {item.description && (
+                    <DoodleCardRow
+                      label="メモ"
+                      value={item.description}
+                    />
+                  )}
+                </DoodleCard>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
 
       {/* 購入記録追加・編集モーダル */}
       <PurchasementModal

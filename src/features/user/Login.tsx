@@ -19,9 +19,9 @@ export default function Login() {
         return login(values)
       })
       .then((res) => {
-        if (res?.data?.access_token) {
+        if (res?.data?.token) {
           // トークンを保存
-          window.document.cookie = `jwt=${res.data.access_token}; path=/; max-age=${res.data.max_age}`
+          window.document.cookie = `jwt=${res.data.token}; path=/;`
           notification.success({
             title: 'ログイン成功',
             description: 'ダッシュボードにリダイレクトします',
