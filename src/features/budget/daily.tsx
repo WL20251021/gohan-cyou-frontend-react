@@ -3,10 +3,6 @@ import {
   Card,
   DatePicker,
   Button,
-  Form,
-  InputNumber,
-  Select,
-  Input,
   Space,
   List,
   Statistic,
@@ -14,10 +10,9 @@ import {
   Row,
   Col,
   Tag,
-  Modal,
   Popconfirm,
 } from 'antd'
-import BookModal from '../../components/BookModal'
+
 import {
   DeleteOutlined,
   EditOutlined,
@@ -32,9 +27,10 @@ import dayjs, { Dayjs } from 'dayjs'
 import { getPurchasements, deletePurchasement } from './purchasement/api'
 import { PurchasementModal } from './purchasement/index'
 import { PurchasementColumn } from './purchasement/columns'
-import { getIncomes, addIncome, updateIncome, deleteIncome } from './income/api'
+import { getIncomes, deleteIncome } from './income/api'
 import { IncomeColumn, JPIncomeCategory } from './income/columns'
-import { getCategories } from './category/api'
+import IncomeModal from './income/IncomeModal'
+
 import { getConsumptions, deleteConsumption } from './consumption/api'
 import { ConsumptionColumn } from './consumption/columns'
 import { ConsumptionModal } from './consumption/ConsumptionModal'
@@ -46,7 +42,7 @@ export default function DailyPurchasementPage() {
   const [loading, setLoading] = useState(false)
   const [dailyPurchases, setDailyPurchases] = useState<PurchasementColumn[]>([])
   const [totalAmount, setTotalAmount] = useState(0)
-  const [categories, setCategories] = useState<Array<any>>([])
+  // removed categories
 
   // 収入関連の状態
   const [dailyIncomes, setDailyIncomes] = useState<IncomeColumn[]>([])
@@ -54,7 +50,6 @@ export default function DailyPurchasementPage() {
   const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false)
   const [isIncomeEditMode, setIsIncomeEditMode] = useState(false)
   const [editingIncome, setEditingIncome] = useState<IncomeColumn | null>(null)
-  const [incomeForm] = Form.useForm<IncomeColumn>()
 
   // 使用記録関連の状態
   const [dailyConsumptions, setDailyConsumptions] = useState<ConsumptionColumn[]>([])
@@ -68,9 +63,7 @@ export default function DailyPurchasementPage() {
   const [editingRecord, setEditingRecord] = useState<PurchasementColumn | null>(null)
 
   // 初期データ取得
-  useEffect(() => {
-    fetchCategories()
-  }, [])
+  // categories not needed
 
   // 日付が変更されたときにデータを取得
   useEffect(() => {
@@ -78,16 +71,6 @@ export default function DailyPurchasementPage() {
     fetchDailyIncomes(selectedDate)
     fetchDailyConsumptions(selectedDate)
   }, [selectedDate])
-
-  // カテゴリデータ取得
-  const fetchCategories = async () => {
-    try {
-      const res = await getCategories()
-      setCategories(res?.data || [])
-    } catch (error) {
-      console.error('カテゴリデータ取得失敗:', error)
-    }
-  }
 
   // 指定日の購入記録を取得
   const fetchDailyPurchases = async (date: Dayjs) => {
@@ -210,11 +193,6 @@ export default function DailyPurchasementPage() {
   const handleAddIncome = () => {
     setIsIncomeEditMode(false)
     setEditingIncome(null)
-    incomeForm.resetFields()
-    incomeForm.setFieldsValue({
-      incomeDate: selectedDate,
-      amount: 0,
-    })
     setIsIncomeModalOpen(true)
   }
 
@@ -222,48 +200,19 @@ export default function DailyPurchasementPage() {
   const handleEditIncome = (record: IncomeColumn) => {
     setIsIncomeEditMode(true)
     setEditingIncome(record)
-    incomeForm.setFieldsValue({
-      ...record,
-      incomeDate: record.incomeDate ? dayjs(record.incomeDate) : selectedDate,
-    })
     setIsIncomeModalOpen(true)
   }
 
   // 収入モーダルをキャンセル
   const handleIncomeCancel = () => {
     setIsIncomeModalOpen(false)
-    incomeForm.resetFields()
     setEditingIncome(null)
   }
 
-  // 収入を保存
-  const handleSaveIncome = async () => {
-    try {
-      const values = await incomeForm.validateFields()
-      const data = {
-        ...values,
-        incomeDate: values.incomeDate ? dayjs(values.incomeDate).format('YYYY-MM-DD') : null,
-      }
-
-      if (isIncomeEditMode && editingIncome) {
-        await updateIncome(editingIncome.id, data as Partial<IncomeColumn>)
-        message.success('収入を更新しました')
-      } else {
-        await addIncome(data as Partial<IncomeColumn>)
-        message.success('収入を追加しました')
-      }
-
-      setIsIncomeModalOpen(false)
-      incomeForm.resetFields()
-      fetchDailyIncomes(selectedDate)
-    } catch (error: any) {
-      if (error.errorFields) {
-        message.error('入力内容を確認してください')
-      } else {
-        message.error('保存に失敗しました')
-        console.error('保存エラー:', error)
-      }
-    }
+  // 収入保存成功
+  const handleIncomeSuccess = () => {
+    handleIncomeCancel()
+    fetchDailyIncomes(selectedDate)
   }
 
   // 収入を削除
@@ -798,94 +747,15 @@ export default function DailyPurchasementPage() {
       />
 
       {/* 収入追加・編集モーダル */}
-      <BookModal
-        title={isIncomeEditMode ? '収入を編集' : '収入を追加'}
+      <IncomeModal
         open={isIncomeModalOpen}
-        onOk={handleSaveIncome}
+        isEditMode={isIncomeEditMode}
+        editingRecord={editingIncome}
+        initialDate={selectedDate}
         onCancel={handleIncomeCancel}
-        // width={500}
-        okText="保存"
-        cancelText="キャンセル"
-      >
-        <Form
-          form={incomeForm}
-          layout="vertical"
-          style={{ marginTop: '1rem' }}
-        >
-          <Form.Item
-            label="収入日"
-            name="incomeDate"
-            rules={[{ required: true, message: '収入日を選択してください' }]}
-          >
-            <DatePicker
-              style={{ width: '100%' }}
-              format="YYYY年MM月DD日"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="カテゴリ"
-            name="categoryId"
-            rules={[{ required: true, message: 'カテゴリを選択してください' }]}
-          >
-            <Select
-              allowClear
-              placeholder="カテゴリを選択"
-              showSearch
-              optionFilterProp="label"
-              options={categories.map((item) => ({
-                label: item.jpName,
-                value: item.id,
-              }))}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="金額"
-            required={true}
-          >
-            <Form.Item
-              name="amount"
-              noStyle
-              rules={[{ required: true, message: '金額を入力してください' }]}
-            >
-              <InputNumber
-                min={0}
-                step={1}
-                style={{ width: '70%' }}
-                addonAfter="円"
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => (Number(value?.replace(/,/g, '')) || 0) as 0}
-              />
-            </Form.Item>
-          </Form.Item>
-
-          <Form.Item
-            label="受取方法"
-            name="method"
-          >
-            <Select
-              allowClear
-              placeholder="受取方法を選択（任意）"
-              options={Object.entries(INCOME_METHODS).map(([_, value]) => ({
-                label: value,
-                value: value,
-              }))}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="メモ"
-            name="note"
-          >
-            <Input.TextArea
-              rows={3}
-              allowClear
-              placeholder="メモを入力（任意）"
-            />
-          </Form.Item>
-        </Form>
-      </BookModal>
+        onSuccess={handleIncomeSuccess}
+        categories={categories}
+      />
 
       {/* 使用記録追加・編集モーダル */}
       <ConsumptionModal
