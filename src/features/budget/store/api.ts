@@ -8,6 +8,14 @@ export function getStores() {
   })
 }
 
+export function getStoresByPage(page: number, pageSize: number) {
+  return request({
+    url: 'budget/stores/page',
+    method: 'get',
+    params: { page, pageSize },
+  })
+}
+
 export function addStore(data: Partial<StoreColumn>) {
   return request({
     url: 'budget/stores',

@@ -8,6 +8,14 @@ export function getConsumptions() {
   })
 }
 
+export function getConsumptionsByPage(page: number, pageSize: number) {
+  return request({
+    url: 'budget/consumption/page',
+    method: 'get',
+    params: { page, pageSize },
+  })
+}
+
 export function addConsumption(data: Partial<ConsumptionColumn>) {
   return request({
     url: 'budget/consumption',

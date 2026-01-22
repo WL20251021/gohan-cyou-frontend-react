@@ -8,6 +8,14 @@ export function getCategories() {
   })
 }
 
+export function getCategoriesByPage(page: number, pageSize: number) {
+  return request({
+    url: 'budget/categories/page',
+    method: 'get',
+    params: { page, pageSize },
+  })
+}
+
 export function getCategoryParent(id: number, type: string) {
   return request({
     url: `budget/categories/parent/${id}`,

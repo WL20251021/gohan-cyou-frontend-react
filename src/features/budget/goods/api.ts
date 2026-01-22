@@ -8,6 +8,14 @@ export function getGoods() {
   })
 }
 
+export function getGoodsByPage(page: number, pageSize: number) {
+  return request({
+    url: 'budget/goods/page',
+    method: 'get',
+    params: { page, pageSize },
+  })
+}
+
 export function addGoods(data: Partial<GoodsColumn>) {
   return request({
     url: 'budget/goods',

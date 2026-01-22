@@ -8,6 +8,14 @@ export function getPurchasements() {
   })
 }
 
+export function getPurchasementsByPage(page: number, pageSize: number) {
+  return request({
+    url: 'budget/purchasement/page',
+    method: 'get',
+    params: { page, pageSize },
+  })
+}
+
 export function addPurchasement(data: Partial<PurchasementColumn>) {
   return request({
     url: 'budget/purchasement',

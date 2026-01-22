@@ -11,6 +11,14 @@ export function getAllInventory() {
   })
 }
 
+export function getAllInventoryByPage(page: number, pageSize: number) {
+  return request<{ data: InventoryItem[]; total: number }>({
+    url: 'budget/inventory/page',
+    method: 'get',
+    params: { page, pageSize },
+  })
+}
+
 /**
  * 在庫サマリーを取得
  */

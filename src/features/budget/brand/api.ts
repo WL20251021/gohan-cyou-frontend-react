@@ -8,6 +8,14 @@ export function getBrands() {
   })
 }
 
+export function getBrandsByPage(page: number, pageSize: number) {
+  return request({
+    url: 'budget/brands/page',
+    method: 'get',
+    params: { page, pageSize },
+  })
+}
+
 export function addBrand(data: Partial<BrandColumn>) {
   return request({
     url: 'budget/brands',

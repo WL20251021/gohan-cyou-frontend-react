@@ -8,6 +8,14 @@ export function getIncomes() {
   })
 }
 
+export function getIncomesByPage(page: number, pageSize: number) {
+  return request({
+    url: 'budget/income/page',
+    method: 'get',
+    params: { page, pageSize },
+  })
+}
+
 export function addIncome(data: Partial<IncomeColumn>) {
   return request({
     url: 'budget/income/',

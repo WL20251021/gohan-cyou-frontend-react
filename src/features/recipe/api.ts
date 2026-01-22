@@ -7,6 +7,14 @@ export function getRecipes() {
   })
 }
 
+export function getRecipesByPage(page: number, pageSize: number) {
+  return request({
+    url: 'recipe/recipes/page',
+    method: 'get',
+    params: { page, pageSize },
+  })
+}
+
 export function getRecipe(id: number) {
   return request({
     url: `recipe/recipes/${id}`,
