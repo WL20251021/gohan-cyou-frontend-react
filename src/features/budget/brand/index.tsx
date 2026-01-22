@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Flex, Table, Button, Form, Input, Space, notification, message, Checkbox } from 'antd'
+import {
+  Flex,
+  Table,
+  Button,
+  Form,
+  Input,
+  Space,
+  notification,
+  message,
+  Checkbox,
+  Popconfirm,
+} from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
@@ -213,10 +224,19 @@ export default function Brand() {
             <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded"></i>
             編集
           </a>
-          <a onClick={() => handleDeleteBrand(record)}>
-            <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded"></i>
-            削除
-          </a>
+          <Popconfirm
+            title="削除確認"
+            description="本当に削除しますか？"
+            onConfirm={() => handleDeleteBrand(record)}
+            okText="削除"
+            cancelText="キャンセル"
+            okButtonProps={{ danger: true }}
+          >
+            <a>
+              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded"></i>
+              削除
+            </a>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -282,40 +302,24 @@ export default function Brand() {
   }
 
   /*************** ブランドを削除 ***************/
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedRows, setSelectedRows] = useState<BrandColumn[]>([])
-  const [actionRow, setActionRow] = useState<BrandColumn | null>(null)
-  const [isDeleteOne, setIsDeleteOne] = useState<boolean>(false)
 
   // テーブルの行選択時
   function onRowSelectionChange(_selectedKeys: any, selectedRows: BrandColumn[]) {
     setSelectedRows(selectedRows)
   }
 
-  // 削除ボタン押下時
-  function handleDeleteBrand(record?: BrandColumn) {
-    setIsDeleteOne(!!record)
-    if (record) {
-      setActionRow(record)
-      setIsDeleteModalOpen(true)
-    } else if (selectedRows.length) {
-      setIsDeleteModalOpen(true)
-    } else {
-      message.warning('削除するブランドを選択してください')
-    }
-  }
+  // 削除実行
+  function executeDelete(rows: (BrandColumn | null)[]) {
+    const cleanRows = rows.filter((r) => r !== null) as BrandColumn[]
+    const deleteIds = cleanRows.map((row) => row.id)
 
-  // 確認モーダルで削除を確定
-  function confirmDeleteBrand() {
-    const rows = isDeleteOne ? [actionRow] : selectedRows
     setTableLoading(true)
-    deleteBrands(rows.map((row) => row!.id))
+    deleteBrands(deleteIds)
       .then(() => {
-        setIsDeleteModalOpen(false)
         message.success(
-          `ブランド${rows.length > 1 ? `${rows.length}件` : `ID: ${rows[0]!.id}`}を削除しました`
+          `ブランド${cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`}を削除しました`
         )
-
         return getBrands()
       })
       .then((res) => {
@@ -330,7 +334,7 @@ export default function Brand() {
         notification.error({
           title: 'ブランド削除失敗',
           description: `ブランド${
-            rows.length > 1 ? `${rows.length}件` : `ID: ${rows[0]!.id}`
+            cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`
           }の削除に失敗しました: ${error.message}`,
           placement: 'bottomRight',
           showProgress: true,
@@ -339,9 +343,15 @@ export default function Brand() {
       })
   }
 
-  // 確認モーダルで削除をキャンセル
-  function cancelDeleteBrand() {
-    setIsDeleteModalOpen(false)
+  // 削除ボタン押下時
+  function handleDeleteBrand(record?: BrandColumn) {
+    if (record) {
+      executeDelete([record])
+    } else if (selectedRows.length) {
+      executeDelete(selectedRows)
+    } else {
+      message.warning('削除するブランドを選択してください')
+    }
   }
 
   return (
@@ -351,6 +361,7 @@ export default function Brand() {
         onAdd={() => showModal(true)}
         onDelete={() => handleDeleteBrand()}
         deleteDisabled={selectedRows.length === 0}
+        data={data}
       />
 
       <div className="doodle-card-grid mt-6">
@@ -413,36 +424,7 @@ export default function Brand() {
         className="mt-6"
         scroll={{ x: 'max-content' }}
       /> */}
-      {/* 削除確認モーダル */}
-      <BookModal
-        title="ブランド削除"
-        // closable={true}
-        open={isDeleteModalOpen}
-        onOk={confirmDeleteBrand}
-        onCancel={cancelDeleteBrand}
-        okText="削除"
-        cancelText="キャンセル"
-        footer={
-          <Space>
-            <Button onClick={cancelDeleteBrand}>キャンセル</Button>
-            <Button
-              type="primary"
-              danger
-              onClick={confirmDeleteBrand}
-            >
-              削除
-            </Button>
-          </Space>
-        }
-      >
-        <p>
-          ブランド
-          {isDeleteOne || selectedRows.length === 1
-            ? `ID: ${isDeleteOne ? actionRow!.id : selectedRows[0].id}`
-            : `${selectedRows.length}件`}
-          を削除しますか？
-        </p>
-      </BookModal>
+
       {/* ブランド追加・編集モーダル */}
       <BrandAddModal
         open={isModalOpen}

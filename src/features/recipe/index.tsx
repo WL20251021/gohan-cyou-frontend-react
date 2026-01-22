@@ -16,6 +16,7 @@ import {
   message,
   Checkbox,
   Modal,
+  Popconfirm,
 } from 'antd'
 import BookModal from '../../components/BookModal'
 import PageHeader from '../../components/PageHeader'
@@ -560,31 +561,20 @@ export default function Recipe() {
       return
     }
 
-    Modal.confirm({
-      title: 'レシピ削除確認',
-      content: `レシピ「${
-        rows.length === 1 ? rows[0].recipeName : `${rows.length}件`
-      }」を削除してもよろしいですか？`,
-      okText: '削除',
-      okType: 'danger',
-      cancelText: 'キャンセル',
-      onOk() {
-        return deleteRecipe(rows.map((r) => r.id))
-          .then(() => {
-            message.success('レシピを削除しました')
-            setSelectedRows([])
-            return fetchRecipes()
-          })
-          .catch((error) => {
-            console.error(error)
-            notification.error({
-              title: 'レシピ削除失敗',
-              description: error.response?.data?.message || error.message,
-              placement: 'bottomRight',
-            })
-          })
-      },
-    })
+    deleteRecipe(rows.map((r) => r.id))
+      .then(() => {
+        message.success('レシピを削除しました')
+        setSelectedRows([])
+        return fetchRecipes()
+      })
+      .catch((error) => {
+        console.error(error)
+        notification.error({
+          title: 'レシピ削除失敗',
+          description: error.response?.data?.message || error.message,
+          placement: 'bottomRight',
+        })
+      })
   }
 
   const handleModalCancel = () => setIsModalOpen(false)
@@ -597,6 +587,7 @@ export default function Recipe() {
         onAdd={handleAdd}
         onDelete={() => handleDelete()}
         deleteDisabled={selectedRows.length === 0}
+        data={data}
       />
 
       <div className="doodle-card-grid mt-6">

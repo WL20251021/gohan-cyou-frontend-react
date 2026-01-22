@@ -10,6 +10,7 @@ import {
   message,
   Upload,
   Image,
+  Popconfirm,
 } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
@@ -475,10 +476,19 @@ export default function Goods() {
             <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "></i>
             編集
           </a>
-          <a onClick={() => handleDeleteGoods(record)}>
-            <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
-            削除
-          </a>
+          <Popconfirm
+            title="削除確認"
+            description="本当に削除しますか？"
+            onConfirm={() => handleDeleteGoods(record)}
+            okText="削除"
+            cancelText="キャンセル"
+            okButtonProps={{ danger: true }}
+          >
+            <a>
+              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
+              削除
+            </a>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -582,44 +592,25 @@ export default function Goods() {
   }
 
   /*************** 商品を削除 ***************/
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedRows, setSelectedRows] = useState<GoodsColumn[]>([])
-  const [actionRow, setActionRow] = useState<GoodsColumn | null>(null)
-  const [isDeleteOne, setIsDeleteOne] = useState<boolean>(false)
 
   // テーブルの行選択時
   function onRowSelectionChange(_selectedKeys: any, selectedRows: GoodsColumn[]) {
     setSelectedRows(selectedRows)
   }
 
-  // 削除ボタン押下時
-  function handleDeleteGoods(record?: GoodsColumn) {
-    setIsDeleteOne(!!record)
-    if (record) {
-      setActionRow(record)
-      setIsDeleteModalOpen(true)
-    } else if (selectedRows.length) {
-      setIsDeleteModalOpen(true)
-    } else {
-      message.warning('削除する商品を選択してください')
-    }
-  }
-
-  // 確認モーダルで削除を確定
-  function confirmDeleteGoods() {
-    const rows = isDeleteOne ? [actionRow] : selectedRows
-    const deletePromises = rows.map((row) => deleteGoods([row!.id]))
+  // 削除実行
+  function executeDelete(rows: (GoodsColumn | null)[]) {
+    const cleanRows = rows.filter((r) => r !== null) as GoodsColumn[]
+    const deletePromises = cleanRows.map((row) => deleteGoods([row.id]))
 
     Promise.all(deletePromises)
       .then(() => {
-        setIsDeleteModalOpen(false)
         message.success(
           `商品${
-            rows.length > 1
-              ? `${selectedRows.map((v) => v.goodsName).join('、')}など${
-                  selectedRows.length
-                }件の商品`
-              : rows[0]!.goodsName
+            cleanRows.length > 1
+              ? `${cleanRows.map((v) => v.goodsName).join('、')}など${cleanRows.length}件の商品`
+              : cleanRows[0].goodsName
           }を削除しました`
         )
 
@@ -636,13 +627,7 @@ export default function Goods() {
 
         notification.error({
           title: '商品削除失敗',
-          description: `商品${
-            rows.length > 1
-              ? `${selectedRows.map((v) => v.goodsName).join('、')}など${
-                  selectedRows.length
-                }件の商品`
-              : rows[0]!.goodsName
-          }の削除に失敗しました: ${error.message}`,
+          description: `商品削除に失敗しました: ${error.message}`,
           placement: 'bottomRight',
           showProgress: true,
           pauseOnHover: true,
@@ -650,9 +635,15 @@ export default function Goods() {
       })
   }
 
-  // 確認モーダルで削除をキャンセル
-  function cancelDeleteGoods() {
-    setIsDeleteModalOpen(false)
+  // 削除ボタン押下時
+  function handleDeleteGoods(record?: GoodsColumn) {
+    if (record) {
+      executeDelete([record])
+    } else if (selectedRows.length) {
+      executeDelete(selectedRows)
+    } else {
+      message.warning('削除する商品を選択してください')
+    }
   }
 
   return (
@@ -662,6 +653,7 @@ export default function Goods() {
         onAdd={() => showModal(true)}
         onDelete={() => handleDeleteGoods()}
         deleteDisabled={selectedRows.length === 0}
+        data={data}
       />
       <div className="doodle-card-grid mt-6">
         {data.map((record) => (
@@ -708,38 +700,7 @@ export default function Goods() {
           </DoodleCard>
         ))}
       </div>
-      {/* 削除確認モーダル */}
-      <BookModal
-        title="商品削除"
-        // closable={true}
-        open={isDeleteModalOpen}
-        onOk={confirmDeleteGoods}
-        onCancel={cancelDeleteGoods}
-        okText="削除"
-        cancelText="キャンセル"
-        footer={
-          <Space>
-            <Button onClick={cancelDeleteGoods}>キャンセル</Button>
-            <Button
-              type="primary"
-              danger
-              onClick={confirmDeleteGoods}
-            >
-              削除
-            </Button>
-          </Space>
-        }
-      >
-        <p>
-          商品
-          {isDeleteOne || selectedRows.length === 1
-            ? `${isDeleteOne ? actionRow!.goodsName : selectedRows[0].goodsName}`
-            : `${selectedRows.map((v) => v.goodsName).join('、')}など${
-                selectedRows.length
-              }件の商品`}
-          を削除しますか？
-        </p>
-      </BookModal>
+
       {/* 商品追加・編集モーダル */}
       <GoodsAddModal
         open={isModalOpen}

@@ -1,5 +1,5 @@
 import type { ReactNode, MouseEvent } from 'react'
-import { Checkbox, Button, Space } from 'antd'
+import { Checkbox, Button, Space, Popconfirm } from 'antd'
 
 interface DoodleCardProps {
   id: string | number
@@ -75,17 +75,24 @@ export default function DoodleCard({
             />
           )}
           {onDelete && (
-            <Button
-              type="text"
-              danger
-              icon={
-                <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded text-xl"></i>
-              }
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete(e)
+            <Popconfirm
+              title="削除確認"
+              description="本当に削除しますか？"
+              onConfirm={(e) => {
+                if (onDelete) onDelete(e as any)
               }}
-            />
+              okText="削除"
+              cancelText="キャンセル"
+              okButtonProps={{ danger: true }}
+            >
+              <Button
+                type="text"
+                danger
+                icon={
+                  <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded text-xl"></i>
+                }
+              />
+            </Popconfirm>
           )}
         </Space>
       </div>

@@ -11,6 +11,7 @@ import {
   message,
   ColorPicker,
   Checkbox,
+  Popconfirm,
 } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
@@ -227,10 +228,19 @@ export default function Category() {
             <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "></i>
             編集
           </a>
-          <a onClick={() => handleDeleteCategory(record)}>
-            <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
-            削除
-          </a>
+          <Popconfirm
+            title="削除確認"
+            description="本当に削除しますか？"
+            onConfirm={() => handleDeleteCategory(record)}
+            okText="削除"
+            cancelText="キャンセル"
+            okButtonProps={{ danger: true }}
+          >
+            <a>
+              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
+              削除
+            </a>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -287,34 +297,14 @@ export default function Category() {
   }
 
   // ========== カテゴリー削除関連の状態 ==========
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [actionRow, setActionRow] = useState<CategoryColumn | null>(null)
-  const [isDeleteOne, setIsDeleteOne] = useState(false)
 
   // テーブルの行選択時
   const onRowSelectionChange = (_selectedKeys: React.Key[], selectedRows: CategoryColumn[]) => {
     setSelectedRows(selectedRows)
   }
 
-  // 削除ボタン押下時
-  const handleDeleteCategory = (record?: CategoryColumn) => {
-    setIsDeleteOne(!!record)
-
-    if (record) {
-      // 行の操作から削除
-      setActionRow(record)
-      setIsDeleteModalOpen(true)
-    } else if (selectedRows.length) {
-      // 選択された行を削除
-      setIsDeleteModalOpen(true)
-    } else {
-      message.warning('削除するカテゴリーを選択してください')
-    }
-  }
-
-  // 確認モーダルで削除を確定
-  const confirmDeleteCategory = async () => {
-    const rows = isDeleteOne ? [actionRow] : selectedRows
+  // 削除実行
+  const executeDelete = async (rows: CategoryColumn[]) => {
     const categoryNames =
       rows.length > 1
         ? `${rows.map((v) => v!.categoryName).join('、')}など${rows.length}件のカテゴリー`
@@ -322,10 +312,9 @@ export default function Category() {
 
     try {
       await deleteCategory(rows.map((row) => row!.id))
-      setIsDeleteModalOpen(false)
       message.success(`カテゴリー${categoryNames}を削除しました`)
-
       await fetchCategories()
+      setSelectedRows([])
     } catch (error: any) {
       console.error(error)
       notification.error({
@@ -338,9 +327,15 @@ export default function Category() {
     }
   }
 
-  // 確認モーダルで削除をキャンセル
-  const cancelDeleteCategory = () => {
-    setIsDeleteModalOpen(false)
+  // 削除ボタン押下時
+  const handleDeleteCategory = (record?: CategoryColumn) => {
+    if (record) {
+      executeDelete([record])
+    } else if (selectedRows.length) {
+      executeDelete(selectedRows)
+    } else {
+      message.warning('削除するカテゴリーを選択してください')
+    }
   }
 
   return (
@@ -350,6 +345,7 @@ export default function Category() {
         onAdd={() => showModal('add')}
         onDelete={() => handleDeleteCategory()}
         deleteDisabled={selectedRows.length === 0}
+        data={data}
       />
       <div className="doodle-card-grid mt-6">
         {data.map((record) => (
@@ -399,37 +395,7 @@ export default function Category() {
           </DoodleCard>
         ))}
       </div>
-      {/* 削除確認モーダル */}
-      <BookModal
-        title="カテゴリー削除"
-        open={isDeleteModalOpen}
-        onOk={confirmDeleteCategory}
-        onCancel={cancelDeleteCategory}
-        okText="削除"
-        cancelText="キャンセル"
-        footer={
-          <Space>
-            <Button onClick={cancelDeleteCategory}>キャンセル</Button>
-            <Button
-              type="primary"
-              danger
-              onClick={confirmDeleteCategory}
-            >
-              削除
-            </Button>
-          </Space>
-        }
-      >
-        <p>
-          カテゴリー
-          {isDeleteOne || selectedRows.length === 1
-            ? `${isDeleteOne ? actionRow!.categoryName : selectedRows[0].categoryName}`
-            : `${selectedRows.map((v) => v.categoryName).join('、')}など${
-                selectedRows.length
-              }件のカテゴリー`}
-          を削除しますか？
-        </p>
-      </BookModal>
+
       {/* カテゴリー追加/編集モーダル */}
       <CategoryModal
         open={isModalOpen}

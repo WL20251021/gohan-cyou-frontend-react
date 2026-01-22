@@ -14,6 +14,8 @@ import {
   Row,
   Col,
   Tag,
+  Modal,
+  Popconfirm,
 } from 'antd'
 import BookModal from '../../components/BookModal'
 import {
@@ -266,24 +268,15 @@ export default function DailyPurchasementPage() {
   }
 
   // 収入を削除
-  const handleDeleteIncome = (record: IncomeColumn) => {
-    Modal.confirm({
-      title: '削除確認',
-      content: `「${record.category?.categoryName || '不明'}」の収入記録を削除しますか？`,
-      okText: '削除',
-      okType: 'danger',
-      cancelText: 'キャンセル',
-      onOk: async () => {
-        try {
-          await deleteIncome([record.id])
-          message.success('収入を削除しました')
-          fetchDailyIncomes(selectedDate)
-        } catch (error) {
-          message.error('削除に失敗しました')
-          console.error('削除エラー:', error)
-        }
-      },
-    })
+  const handleDeleteIncome = async (record: IncomeColumn) => {
+    try {
+      await deleteIncome([record.id])
+      message.success('収入を削除しました')
+      fetchDailyIncomes(selectedDate)
+    } catch (error) {
+      message.error('削除に失敗しました')
+      console.error('削除エラー:', error)
+    }
   }
 
   // 使用記録追加モーダルを開く
@@ -314,45 +307,27 @@ export default function DailyPurchasementPage() {
   }
 
   // 使用記録削除
-  const handleDeleteConsumption = (record: ConsumptionColumn) => {
-    Modal.confirm({
-      title: '削除確認',
-      content: `「${record.purchasement?.goods?.goodsName || '不明'}」の使用記録を削除しますか？`,
-      okText: '削除',
-      okType: 'danger',
-      cancelText: 'キャンセル',
-      onOk: async () => {
-        try {
-          await deleteConsumption([record.id])
-          message.success('使用記録を削除しました')
-          fetchDailyConsumptions(selectedDate)
-        } catch (error) {
-          message.error('削除に失敗しました')
-          console.error('削除エラー:', error)
-        }
-      },
-    })
+  const handleDeleteConsumption = async (record: ConsumptionColumn) => {
+    try {
+      await deleteConsumption([record.id])
+      message.success('使用記録を削除しました')
+      fetchDailyConsumptions(selectedDate)
+    } catch (error) {
+      message.error('削除に失敗しました')
+      console.error('削除エラー:', error)
+    }
   }
 
   // 購入記録を削除
-  const handleDelete = (record: PurchasementColumn) => {
-    Modal.confirm({
-      title: '削除確認',
-      content: `「${record.goods?.goodsName || '不明'}」の購入記録を削除しますか？`,
-      okText: '削除',
-      okType: 'danger',
-      cancelText: 'キャンセル',
-      onOk: async () => {
-        try {
-          await deletePurchasement([record.id])
-          message.success('購入記録を削除しました')
-          fetchDailyPurchases(selectedDate)
-        } catch (error) {
-          message.error('削除に失敗しました')
-          console.error('削除エラー:', error)
-        }
-      },
-    })
+  const handleDelete = async (record: PurchasementColumn) => {
+    try {
+      await deletePurchasement([record.id])
+      message.success('購入記録を削除しました')
+      fetchDailyPurchases(selectedDate)
+    } catch (error) {
+      message.error('削除に失敗しました')
+      console.error('削除エラー:', error)
+    }
   }
 
   return (
@@ -552,14 +527,22 @@ export default function DailyPurchasementPage() {
                   >
                     編集
                   </Button>,
-                  <Button
-                    type="link"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDelete(item)}
+                  <Popconfirm
+                    title="削除確認"
+                    description={`「${item.goods?.goodsName || '不明'}」の購入記録を削除しますか？`}
+                    onConfirm={() => handleDelete(item)}
+                    okText="削除"
+                    cancelText="キャンセル"
+                    okButtonProps={{ danger: true }}
                   >
-                    削除
-                  </Button>,
+                    <Button
+                      type="link"
+                      danger
+                      icon={<DeleteOutlined />}
+                    >
+                      削除
+                    </Button>
+                  </Popconfirm>,
                 ]}
               >
                 <List.Item.Meta
@@ -573,7 +556,7 @@ export default function DailyPurchasementPage() {
                           color="blue"
                           style={{ marginLeft: '8px' }}
                         >
-                          {item.store.name}
+                          {item.store.storeName}
                         </Tag>
                       )}
                       {item.paymentMethod && (
@@ -592,8 +575,10 @@ export default function DailyPurchasementPage() {
                         数量: {item.quantity} {item.quantityUnit} × 単価: {item.unitPrice}{' '}
                         {item.priceUnit}
                       </div>
-                      {item.note && (
-                        <div style={{ marginTop: '4px', color: '#666' }}>メモ: {item.note}</div>
+                      {item.description && (
+                        <div style={{ marginTop: '4px', color: '#666' }}>
+                          メモ: {item.description}
+                        </div>
                       )}
                     </div>
                   }
@@ -650,14 +635,22 @@ export default function DailyPurchasementPage() {
                   >
                     編集
                   </Button>,
-                  <Button
-                    type="link"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDeleteIncome(item)}
+                  <Popconfirm
+                    title="削除確認"
+                    description={`「${item.category?.categoryName || '不明'}」の収入記録を削除しますか？`}
+                    onConfirm={() => handleDeleteIncome(item)}
+                    okText="削除"
+                    cancelText="キャンセル"
+                    okButtonProps={{ danger: true }}
                   >
-                    削除
-                  </Button>,
+                    <Button
+                      type="link"
+                      danger
+                      icon={<DeleteOutlined />}
+                    >
+                      削除
+                    </Button>
+                  </Popconfirm>,
                 ]}
               >
                 <List.Item.Meta
@@ -739,14 +732,22 @@ export default function DailyPurchasementPage() {
                   >
                     編集
                   </Button>,
-                  <Button
-                    type="link"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDeleteConsumption(item)}
+                  <Popconfirm
+                    title="削除確認"
+                    description={`「${item.purchasement?.goods?.goodsName || '不明'}」の使用記録を削除しますか？`}
+                    onConfirm={() => handleDeleteConsumption(item)}
+                    okText="削除"
+                    cancelText="キャンセル"
+                    okButtonProps={{ danger: true }}
                   >
-                    削除
-                  </Button>,
+                    <Button
+                      type="link"
+                      danger
+                      icon={<DeleteOutlined />}
+                    >
+                      削除
+                    </Button>
+                  </Popconfirm>,
                 ]}
               >
                 <List.Item.Meta

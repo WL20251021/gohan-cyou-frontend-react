@@ -1,7 +1,6 @@
-import { Button, Flex, Empty } from 'antd'
+import { Button, Flex, Empty, Popconfirm } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useLocation } from 'react-router'
-import DeleteButton from './DeleteButton'
 
 interface PageHeaderProps {
   title?: string
@@ -54,10 +53,23 @@ export default function PageHeader({
           >
             新規
           </Button>
-          <DeleteButton
-            onClick={onDelete}
+          <Popconfirm
+            title="削除確認"
+            description="本当に削除しますか？"
+            onConfirm={onDelete}
+            okText="削除"
+            cancelText="キャンセル"
+            okButtonProps={{ danger: true }}
             disabled={deleteDisabled}
-          />
+          >
+            <Button
+              danger
+              disabled={deleteDisabled}
+              className="hover:!border-current"
+            >
+              削除
+            </Button>
+          </Popconfirm>
         </Flex>
       ) : (
         <Empty description="データなし">

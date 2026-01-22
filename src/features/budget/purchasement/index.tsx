@@ -15,6 +15,7 @@ import {
   Col,
   Radio,
   Checkbox,
+  Popconfirm,
 } from 'antd'
 import dayjs from 'dayjs'
 import BookModal from '../../../components/BookModal'
@@ -745,10 +746,19 @@ export default function Purchasement() {
             <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "></i>
             編集
           </a>
-          <a onClick={() => handleDeletePurchasement(record)}>
-            <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
-            削除
-          </a>
+          <Popconfirm
+            title="削除確認"
+            description="本当に削除しますか？"
+            onConfirm={() => handleDeletePurchasement(record)}
+            okText="削除"
+            cancelText="キャンセル"
+            okButtonProps={{ danger: true }}
+          >
+            <a>
+              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
+              削除
+            </a>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -837,37 +847,22 @@ export default function Purchasement() {
   }
 
   /*************** 購入記録を削除 ***************/
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedRows, setSelectedRows] = useState<PurchasementColumn[]>([])
-  const [actionRow, setActionRow] = useState<PurchasementColumn | null>(null)
-  const [isDeleteOne, setIsDeleteOne] = useState<boolean>(false)
 
   // テーブルの行選択時
   function onRowSelectionChange(_selectedKeys: any, selectedRows: PurchasementColumn[]) {
     setSelectedRows(selectedRows)
   }
 
-  // 削除ボタン押下時
-  function handleDeletePurchasement(record?: PurchasementColumn) {
-    setIsDeleteOne(!!record)
-    if (record) {
-      setActionRow(record)
-      setIsDeleteModalOpen(true)
-    } else if (selectedRows.length) {
-      setIsDeleteModalOpen(true)
-    } else {
-      message.warning('削除する購入記録を選択してください')
-    }
-  }
+  // 削除実行
+  function executeDelete(rows: (PurchasementColumn | null)[]) {
+    const cleanRows = rows.filter((r) => r !== null) as PurchasementColumn[]
+    const deleteIds = cleanRows.map((row) => row.id)
 
-  // 確認モーダルで削除を確定
-  function confirmDeletePurchasement() {
-    const rows = isDeleteOne ? [actionRow] : selectedRows
-    deletePurchasement(rows.map((row) => row!.id))
+    deletePurchasement(deleteIds)
       .then(() => {
-        setIsDeleteModalOpen(false)
         message.success(
-          `購入記録${rows.length > 1 ? `${rows.length}件` : `ID: ${rows[0]!.id}`}を削除しました`
+          `購入記録${cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`}を削除しました`
         )
 
         setTableLoading(true)
@@ -884,7 +879,7 @@ export default function Purchasement() {
         notification.error({
           title: '購入記録削除失敗',
           description: `購入記録${
-            rows.length > 1 ? `${rows.length}件` : `ID: ${rows[0]!.id}`
+            cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`
           }の削除に失敗しました: ${error.message}`,
           placement: 'bottomRight',
           showProgress: true,
@@ -893,9 +888,15 @@ export default function Purchasement() {
       })
   }
 
-  // 確認モーダルで削除をキャンセル
-  function cancelDeletePurchasement() {
-    setIsDeleteModalOpen(false)
+  // 削除ボタン押下時
+  function handleDeletePurchasement(record?: PurchasementColumn) {
+    if (record) {
+      executeDelete([record])
+    } else if (selectedRows.length) {
+      executeDelete(selectedRows)
+    } else {
+      message.warning('削除する購入記録を選択してください')
+    }
   }
 
   return (
@@ -967,36 +968,7 @@ export default function Purchasement() {
           </DoodleCard>
         ))}
       </div>
-      {/* 削除確認モーダル */}
-      <BookModal
-        title="購入記録削除"
-        // closable={true}
-        open={isDeleteModalOpen}
-        onOk={confirmDeletePurchasement}
-        onCancel={cancelDeletePurchasement}
-        okText="削除"
-        cancelText="キャンセル"
-        footer={
-          <Space>
-            <Button onClick={cancelDeletePurchasement}>キャンセル</Button>
-            <Button
-              type="primary"
-              danger
-              onClick={confirmDeletePurchasement}
-            >
-              削除
-            </Button>
-          </Space>
-        }
-      >
-        <p>
-          購入記録
-          {isDeleteOne || selectedRows.length === 1
-            ? `ID: ${isDeleteOne ? actionRow!.id : selectedRows[0].id}`
-            : `${selectedRows.length}件`}
-          を削除しますか？
-        </p>
-      </BookModal>
+
       {/* 購入記録追加・編集モーダル */}
       <PurchasementModal
         open={isModalOpen}

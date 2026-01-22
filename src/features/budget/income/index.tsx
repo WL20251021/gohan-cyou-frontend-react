@@ -14,6 +14,7 @@ import {
   Statistic,
   Card,
   Checkbox,
+  Popconfirm,
 } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
@@ -94,10 +95,19 @@ export default function Income() {
             <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "></i>
             編集
           </a>
-          <a onClick={() => handleDeleteIncome(record)}>
-            <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
-            削除
-          </a>
+          <Popconfirm
+            title="削除確認"
+            description="本当に削除しますか？"
+            onConfirm={() => handleDeleteIncome(record)}
+            okText="削除"
+            cancelText="キャンセル"
+            okButtonProps={{ danger: true }}
+          >
+            <a>
+              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
+              削除
+            </a>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -275,37 +285,22 @@ export default function Income() {
   }
 
   /*************** 収入を削除 ***************/
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedRows, setSelectedRows] = useState<IncomeColumn[]>([])
-  const [actionRow, setActionRow] = useState<IncomeColumn | null>(null)
-  const [isDeleteOne, setIsDeleteOne] = useState<boolean>(false)
 
   // テーブルの行選択時
   function onRowSelectionChange(_selectedKeys: any, selectedRows: IncomeColumn[]) {
     setSelectedRows(selectedRows)
   }
 
-  // 削除ボタン押下時
-  function handleDeleteIncome(record?: IncomeColumn) {
-    setIsDeleteOne(!!record)
-    if (record) {
-      setActionRow(record)
-      setIsDeleteModalOpen(true)
-    } else if (selectedRows.length) {
-      setIsDeleteModalOpen(true)
-    } else {
-      message.warning('削除する収入を選択してください')
-    }
-  }
+  // 削除実行
+  function executeDelete(rows: (IncomeColumn | null)[]) {
+    const cleanRows = rows.filter((r) => r !== null) as IncomeColumn[]
+    const deleteIds = cleanRows.map((row) => row.id)
 
-  // 確認モーダルで削除を確定
-  function confirmDeleteIncome() {
-    const rows = isDeleteOne ? [actionRow] : selectedRows
-    deleteIncome(rows.map((row) => row!.id))
+    deleteIncome(deleteIds)
       .then(() => {
-        setIsDeleteModalOpen(false)
         message.success(
-          `収入${rows.length > 1 ? `${rows.length}件` : `ID: ${rows[0]!.id}`}を削除しました`
+          `収入${cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`}を削除しました`
         )
 
         setTableLoading(true)
@@ -326,16 +321,24 @@ export default function Income() {
         notification.error({
           title: '収入削除失敗',
           description: `収入${
-            rows.length > 1 ? `${rows.length}件` : `ID: ${rows[0]!.id}`
+            cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`
           }の削除に失敗しました: ${error.message}`,
           placement: 'bottomRight',
+          showProgress: true,
+          pauseOnHover: true,
         })
       })
   }
 
-  // 確認モーダルで削除をキャンセル
-  function cancelDeleteIncome() {
-    setIsDeleteModalOpen(false)
+  // 削除ボタン押下時
+  function handleDeleteIncome(record?: IncomeColumn) {
+    if (record) {
+      executeDelete([record])
+    } else if (selectedRows.length) {
+      executeDelete(selectedRows)
+    } else {
+      message.warning('削除する収入を選択してください')
+    }
   }
 
   return (
@@ -345,6 +348,7 @@ export default function Income() {
         onAdd={() => showModal(true)}
         onDelete={() => handleDeleteIncome()}
         deleteDisabled={selectedRows.length === 0}
+        data={data}
       />
 
       {/* 合計収入カード */}
@@ -404,51 +408,7 @@ export default function Income() {
           </DoodleCard>
         ))}
       </div>
-      {/* <Table
-        dataSource={data}
-        columns={columns}
-        loading={tableLoading}
-        rowKey="id"
-        onRow={(record) => ({
-          onClick: () => showModal(false, record),
-        })}
-        rowSelection={{
-          type: 'checkbox',
-          onChange: onRowSelectionChange,
-        }}
-        className="mt-6"
-        scroll={{ x: 'max-content' }}
-      /> */}
-      {/* 削除確認モーダル */}
-      <BookModal
-        title="収入削除"
-        // closable={true}
-        open={isDeleteModalOpen}
-        onOk={confirmDeleteIncome}
-        onCancel={cancelDeleteIncome}
-        okText="削除"
-        cancelText="キャンセル"
-        footer={
-          <Space>
-            <Button onClick={cancelDeleteIncome}>キャンセル</Button>
-            <Button
-              type="primary"
-              danger
-              onClick={confirmDeleteIncome}
-            >
-              削除
-            </Button>
-          </Space>
-        }
-      >
-        <p>
-          収入
-          {isDeleteOne || selectedRows.length === 1
-            ? `ID: ${isDeleteOne ? actionRow!.id : selectedRows[0].id}`
-            : `${selectedRows.length}件`}
-          を削除しますか？
-        </p>
-      </BookModal>
+
       {/* 収入インフォーモーダル */}
       <BookModal
         title={modalName}

@@ -10,6 +10,7 @@ import {
   notification,
   message,
   Checkbox,
+  Popconfirm,
 } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
@@ -288,10 +289,19 @@ export default function Store() {
             <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded"></i>
             編集
           </a>
-          <a onClick={() => handleDeleteSingle(record)}>
-            <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded"></i>
-            削除
-          </a>
+          <Popconfirm
+            title="削除確認"
+            description="本当に削除しますか？"
+            onConfirm={() => handleDeleteSingle(record)}
+            okText="削除"
+            cancelText="キャンセル"
+            okButtonProps={{ danger: true }}
+          >
+            <a>
+              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded"></i>
+              削除
+            </a>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -361,36 +371,18 @@ export default function Store() {
   }
 
   /*************** 店舗を削除 ***************/
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedRows, setSelectedRows] = useState<StoreColumn[]>([])
-  const [deletingRows, setDeletingRows] = useState<StoreColumn[]>([])
 
   // テーブルの行選択時
   const handleRowSelectionChange = (_: unknown, rows: StoreColumn[]) => {
     setSelectedRows(rows)
   }
 
-  // 単一行削除
-  const handleDeleteSingle = (record: StoreColumn) => {
-    setDeletingRows([record])
-    setIsDeleteModalOpen(true)
-  }
-
-  // 複数行削除
-  const handleDeleteMultiple = () => {
-    if (selectedRows.length === 0) {
-      message.warning('削除する店舗を選択してください')
-      return
-    }
-    setDeletingRows(selectedRows)
-    setIsDeleteModalOpen(true)
-  }
-
-  // 削除を確定
-  const confirmDelete = () => {
+  // 削除実行
+  const executeDelete = (rows: StoreColumn[]) => {
     setTableLoading(true)
-    const ids = deletingRows.map((row) => row.id)
-    const count = deletingRows.length
+    const ids = rows.map((row) => row.id)
+    const count = rows.length
     const displayText = count === 1 ? `ID: ${ids[0]}` : `${count}件`
 
     deleteStores(ids)
@@ -401,7 +393,6 @@ export default function Store() {
       .then((res) => {
         setData(res?.data || [])
         setSelectedRows([])
-        setIsDeleteModalOpen(false)
       })
       .catch((error) => {
         console.error(error)
@@ -418,10 +409,18 @@ export default function Store() {
       })
   }
 
-  // 削除をキャンセル
-  const cancelDelete = () => {
-    setIsDeleteModalOpen(false)
-    setDeletingRows([])
+  // 単一行削除
+  const handleDeleteSingle = (record: StoreColumn) => {
+    executeDelete([record])
+  }
+
+  // 複数行削除
+  const handleDeleteMultiple = () => {
+    if (selectedRows.length === 0) {
+      message.warning('削除する店舗を選択してください')
+      return
+    }
+    executeDelete(selectedRows)
   }
 
   return (
@@ -431,6 +430,7 @@ export default function Store() {
         onAdd={handleAdd}
         onDelete={handleDeleteMultiple}
         deleteDisabled={selectedRows.length === 0}
+        data={data}
       />
       <div className="doodle-card-grid mt-6">
         {data.map((record) => {
@@ -492,34 +492,7 @@ export default function Store() {
           )
         })}
       </div>
-      {/* 削除確認モーダル */}
-      <BookModal
-        title="店舗削除"
-        open={isDeleteModalOpen}
-        onOk={confirmDelete}
-        onCancel={cancelDelete}
-        okText="削除"
-        cancelText="キャンセル"
-        // okButtonProps={{ danger: true }} // BookModal may need to support this or we ignore for now
-        footer={
-          <Space>
-            <Button onClick={cancelDelete}>キャンセル</Button>
-            <Button
-              type="primary"
-              danger
-              onClick={confirmDelete}
-              loading={tableLoading}
-            >
-              削除
-            </Button>
-          </Space>
-        }
-      >
-        <p>
-          店舗{deletingRows.length === 1 ? `ID: ${deletingRows[0].id}` : `${deletingRows.length}件`}
-          を削除しますか？
-        </p>
-      </BookModal>
+
       {/* 店舗追加・編集モーダル */}
       <StoreAddModal
         open={isModalOpen}
