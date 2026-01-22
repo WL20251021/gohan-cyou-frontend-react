@@ -176,7 +176,10 @@ export default function PaginatedGrid<T>({
           )}
         </>
       ) : (
-        <Empty description="データなし">
+        <Empty
+          description="データなし"
+          style={{ margin: '20px' }}
+        >
           <Button
             type="primary"
             icon={<PlusOutlined />}
