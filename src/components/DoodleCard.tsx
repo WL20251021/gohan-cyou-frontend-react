@@ -10,6 +10,7 @@ interface DoodleCardProps {
   onDelete?: (e: MouseEvent<HTMLElement>) => void
   onClick?: () => void
   children?: ReactNode
+  rowJustify?: 'start' | 'center' | 'end' | 'space-between' | 'space-around' | 'space-evenly'
 }
 
 export function DoodleCardRow({
@@ -38,11 +39,19 @@ export default function DoodleCard({
   onDelete,
   onClick,
   children,
+  rowJustify,
 }: DoodleCardProps) {
   return (
     <div
       className={`doodle-card ${selected ? 'selected' : ''}`}
       onClick={onClick}
+      style={
+        rowJustify
+          ? ({
+              '--doodle-card-row-justify': rowJustify,
+            } as React.CSSProperties)
+          : undefined
+      }
     >
       <div className="doodle-card-id">{id}</div>
       <div className="doodle-card-title">{title}</div>

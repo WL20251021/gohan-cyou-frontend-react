@@ -21,6 +21,7 @@ interface BookDetailModalProps {
   hasNext?: boolean
   hasPrev?: boolean
   children?: ReactNode
+  rowJustify?: 'start' | 'center' | 'end' | 'space-between' | 'space-around' | 'space-evenly'
 }
 
 export default function BookDetailModal({
@@ -35,6 +36,7 @@ export default function BookDetailModal({
   hasNext,
   hasPrev,
   children,
+  rowJustify,
 }: BookDetailModalProps) {
   const { setFlip } = useBook()
   const [targetParams, setTargetParams] = useState<{
@@ -190,11 +192,14 @@ export default function BookDetailModal({
   // Right Side Content
   const content = (
     <div
-      style={{
-        height: '100%',
-        padding: '48px',
-        overflowY: 'auto',
-      }}
+      style={
+        {
+          height: '100%',
+          padding: '48px',
+          overflowY: 'auto',
+          '--doodle-card-row-justify': rowJustify,
+        } as React.CSSProperties
+      }
     >
       {children}
     </div>

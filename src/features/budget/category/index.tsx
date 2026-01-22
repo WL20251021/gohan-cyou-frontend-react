@@ -266,6 +266,7 @@ export default function Category() {
         onPrev={prevDetail}
         hasNext={hasNext}
         hasPrev={hasPrev}
+        rowJustify="start"
       >
         {detailRecord && (
           <div className="flex flex-col gap-4">
