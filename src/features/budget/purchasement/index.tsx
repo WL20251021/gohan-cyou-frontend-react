@@ -345,7 +345,7 @@ export function PurchasementModal({
                   optionFilterProp="label"
                   style={{ width: 'calc(100% - 80px)' }}
                   options={stores.map((item) => ({
-                    label: item.name,
+                    label: item.storeName,
                     value: item.id,
                   }))}
                 />
@@ -905,6 +905,7 @@ export default function Purchasement() {
         onAdd={() => showModal(true)}
         onDelete={() => handleDeletePurchasement()}
         deleteDisabled={selectedRows.length === 0}
+        data={data}
       />
       <div className="doodle-card-grid mt-6">
         {data.map((record) => (
@@ -966,18 +967,6 @@ export default function Purchasement() {
           </DoodleCard>
         ))}
       </div>
-      {/* <Table
-        dataSource={data}
-        columns={columns}
-        loading={tableLoading}
-        rowKey="id"
-        rowSelection={{
-          type: 'checkbox',
-          onChange: onRowSelectionChange,
-        }}
-        className="mt-6"
-        scroll={{ x: 'max-content' }}
-      /> */}
       {/* 削除確認モーダル */}
       <BookModal
         title="購入記録削除"
