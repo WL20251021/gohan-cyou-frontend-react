@@ -1,16 +1,5 @@
 import { useState, useEffect } from 'react'
-import {
-  Button,
-  Form,
-  Input,
-  Select,
-  Space,
-  notification,
-  message,
-  Upload,
-  Image,
-  Popconfirm,
-} from 'antd'
+import { Form, Input, Select, notification, message, Upload, Image, Space, Button } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
@@ -30,6 +19,7 @@ import { getBrands } from '../brand/api'
 import { CategoryAddModal } from '../category/index'
 import { BrandAddModal } from '../brand/index'
 import { type FileType } from '@/utils/file'
+import { useBookPage } from '../../../hooks/useBookPage'
 
 // 商品追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function GoodsAddModal({
@@ -404,136 +394,38 @@ function genImageUrl(imageName: string) {
 }
 
 export default function Goods() {
-  // テーブルデータとカラム定義
-  const [data, setData] = useState<Array<GoodsColumn>>([])
-  const [tableLoading, setTableLoading] = useState<boolean>(false)
+  const {
+    data,
+    selectedRows,
+    toggleSelection,
+    isModalOpen,
+    isAdd,
+    editingRecord,
+    showModal,
+    handleCancel,
+    handleSuccess,
+    handleDelete,
+    handleDeleteAction,
+  } = useBookPage({
+    fetchList: getGoods,
+    deleteItem: deleteGoods,
+    itemName: '商品',
+  })
+
+  // Additional state for Goods
   const [categories, setCategories] = useState<Array<any>>([])
   const [brands, setBrands] = useState<Array<any>>([])
 
-  const columns: Array<any> = [
-    {
-      title: JPNames.id,
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-      className: 'cell-id',
-      onCell: () => ({ 'data-label': JPNames.id }),
-    },
-    {
-      title: JPNames.goodsName,
-      dataIndex: 'goodsName',
-      key: 'goodsName',
-      className: 'cell-title',
-      onCell: () => ({ 'data-label': JPNames.goodsName }),
-    },
-    {
-      title: JPNames.category,
-      dataIndex: 'category',
-      key: 'category',
-      onCell: () => ({ 'data-label': JPNames.category }),
-      render: (category: any) => category?.categoryName || '-',
-    },
-    {
-      title: JPNames.brand,
-      dataIndex: 'brand',
-      key: 'brand',
-      onCell: () => ({ 'data-label': JPNames.brand }),
-      render: (brand: any) => brand?.brandName || '-',
-    },
-    {
-      title: JPNames.memo,
-      dataIndex: 'memo',
-      key: 'memo',
-      onCell: () => ({ 'data-label': JPNames.memo }),
-      render: (memo: string | null) => memo || '-',
-    },
-    {
-      title: JPNames.imageName,
-      dataIndex: 'imageName',
-      key: 'imageName',
-      onCell: () => ({ 'data-label': JPNames.imageName }),
-      render: (imageName: string | null) =>
-        imageName ? (
-          // Only VITE_SOME_KEY will be exposed as import.meta.env.VITE_SOME_KEY to your client source code, but DB_PASSWORD will not.
-          <Image
-            src={genImageUrl(imageName)}
-            alt={JPNames.imageName}
-            width={50}
-            height={50}
-            style={{ objectFit: 'cover' }}
-          />
-        ) : (
-          '-'
-        ),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      onCell: () => ({ 'data-label': '操作' }),
-      render: (_: any, record: GoodsColumn) => (
-        <Space size="middle">
-          <a>
-            <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "></i>
-            編集
-          </a>
-          <Popconfirm
-            title="削除確認"
-            description="本当に削除しますか？"
-            onConfirm={() => handleDeleteGoods(record)}
-            okText="削除"
-            cancelText="キャンセル"
-            okButtonProps={{ danger: true }}
-          >
-            <a>
-              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
-              削除
-            </a>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ]
-
-  // データの取得
+  // データの取得 (Cats/Brands)
   useEffect(() => {
-    fetchGoods()
     fetchCategories()
     fetchBrands()
   }, [])
-
-  // 商品データ取得
-  function fetchGoods() {
-    getGoods()
-      .then((res) => {
-        setData(res?.data || [])
-      })
-      .catch((error) => {
-        console.error(error)
-        notification.error({
-          title: '商品データ取得失敗',
-          description: error.message,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
-
-  const toggleSelection = (record: GoodsColumn, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const isSelected = selectedRows.find((r) => r.id === record.id)
-    if (isSelected) {
-      setSelectedRows(selectedRows.filter((r) => r.id !== record.id))
-    } else {
-      setSelectedRows([...selectedRows, record])
-    }
-  }
 
   // カテゴリーデータ取得
   function fetchCategories() {
     getCategories()
       .then((res) => {
-        // ツリー構造をフラット化
         const flatCategories = flattenTree(res?.data || [])
         setCategories(flatCategories)
       })
@@ -568,96 +460,18 @@ export default function Goods() {
     return result
   }
 
-  /*************** 新規商品を追加/商品を編集 ***************/
-  const [isAdd, setIsAdd] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingRecord, setEditingRecord] = useState<GoodsColumn | null>(null)
-
-  // モーダルの表示
-  const showModal = (isAdd: boolean, record?: GoodsColumn) => {
-    setIsModalOpen(true)
-    setIsAdd(isAdd)
-    setEditingRecord(record || null)
-  }
-
-  // モーダルのキャンセル
-  const handleCancel = () => {
-    setIsModalOpen(false)
-    setEditingRecord(null)
-  }
-
-  // 商品保存成功時
-  const handleSuccess = () => {
-    fetchGoods()
-  }
-
-  /*************** 商品を削除 ***************/
-  const [selectedRows, setSelectedRows] = useState<GoodsColumn[]>([])
-
-  // テーブルの行選択時
-  function onRowSelectionChange(_selectedKeys: any, selectedRows: GoodsColumn[]) {
-    setSelectedRows(selectedRows)
-  }
-
-  // 削除実行
-  function executeDelete(rows: (GoodsColumn | null)[]) {
-    const cleanRows = rows.filter((r) => r !== null) as GoodsColumn[]
-    const deletePromises = cleanRows.map((row) => deleteGoods([row.id]))
-
-    Promise.all(deletePromises)
-      .then(() => {
-        message.success(
-          `商品${
-            cleanRows.length > 1
-              ? `${cleanRows.map((v) => v.goodsName).join('、')}など${cleanRows.length}件の商品`
-              : cleanRows[0].goodsName
-          }を削除しました`
-        )
-
-        setTableLoading(true)
-        return getGoods()
-      })
-      .then((res) => {
-        setData(res?.data || [])
-        setTableLoading(false)
-        setSelectedRows([])
-      })
-      .catch((error) => {
-        console.error(error)
-
-        notification.error({
-          title: '商品削除失敗',
-          description: `商品削除に失敗しました: ${error.message}`,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
-
-  // 削除ボタン押下時
-  function handleDeleteGoods(record?: GoodsColumn) {
-    if (record) {
-      executeDelete([record])
-    } else if (selectedRows.length) {
-      executeDelete(selectedRows)
-    } else {
-      message.warning('削除する商品を選択してください')
-    }
-  }
-
   return (
     <div className="book-page-container">
       <PageHeader
         title="商品一覧"
         onAdd={() => showModal(true)}
-        onDelete={() => handleDeleteGoods()}
+        onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
       <PaginatedGrid
         className="book-page-content"
-        data={data}
+        data={data as GoodsColumn[]}
         renderItem={(record: GoodsColumn) => (
           <DoodleCard
             key={record.id}
@@ -671,7 +485,7 @@ export default function Goods() {
             }}
             onDelete={(e) => {
               e.stopPropagation()
-              handleDeleteGoods(record)
+              handleDeleteAction(record)
             }}
           >
             {record.imageName && (
@@ -707,7 +521,7 @@ export default function Goods() {
       <GoodsAddModal
         open={isModalOpen}
         isEditMode={!isAdd}
-        editingRecord={editingRecord}
+        editingRecord={editingRecord as GoodsColumn | null}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
       />

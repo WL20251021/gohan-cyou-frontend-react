@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Select, Space, notification, message, Popconfirm } from 'antd'
+import { Form, Input, Select, notification, message } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
@@ -15,6 +15,7 @@ import {
   COUNTRIES,
 } from './columns'
 import { getStores, addStore, updateStore, deleteStores } from './api'
+import { useBookPage } from '../../../hooks/useBookPage'
 
 // 店舗追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function StoreAddModal({
@@ -197,300 +198,97 @@ export function StoreAddModal({
 }
 
 export default function Store() {
-  // テーブルデータとカラム定義
-  const [data, setData] = useState<Array<StoreColumn>>([])
-  const [tableLoading, setTableLoading] = useState<boolean>(false)
-
-  const columns: Array<any> = [
-    {
-      title: JPNames.id,
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-      className: 'cell-id',
-      onCell: () => ({ 'data-label': JPNames.id }),
-    },
-    {
-      title: JPNames.storeName,
-      dataIndex: 'storeName',
-      key: 'storeName',
-      className: 'cell-title',
-      onCell: () => ({ 'data-label': JPNames.storeName }),
-    },
-    {
-      title: JPNames.storeType,
-      dataIndex: 'storeType',
-      key: 'storeType',
-      onCell: () => ({ 'data-label': JPNames.storeType }),
-      render: (type: StoreType) => {
-        const key = Object.keys(STORES).find(
-          (k) => STORES[k as keyof typeof STORES] === type
-        ) as keyof typeof JPStoreTypes
-        return key ? JPStoreTypes[key] : type
-      },
-    },
-    {
-      title: JPNames.country,
-      dataIndex: 'country',
-      key: 'country',
-      onCell: () => ({ 'data-label': JPNames.country }),
-      render: (country: CountryType) => JPCountries[country as keyof typeof JPCountries] || country,
-    },
-    {
-      title: JPNames.city,
-      dataIndex: 'city',
-      key: 'city',
-      onCell: () => ({ 'data-label': JPNames.city }),
-    },
-    {
-      title: JPNames.address,
-      dataIndex: 'address',
-      key: 'address',
-      onCell: () => ({ 'data-label': JPNames.address }),
-    },
-    {
-      title: JPNames.url,
-      dataIndex: 'url',
-      key: 'url',
-      onCell: () => ({ 'data-label': JPNames.url }),
-      render: (url: string) =>
-        url ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {url}
-          </a>
-        ) : (
-          '-'
-        ),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      fixed: 'right' as const,
-      width: 150,
-      onCell: () => ({ 'data-label': '操作' }),
-      render: (_: unknown, record: StoreColumn) => (
-        <Space size="middle">
-          <a>
-            <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded"></i>
-            編集
-          </a>
-          <Popconfirm
-            title="削除確認"
-            description="本当に削除しますか？"
-            onConfirm={() => handleDeleteSingle(record)}
-            okText="削除"
-            cancelText="キャンセル"
-            okButtonProps={{ danger: true }}
-          >
-            <a>
-              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded"></i>
-              削除
-            </a>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ]
-
-  // データの取得
-  useEffect(() => {
-    fetchStores()
-  }, [])
-
-  // 店舗データ取得
-  function fetchStores() {
-    setTableLoading(true)
-    getStores()
-      .then((res) => {
-        setData(res?.data || [])
-        setTableLoading(false)
-      })
-      .catch((error) => {
-        console.error(error)
-        setTableLoading(false)
-        notification.error({
-          title: '店舗データ取得失敗',
-          description: error.message,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
-
-  const toggleSelection = (record: StoreColumn, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const isSelected = selectedRows.find((r) => r.id === record.id)
-    if (isSelected) {
-      setSelectedRows(selectedRows.filter((r) => r.id !== record.id))
-    } else {
-      setSelectedRows([...selectedRows, record])
-    }
-  }
-
-  /*************** 新規店舗を追加/店舗を編集 ***************/
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingRecord, setEditingRecord] = useState<StoreColumn | null>(null)
-
-  // 新規追加モーダル表示
-  const handleAdd = () => {
-    setEditingRecord(null)
-    setIsModalOpen(true)
-  }
-
-  // 編集モーダル表示
-  const handleEdit = (record: StoreColumn) => {
-    setEditingRecord(record)
-    setIsModalOpen(true)
-  }
-
-  // モーダルのキャンセル
-  const handleModalCancel = () => {
-    setIsModalOpen(false)
-    setEditingRecord(null)
-  }
-
-  // 店舗保存成功時
-  const handleModalSuccess = () => {
-    fetchStores()
-  }
-
-  /*************** 店舗を削除 ***************/
-  const [selectedRows, setSelectedRows] = useState<StoreColumn[]>([])
-
-  // テーブルの行選択時
-  const handleRowSelectionChange = (_: unknown, rows: StoreColumn[]) => {
-    setSelectedRows(rows)
-  }
-
-  // 削除実行
-  const executeDelete = (rows: StoreColumn[]) => {
-    setTableLoading(true)
-    const ids = rows.map((row) => row.id)
-    const count = rows.length
-    const displayText = count === 1 ? `ID: ${ids[0]}` : `${count}件`
-
-    deleteStores(ids)
-      .then(() => {
-        message.success(`店舗${displayText}を削除しました`)
-        return getStores()
-      })
-      .then((res) => {
-        setData(res?.data || [])
-        setSelectedRows([])
-      })
-      .catch((error) => {
-        console.error(error)
-        notification.error({
-          title: '店舗削除失敗',
-          description: `店舗${displayText}の削除に失敗しました: ${error.message}`,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-      .finally(() => {
-        setTableLoading(false)
-      })
-  }
-
-  // 単一行削除
-  const handleDeleteSingle = (record: StoreColumn) => {
-    executeDelete([record])
-  }
-
-  // 複数行削除
-  const handleDeleteMultiple = () => {
-    if (selectedRows.length === 0) {
-      message.warning('削除する店舗を選択してください')
-      return
-    }
-    executeDelete(selectedRows)
-  }
+  const {
+    data,
+    selectedRows,
+    toggleSelection,
+    isModalOpen,
+    isAdd,
+    editingRecord,
+    showModal,
+    handleCancel,
+    handleSuccess,
+    handleDelete,
+    handleDeleteAction,
+  } = useBookPage({
+    fetchList: getStores,
+    deleteItem: deleteStores,
+    itemName: '店舗',
+  })
 
   return (
     <div className="book-page-container">
       <PageHeader
         title="店舗一覧"
-        onAdd={handleAdd}
-        onDelete={handleDeleteMultiple}
+        onAdd={() => showModal(true)}
+        onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
       <PaginatedGrid
         className="book-page-content"
-        data={data}
-        renderItem={(record: StoreColumn) => {
-          const storeTypeKey = Object.keys(STORES).find(
-            (k) => STORES[k as keyof typeof STORES] === record.storeType
-          ) as keyof typeof JPStoreTypes
-          const storeTypeLabel = storeTypeKey ? JPStoreTypes[storeTypeKey] : record.storeType
-
-          return (
-            <DoodleCard
-              key={record.id}
-              id={record.id}
-              title={record.storeName}
-              selected={!!selectedRows.find((r) => r.id === record.id)}
-              onToggleSelection={(e) => toggleSelection(record, e)}
-              onEdit={(e) => {
-                e.stopPropagation()
-                handleEdit(record)
-              }}
-              onDelete={(e) => {
-                e.stopPropagation()
-                handleDeleteSingle(record)
-              }}
-            >
-              <DoodleCardRow
-                label={JPNames.storeType}
-                value={storeTypeLabel}
-              />
-              <DoodleCardRow
-                label={JPNames.country}
-                value={JPCountries[record.country as keyof typeof JPCountries] || record.country}
-              />
-              <DoodleCardRow
-                label={JPNames.city}
-                value={record.city || '-'}
-              />
-              <DoodleCardRow
-                label={JPNames.address}
-                value={record.address || '-'}
-              />
-              <DoodleCardRow
-                label={JPNames.url}
-                value={
-                  record.url ? (
-                    <a
-                      href={record.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      リンク
-                    </a>
-                  ) : (
-                    '-'
-                  )
-                }
-              />
-            </DoodleCard>
-          )
-        }}
+        data={data as StoreColumn[]}
+        renderItem={(record: StoreColumn) => (
+          <DoodleCard
+            key={record.id}
+            id={record.id}
+            title={record.storeName}
+            selected={!!selectedRows.find((r) => r.id === record.id)}
+            onToggleSelection={(e) => toggleSelection(record, e)}
+            onEdit={(e) => {
+              e.stopPropagation()
+              showModal(false, record)
+            }}
+            onDelete={(e) => {
+              e.stopPropagation()
+              handleDeleteAction(record)
+            }}
+          >
+            <DoodleCardRow
+              label={JPNames.storeType}
+              value={
+                JPStoreTypes[
+                  Object.keys(STORES).find(
+                    (k) => STORES[k as keyof typeof STORES] === record.storeType
+                  ) as keyof typeof JPStoreTypes
+                ] || record.storeType
+              }
+            />
+            <DoodleCardRow
+              label={JPNames.country}
+              value={JPCountries[record.country as keyof typeof JPCountries] || record.country}
+            />
+            <DoodleCardRow
+              label={JPNames.city}
+              value={record.city || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.url}
+              value={
+                record.url ? (
+                  <a
+                    href={record.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    リンク
+                  </a>
+                ) : (
+                  '-'
+                )
+              }
+            />
+          </DoodleCard>
+        )}
       />
 
-      {/* 店舗追加・編集モーダル */}
       <StoreAddModal
         open={isModalOpen}
-        isEditMode={!!editingRecord}
-        editingRecord={editingRecord}
-        onCancel={handleModalCancel}
-        onSuccess={handleModalSuccess}
+        isEditMode={!isAdd}
+        editingRecord={editingRecord as StoreColumn | null}
+        onCancel={handleCancel}
+        onSuccess={handleSuccess}
       />
     </div>
   )

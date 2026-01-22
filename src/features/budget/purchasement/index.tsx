@@ -12,7 +12,6 @@ import {
   Row,
   Col,
   Radio,
-  Popconfirm,
 } from 'antd'
 import dayjs from 'dayjs'
 import BookModal from '../../../components/BookModal'
@@ -616,299 +615,41 @@ export function PurchasementModal({
   )
 }
 
+import { useBookPage } from '../../../hooks/useBookPage'
+
 export default function Purchasement() {
-  // テーブルデータとカラム定義
-  const [data, setData] = useState<Array<PurchasementColumn>>([])
-  const [tableLoading, setTableLoading] = useState<boolean>(false)
-  const [goods, setGoods] = useState<Array<any>>([])
-  const [stores, setStores] = useState<Array<any>>([])
+  const {
+    data,
+    selectedRows,
+    toggleSelection,
+    isModalOpen,
+    isAdd,
+    editingRecord,
+    showModal,
+    handleCancel,
+    handleSuccess,
+    handleDelete,
+    handleDeleteAction,
+  } = useBookPage({
+    fetchList: getPurchasements,
+    deleteItem: deletePurchasement,
+    itemName: '購入記録',
+  })
 
-  const columns: Array<any> = [
-    {
-      title: JPNames.id,
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-      onCell: () => ({ 'data-label': JPNames.id }),
-    },
-    {
-      title: JPNames.purchaseDate,
-      dataIndex: 'purchaseDate',
-      key: 'purchaseDate',
-      render: (date: string | null) => (date ? dayjs(date).format('YYYY-MM-DD') : '-'),
-      sorter: (a: PurchasementColumn, b: PurchasementColumn) => {
-        const dateA = a.purchaseDate ? new Date(a.purchaseDate).getTime() : 0
-        const dateB = b.purchaseDate ? new Date(b.purchaseDate).getTime() : 0
-        return dateA - dateB
-      },
-      onCell: () => ({ 'data-label': JPNames.purchaseDate }),
-    },
-    {
-      title: JPNames.goods,
-      dataIndex: 'goods',
-      key: 'goods',
-      render: (goods: any) => goods?.goodsName || '-',
-      onCell: () => ({ 'data-label': JPNames.goods }),
-    },
-    {
-      title: JPNames.store,
-      dataIndex: 'store',
-      key: 'store',
-      render: (store: any) => store?.storeName || '-',
-      onCell: () => ({ 'data-label': JPNames.store }),
-    },
-    {
-      title: JPNames.quantity,
-      dataIndex: 'quantity',
-      key: 'quantity',
-      render: (quantity: number, record: PurchasementColumn) =>
-        `${quantity} ${record.quantityUnit}`,
-      onCell: () => ({ 'data-label': JPNames.quantity }),
-    },
-    {
-      title: JPNames.unitPrice,
-      dataIndex: 'unitPrice',
-      key: 'unitPrice',
-      render: (price: number) => `${price} 円`,
-      onCell: () => ({ 'data-label': JPNames.unitPrice }),
-    },
-    {
-      title: JPNames.totalPrice,
-      dataIndex: 'totalPrice',
-      key: 'totalPrice',
-      render: (price: number) => `${price} 円`,
-      onCell: () => ({ 'data-label': JPNames.totalPrice }),
-    },
-    {
-      title: JPNames.paymentMethod,
-      dataIndex: 'paymentMethod',
-      key: 'paymentMethod',
-      render: (method: string | null) => method || '-',
-      onCell: () => ({ 'data-label': JPNames.paymentMethod }),
-    },
-    {
-      title: JPNames.taxRate,
-      dataIndex: 'taxRate',
-      key: 'taxRate',
-      render: (category: string | null) =>
-        category ? TAX_CATEGORY_NAMES[category as keyof typeof TAX_CATEGORY_NAMES] : '-',
-      onCell: () => ({ 'data-label': JPNames.taxRate }),
-    },
-    {
-      title: JPNames.taxAmount,
-      dataIndex: 'taxAmount',
-      key: 'taxAmount',
-      render: (amount: number | null) => (amount !== null ? `${amount}円` : '-'),
-      onCell: () => ({ 'data-label': JPNames.taxAmount }),
-    },
-    {
-      title: JPNames.isTaxIncluded,
-      dataIndex: 'isTaxIncluded',
-      key: 'isTaxIncluded',
-      render: (isTaxIncluded: boolean | null) => {
-        if (isTaxIncluded === null) return '-'
-        return isTaxIncluded ? '税込（内税）' : '税抜（外税）'
-      },
-      onCell: () => ({ 'data-label': JPNames.isTaxIncluded }),
-    },
-    {
-      title: JPNames.discountType,
-      dataIndex: 'discountType',
-      key: 'discountType',
-      render: (type: string | null) =>
-        type ? DISCOUNT_TYPE_NAMES[type as keyof typeof DISCOUNT_TYPE_NAMES] : '-',
-      onCell: () => ({ 'data-label': JPNames.discountType }),
-    },
-    {
-      title: JPNames.discountRate,
-      dataIndex: 'discountRate',
-      key: 'discountRate',
-      render: (rate: number | null) => (rate !== null ? `${rate}%` : '-'),
-      onCell: () => ({ 'data-label': JPNames.discountRate }),
-    },
-    {
-      title: JPNames.discountAmount,
-      dataIndex: 'discountAmount',
-      key: 'discountAmount',
-      render: (amount: number | null) => (amount !== null ? `${amount}円` : '-'),
-      onCell: () => ({ 'data-label': JPNames.discountAmount }),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      fixed: 'right' as const,
-      width: 150,
-      render: (_: any, record: PurchasementColumn) => (
-        <Space size="middle">
-          <a>
-            <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "></i>
-            編集
-          </a>
-          <Popconfirm
-            title="削除確認"
-            description="本当に削除しますか？"
-            onConfirm={() => handleDeletePurchasement(record)}
-            okText="削除"
-            cancelText="キャンセル"
-            okButtonProps={{ danger: true }}
-          >
-            <a>
-              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
-              削除
-            </a>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ]
-
-  // データの取得
-  useEffect(() => {
-    fetchPurchasements()
-    fetchGoods()
-    fetchStores()
-  }, [])
-
-  // 購入記録データ取得
-  function fetchPurchasements() {
-    getPurchasements()
-      .then((res) => {
-        setData(res?.data || [])
-      })
-      .catch((error) => {
-        console.error(error)
-        notification.error({
-          title: '購入記録データ取得失敗',
-          description: error.message,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
-
-  // 商品データ取得
-  function fetchGoods() {
-    getGoods()
-      .then((res) => {
-        setGoods(res?.data || [])
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-  }
-
-  // 店舗データ取得
-  function fetchStores() {
-    getStores()
-      .then((res) => {
-        setStores(res?.data || [])
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-  }
-
-  const toggleSelection = (record: PurchasementColumn, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const isSelected = selectedRows.find((r) => r.id === record.id)
-    if (isSelected) {
-      setSelectedRows(selectedRows.filter((r) => r.id !== record.id))
-    } else {
-      setSelectedRows([...selectedRows, record])
-    }
-  }
-
-  /*************** 新規購入記録を追加/購入記録を編集 ***************/
-  const [isAdd, setIsAdd] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingRecord, setEditingRecord] = useState<PurchasementColumn | null>(null)
-
-  // モーダルの表示
-  const showModal = (isAdd: boolean, record?: PurchasementColumn) => {
-    setIsModalOpen(true)
-    setIsAdd(isAdd)
-    setEditingRecord(record || null)
-  }
-
-  // モーダルのキャンセル
-  const handleCancel = () => {
-    setIsModalOpen(false)
-    setEditingRecord(null)
-  }
-
-  // 購入記録保存成功時
-  const handleSuccess = () => {
-    setTableLoading(true)
-    fetchPurchasements()
-    setTableLoading(false)
-  }
-
-  /*************** 購入記録を削除 ***************/
-  const [selectedRows, setSelectedRows] = useState<PurchasementColumn[]>([])
-
-  // テーブルの行選択時
-  function onRowSelectionChange(_selectedKeys: any, selectedRows: PurchasementColumn[]) {
-    setSelectedRows(selectedRows)
-  }
-
-  // 削除実行
-  function executeDelete(rows: (PurchasementColumn | null)[]) {
-    const cleanRows = rows.filter((r) => r !== null) as PurchasementColumn[]
-    const deleteIds = cleanRows.map((row) => row.id)
-
-    deletePurchasement(deleteIds)
-      .then(() => {
-        message.success(
-          `購入記録${cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`}を削除しました`
-        )
-
-        setTableLoading(true)
-        return getPurchasements()
-      })
-      .then((res) => {
-        setData(res?.data || [])
-        setTableLoading(false)
-        setSelectedRows([])
-      })
-      .catch((error) => {
-        console.error(error)
-
-        notification.error({
-          title: '購入記録削除失敗',
-          description: `購入記録${
-            cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`
-          }の削除に失敗しました: ${error.message}`,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
-
-  // 削除ボタン押下時
-  function handleDeletePurchasement(record?: PurchasementColumn) {
-    if (record) {
-      executeDelete([record])
-    } else if (selectedRows.length) {
-      executeDelete(selectedRows)
-    } else {
-      message.warning('削除する購入記録を選択してください')
-    }
-  }
+  // テーブルデータとカラム定義 (Removed manual state)
 
   return (
     <div className="book-page-container">
       <PageHeader
         title="購入記録一覧"
         onAdd={() => showModal(true)}
-        onDelete={() => handleDeletePurchasement()}
+        onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
       <PaginatedGrid
         className="book-page-content"
-        data={data}
+        data={data as PurchasementColumn[]}
         renderItem={(record: PurchasementColumn) => (
           <DoodleCard
             key={record.id}
@@ -922,7 +663,7 @@ export default function Purchasement() {
             }}
             onDelete={(e) => {
               e.stopPropagation()
-              handleDeletePurchasement(record)
+              handleDeleteAction(record)
             }}
           >
             <DoodleCardRow
@@ -973,7 +714,7 @@ export default function Purchasement() {
       <PurchasementModal
         open={isModalOpen}
         isEditMode={!isAdd}
-        editingRecord={editingRecord}
+        editingRecord={editingRecord as PurchasementColumn | null}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
       />

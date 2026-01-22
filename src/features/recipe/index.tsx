@@ -420,174 +420,43 @@ function RecipeModal({
   )
 }
 
+import { useBookPage } from '../../hooks/useBookPage'
+
+// (Keep RecipeModal definition and interfaces as is...)
+
 export default function Recipe() {
-  const [data, setData] = useState<RecipeColumn[]>([])
-  const [tableLoading, setTableLoading] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingRecord, setEditingRecord] = useState<RecipeColumn | null>(null)
-  const [selectedRows, setSelectedRows] = useState<RecipeColumn[]>([])
-
-  const toggleSelection = (record: RecipeColumn, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const isSelected = selectedRows.find((r) => r.id === record.id)
-    if (isSelected) {
-      setSelectedRows(selectedRows.filter((r) => r.id !== record.id))
-    } else {
-      setSelectedRows([...selectedRows, record])
-    }
-  }
-
-  const columns = [
-    {
-      title: JPNames.id,
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-      className: 'cell-id',
-      onCell: () => ({ 'data-label': JPNames.id }),
-    },
-    {
-      title: JPNames.recipeName,
-      dataIndex: 'recipeName',
-      key: 'recipeName',
-      className: 'cell-title',
-      onCell: () => ({ 'data-label': JPNames.recipeName }),
-    },
-    {
-      title: JPNames.servings,
-      dataIndex: 'servings',
-      key: 'servings',
-      width: 80,
-      render: (servings: number) => `${servings}人分`,
-      onCell: () => ({ 'data-label': JPNames.servings }),
-    },
-    {
-      title: JPNames.preTime,
-      dataIndex: 'preTime',
-      key: 'preTime',
-      width: 100,
-      render: (time: number | null) => (time ? `${time}分` : '-'),
-      onCell: () => ({ 'data-label': JPNames.preTime }),
-    },
-    {
-      title: JPNames.cookTime,
-      dataIndex: 'cookTime',
-      key: 'cookTime',
-      width: 100,
-      render: (time: number | null) => (time ? `${time}分` : '-'),
-      onCell: () => ({ 'data-label': JPNames.cookTime }),
-    },
-    {
-      title: JPNames.totalTime,
-      dataIndex: 'totalTime',
-      key: 'totalTime',
-      width: 100,
-      render: (time: number | null) => (time ? `${time}分` : '-'),
-      onCell: () => ({ 'data-label': JPNames.totalTime }),
-    },
-    {
-      title: JPNames.difficulty,
-      dataIndex: 'difficulty',
-      key: 'difficulty',
-      onCell: () => ({ 'data-label': JPNames.difficulty }),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      fixed: 'right' as const,
-      width: 150,
-      onCell: () => ({ 'data-label': '操作' }),
-      render: (_: unknown, record: RecipeColumn) => (
-        <Space size="middle">
-          <a>
-            <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded"></i>
-            編集
-          </a>
-          <a onClick={() => handleDelete(record)}>
-            <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded"></i>
-            削除
-          </a>
-        </Space>
-      ),
-    },
-  ]
-
-  useEffect(() => {
-    fetchRecipes()
-  }, [])
-
-  function fetchRecipes() {
-    setTableLoading(true)
-    getRecipes()
-      .then((res) => {
-        setData(res?.data || [])
-      })
-      .catch((error) => {
-        console.error(error)
-        notification.error({
-          title: 'レシピデータ取得失敗',
-          description: error.message,
-          placement: 'bottomRight',
-        })
-      })
-      .finally(() => {
-        setTableLoading(false)
-      })
-  }
-
-  /*************** レシピ追加/編集 ***************/
-  // 新規追加モーダル表示
-  const handleAdd = () => {
-    setEditingRecord(null)
-    setIsModalOpen(true)
-  }
-
-  // 編集モーダル表示
-  const handleEdit = (record: RecipeColumn) => {
-    setEditingRecord(record)
-    setIsModalOpen(true)
-  }
-
-  // レシピ削除
-  function handleDelete(record?: RecipeColumn) {
-    const rows = record ? [record] : selectedRows
-    if (rows.length === 0) {
-      message.warning('削除するレシピを選択してください')
-      return
-    }
-
-    deleteRecipe(rows.map((r) => r.id))
-      .then(() => {
-        message.success('レシピを削除しました')
-        setSelectedRows([])
-        return fetchRecipes()
-      })
-      .catch((error) => {
-        console.error(error)
-        notification.error({
-          title: 'レシピ削除失敗',
-          description: error.response?.data?.message || error.message,
-          placement: 'bottomRight',
-        })
-      })
-  }
-
-  const handleModalCancel = () => setIsModalOpen(false)
-  const handleModalSuccess = () => fetchRecipes()
+  const {
+    data,
+    loading,
+    selectedRows,
+    toggleSelection,
+    isModalOpen,
+    isAdd,
+    editingRecord,
+    showModal,
+    handleCancel,
+    handleSuccess,
+    handleDelete,
+    handleDeleteAction,
+  } = useBookPage({
+    fetchList: getRecipes,
+    deleteItem: deleteRecipe,
+    itemName: 'レシピ',
+  })
 
   return (
     <div>
       <PageHeader
         title="レシピ一覧"
-        onAdd={handleAdd}
-        onDelete={() => handleDelete()}
+        onAdd={() => showModal(true)}
+        onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
 
       <PaginatedGrid
         className="book-page-content"
-        data={data}
+        data={data as RecipeColumn[]}
         renderItem={(record: RecipeColumn) => (
           <DoodleCard
             key={record.id}
@@ -597,11 +466,11 @@ export default function Recipe() {
             onToggleSelection={(e) => toggleSelection(record, e)}
             onEdit={(e) => {
               e.stopPropagation()
-              handleEdit(record)
+              showModal(false, record)
             }}
             onDelete={(e) => {
               e.stopPropagation()
-              handleDelete(record)
+              handleDeleteAction(record)
             }}
           >
             <DoodleCardRow
@@ -629,10 +498,10 @@ export default function Recipe() {
       {/* レシピ追加・編集モーダル */}
       <RecipeModal
         open={isModalOpen}
-        isEditMode={!!editingRecord}
-        editingRecord={editingRecord}
-        onCancel={handleModalCancel}
-        onSuccess={handleModalSuccess}
+        isEditMode={!isAdd}
+        editingRecord={editingRecord as RecipeColumn | null}
+        onCancel={handleCancel}
+        onSuccess={handleSuccess}
       />
     </div>
   )

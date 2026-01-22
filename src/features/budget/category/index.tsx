@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import type { Color } from 'antd/es/color-picker'
-import { Form, Input, Space, notification, message, ColorPicker, Popconfirm } from 'antd'
+import { Form, Input, notification, message, ColorPicker } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
 import { CategoryColumn, JPNames } from './columns'
 import { getCategories, addCategory, updateCategory, deleteCategory } from './api'
+import { useBookPage } from '../../../hooks/useBookPage'
 
 // カテゴリモーダルコンポーネント（追加・編集両方に対応、他のコンポーネントから使用可能）
 export function CategoryModal({
@@ -160,185 +161,36 @@ export function CategoryModal({
 export const CategoryAddModal = CategoryModal
 
 export default function Category() {
-  // ========== テーブル関連の状態 ==========
-  const [data, setData] = useState<CategoryColumn[]>([])
-  const [tableLoading, setTableLoading] = useState(false)
-  const [selectedRows, setSelectedRows] = useState<CategoryColumn[]>([])
-
-  // テーブルのカラム定義
-  const columns = [
-    {
-      title: JPNames.id,
-      dataIndex: 'id',
-      key: 'id',
-      className: 'cell-id',
-      onCell: () => ({ 'data-label': JPNames.id }) as any,
-    },
-    {
-      title: JPNames.categoryName,
-      dataIndex: 'categoryName',
-      key: 'categoryName',
-      className: 'cell-title',
-      onCell: () => ({ 'data-label': JPNames.categoryName }) as any,
-    },
-    {
-      title: JPNames.icon,
-      dataIndex: 'icon',
-      key: 'icon',
-      onCell: () => ({ 'data-label': JPNames.icon }) as any,
-      render: (icon: string) => <i className={icon}></i>,
-    },
-    {
-      title: JPNames.color,
-      dataIndex: 'color',
-      key: 'color',
-      onCell: () => ({ 'data-label': JPNames.color }) as any,
-      render: (color: string) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div
-            style={{
-              width: '20px',
-              height: '20px',
-              backgroundColor: `#${color}`,
-              border: '1px solid #ccc',
-            }}
-          ></div>
-          <span>#{color}</span>
-        </div>
-      ),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      onCell: () => ({ 'data-label': '操作' }) as any,
-      render: (_: any, record: CategoryColumn) => (
-        <Space size="middle">
-          <a>
-            <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "></i>
-            編集
-          </a>
-          <Popconfirm
-            title="削除確認"
-            description="本当に削除しますか？"
-            onConfirm={() => handleDeleteCategory(record)}
-            okText="削除"
-            cancelText="キャンセル"
-            okButtonProps={{ danger: true }}
-          >
-            <a>
-              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
-              削除
-            </a>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ]
-  // 初回レンダリング時にデータを取得
-  useEffect(() => {
-    fetchCategories()
-  }, [])
-
-  const toggleSelection = (record: CategoryColumn, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const isSelected = selectedRows.find((r) => r.id === record.id)
-    if (isSelected) {
-      setSelectedRows(selectedRows.filter((r) => r.id !== record.id))
-    } else {
-      setSelectedRows([...selectedRows, record])
-    }
-  }
-
-  // カテゴリーデータを取得する共通関数
-  const fetchCategories = async () => {
-    try {
-      setTableLoading(true)
-      const res = await getCategories()
-      setData(res?.data || [])
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setTableLoading(false)
-    }
-  }
-
-  // ========== カテゴリー追加/編集モーダル関連の状態 ==========
-  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<CategoryColumn | undefined>()
-
-  // モーダルの表示
-  const showModal = (mode: 'add' | 'edit', record?: CategoryColumn) => {
-    setModalMode(mode)
-    setEditingCategory(record)
-    setIsModalOpen(true)
-  }
-
-  // モーダルのキャンセル
-  const handleModalCancel = () => {
-    setIsModalOpen(false)
-    setEditingCategory(undefined)
-  }
-
-  // モーダル保存成功時
-  const handleModalSuccess = () => {
-    fetchCategories()
-  }
-
-  // ========== カテゴリー削除関連の状態 ==========
-
-  // テーブルの行選択時
-  const onRowSelectionChange = (_selectedKeys: React.Key[], selectedRows: CategoryColumn[]) => {
-    setSelectedRows(selectedRows)
-  }
-
-  // 削除実行
-  const executeDelete = async (rows: CategoryColumn[]) => {
-    const categoryNames =
-      rows.length > 1
-        ? `${rows.map((v) => v!.categoryName).join('、')}など${rows.length}件のカテゴリー`
-        : rows[0]!.categoryName
-
-    try {
-      await deleteCategory(rows.map((row) => row!.id))
-      message.success(`カテゴリー${categoryNames}を削除しました`)
-      await fetchCategories()
-      setSelectedRows([])
-    } catch (error: any) {
-      console.error(error)
-      notification.error({
-        title: 'カテゴリー削除失敗',
-        description: `カテゴリー${categoryNames}の削除に失敗しました: ${error.message}`,
-        placement: 'bottomRight',
-        showProgress: true,
-        pauseOnHover: true,
-      })
-    }
-  }
-
-  // 削除ボタン押下時
-  const handleDeleteCategory = (record?: CategoryColumn) => {
-    if (record) {
-      executeDelete([record])
-    } else if (selectedRows.length) {
-      executeDelete(selectedRows)
-    } else {
-      message.warning('削除するカテゴリーを選択してください')
-    }
-  }
+  const {
+    data,
+    selectedRows,
+    toggleSelection,
+    isModalOpen,
+    isAdd,
+    editingRecord,
+    showModal,
+    handleCancel,
+    handleSuccess,
+    handleDelete,
+    handleDeleteAction,
+  } = useBookPage({
+    fetchList: getCategories,
+    deleteItem: deleteCategory,
+    itemName: 'カテゴリー',
+  })
 
   return (
     <div className="book-page-container">
       <PageHeader
         title="カテゴリー一覧"
-        onAdd={() => showModal('add')}
-        onDelete={() => handleDeleteCategory()}
+        onAdd={() => showModal(true)}
+        onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
       <PaginatedGrid
         className="book-page-content"
-        data={data}
+        data={data as CategoryColumn[]}
         renderItem={(record: CategoryColumn) => (
           <DoodleCard
             key={record.id}
@@ -348,20 +200,16 @@ export default function Category() {
             onToggleSelection={(e) => toggleSelection(record, e)}
             onEdit={(e) => {
               e.stopPropagation()
-              showModal('edit', record)
+              showModal(false, record)
             }}
             onDelete={(e) => {
               e.stopPropagation()
-              handleDeleteCategory(record)
+              handleDeleteAction(record)
             }}
           >
             <DoodleCardRow
               label={JPNames.icon}
-              value={
-                <span>
-                  <i className={record.icon}></i>
-                </span>
-              }
+              value={<i className={record.icon}></i>}
             />
             <DoodleCardRow
               label={JPNames.color}
@@ -371,10 +219,11 @@ export default function Category() {
                     style={{
                       width: '20px',
                       height: '20px',
+                      borderRadius: '50%',
                       backgroundColor: `#${record.color}`,
                       border: '1px solid #ccc',
                     }}
-                  ></div>
+                  />
                   <span>#{record.color}</span>
                 </div>
               }
@@ -387,13 +236,12 @@ export default function Category() {
         )}
       />
 
-      {/* カテゴリー追加/編集モーダル */}
       <CategoryModal
         open={isModalOpen}
-        mode={modalMode}
-        initialData={editingCategory}
-        onCancel={handleModalCancel}
-        onSuccess={handleModalSuccess}
+        mode={isAdd ? 'add' : 'edit'}
+        initialData={editingRecord as CategoryColumn | undefined}
+        onCancel={handleCancel}
+        onSuccess={handleSuccess}
       />
     </div>
   )

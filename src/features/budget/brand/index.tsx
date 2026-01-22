@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Space, notification, message, Popconfirm } from 'antd'
+import { Form, Input, notification, message } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
 import { BrandColumn, JPNames } from './columns'
 import { getBrands, addBrand, updateBrand, deleteBrands } from './api'
+
+import { useBookPage } from '../../../hooks/useBookPage'
 
 // ブランド追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function BrandAddModal({
@@ -152,211 +154,37 @@ export function BrandAddModal({
 }
 
 export default function Brand() {
-  // テーブルデータとカラム定義
-  const [data, setData] = useState<Array<BrandColumn>>([])
-  const [tableLoading, setTableLoading] = useState<boolean>(false)
-
-  const columns: Array<any> = [
-    {
-      title: JPNames.id,
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-      className: 'cell-id',
-      onCell: () => ({ 'data-label': JPNames.id }),
-    },
-    {
-      title: JPNames.brandName,
-      dataIndex: 'brandName',
-      key: 'brandName',
-      className: 'cell-title',
-      onCell: () => ({ 'data-label': JPNames.brandName }),
-    },
-    {
-      title: JPNames.description,
-      dataIndex: 'description',
-      key: 'description',
-      onCell: () => ({ 'data-label': JPNames.description }),
-    },
-    {
-      title: JPNames.country,
-      dataIndex: 'country',
-      key: 'country',
-      onCell: () => ({ 'data-label': JPNames.country }),
-    },
-    {
-      title: JPNames.website,
-      dataIndex: 'website',
-      key: 'website',
-      onCell: () => ({ 'data-label': JPNames.website }),
-      render: (url: string) =>
-        url ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {url}
-          </a>
-        ) : (
-          '-'
-        ),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      fixed: 'right' as const,
-      width: 150,
-      onCell: () => ({ 'data-label': '操作' }),
-      render: (_: any, record: BrandColumn) => (
-        <Space size="middle">
-          <a>
-            <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded"></i>
-            編集
-          </a>
-          <Popconfirm
-            title="削除確認"
-            description="本当に削除しますか？"
-            onConfirm={() => handleDeleteBrand(record)}
-            okText="削除"
-            cancelText="キャンセル"
-            okButtonProps={{ danger: true }}
-          >
-            <a>
-              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded"></i>
-              削除
-            </a>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ]
-
-  // データの取得
-  useEffect(() => {
-    fetchBrands()
-  }, [])
-
-  // ブランドデータ取得
-  function fetchBrands() {
-    setTableLoading(true)
-    getBrands()
-      .then((res) => {
-        setData(res?.data || [])
-        setTableLoading(false)
-      })
-      .catch((error) => {
-        console.error(error)
-        setTableLoading(false)
-        notification.error({
-          title: 'ブランドデータ取得失敗',
-          description: error.message,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
-
-  const toggleSelection = (record: BrandColumn, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const isSelected = selectedRows.find((r) => r.id === record.id)
-    if (isSelected) {
-      setSelectedRows(selectedRows.filter((r) => r.id !== record.id))
-    } else {
-      setSelectedRows([...selectedRows, record])
-    }
-  }
-
-  /*************** 新規ブランドを追加/ブランドを編集 ***************/
-  const [isAdd, setIsAdd] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingRecord, setEditingRecord] = useState<BrandColumn | null>(null)
-
-  // モーダルの表示
-  const showModal = (isAdd: boolean, record?: BrandColumn) => {
-    setIsModalOpen(true)
-    setIsAdd(isAdd)
-    setEditingRecord(record || null)
-  }
-
-  // モーダルのキャンセル
-  const handleCancel = () => {
-    setIsModalOpen(false)
-    setEditingRecord(null)
-  }
-
-  // ブランド保存成功時
-  const handleSuccess = () => {
-    fetchBrands()
-  }
-
-  /*************** ブランドを削除 ***************/
-  const [selectedRows, setSelectedRows] = useState<BrandColumn[]>([])
-
-  // テーブルの行選択時
-  function onRowSelectionChange(_selectedKeys: any, selectedRows: BrandColumn[]) {
-    setSelectedRows(selectedRows)
-  }
-
-  // 削除実行
-  function executeDelete(rows: (BrandColumn | null)[]) {
-    const cleanRows = rows.filter((r) => r !== null) as BrandColumn[]
-    const deleteIds = cleanRows.map((row) => row.id)
-
-    setTableLoading(true)
-    deleteBrands(deleteIds)
-      .then(() => {
-        message.success(
-          `ブランド${cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`}を削除しました`
-        )
-        return getBrands()
-      })
-      .then((res) => {
-        setData(res?.data || [])
-        setTableLoading(false)
-        setSelectedRows([])
-      })
-      .catch((error) => {
-        console.error(error)
-        setTableLoading(false)
-
-        notification.error({
-          title: 'ブランド削除失敗',
-          description: `ブランド${
-            cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`
-          }の削除に失敗しました: ${error.message}`,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
-
-  // 削除ボタン押下時
-  function handleDeleteBrand(record?: BrandColumn) {
-    if (record) {
-      executeDelete([record])
-    } else if (selectedRows.length) {
-      executeDelete(selectedRows)
-    } else {
-      message.warning('削除するブランドを選択してください')
-    }
-  }
+  const {
+    data,
+    selectedRows,
+    toggleSelection,
+    isModalOpen,
+    isAdd,
+    editingRecord,
+    showModal,
+    handleCancel,
+    handleSuccess,
+    handleDelete,
+    handleDeleteAction,
+  } = useBookPage({
+    fetchList: getBrands,
+    deleteItem: deleteBrands,
+    itemName: 'ブランド',
+  })
 
   return (
     <div className="book-page-container">
       <PageHeader
         title="ブランド一覧"
         onAdd={() => showModal(true)}
-        onDelete={() => handleDeleteBrand()}
+        onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
 
       <PaginatedGrid
         className="book-page-content"
-        data={data}
+        data={data as BrandColumn[]}
         renderItem={(record: BrandColumn) => (
           <DoodleCard
             key={record.id}
@@ -370,7 +198,7 @@ export default function Brand() {
             }}
             onDelete={(e) => {
               e.stopPropagation()
-              handleDeleteBrand(record)
+              handleDeleteAction(record)
             }}
           >
             <DoodleCardRow
@@ -402,11 +230,10 @@ export default function Brand() {
         )}
       />
 
-      {/* ブランド追加・編集モーダル */}
       <BrandAddModal
         open={isModalOpen}
         isEditMode={!isAdd}
-        editingRecord={editingRecord}
+        editingRecord={editingRecord as BrandColumn | null}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
       />

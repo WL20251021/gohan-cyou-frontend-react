@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   Form,
   InputNumber,
@@ -10,7 +10,6 @@ import {
   Input,
   Statistic,
   Card,
-  Popconfirm,
 } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
@@ -21,121 +20,44 @@ import dayjs from 'dayjs'
 import { IncomeColumn, JPNames, INCOME_METHODS, AMOUNT_UNITS } from './columns'
 import { getIncomes, addIncome, updateIncome, deleteIncome } from './api'
 import { getCategories } from '../category/api'
+import { useBookPage } from '../../../hooks/useBookPage'
 
 export default function Income() {
+  const {
+    data,
+    loading, // used by PaginatedGrid? No, it just takes data. But logical to have.
+    selectedRows,
+    // setSelectedRows,
+    toggleSelection,
+    isModalOpen,
+    isAdd,
+    editingRecord,
+    showModal: _showModal,
+    handleCancel: _handleCancel,
+    handleSuccess,
+    handleDelete,
+    handleDeleteAction,
+  } = useBookPage({
+    fetchList: getIncomes,
+    deleteItem: deleteIncome,
+    itemName: '収入',
+  })
+
   // テーブルデータとカラム定義
-  const [data, setData] = useState<Array<IncomeColumn>>([])
-  const [tableLoading, setTableLoading] = useState<boolean>(false)
-  const [totalIncome, setTotalIncome] = useState<number>(0)
+  // const [data, setData] = useState<Array<IncomeColumn>>([])
+  // const [tableLoading, setTableLoading] = useState<boolean>(false)
+  // const [totalIncome, setTotalIncome] = useState<number>(0)
   const [categories, setCategories] = useState<Array<any>>([])
 
-  const columns: Array<any> = [
-    {
-      title: JPNames.id,
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-      className: 'cell-id',
-      onCell: () => ({ 'data-label': JPNames.id }),
-    },
-    {
-      title: JPNames.incomeDate,
-      dataIndex: 'incomeDate',
-      key: 'incomeDate',
-      render: (date: string | null) => (date ? dayjs(date).format('YYYY-MM-DD') : '-'),
-      sorter: (a: IncomeColumn, b: IncomeColumn) => {
-        const dateA = a.incomeDate ? new Date(a.incomeDate).getTime() : 0
-        const dateB = b.incomeDate ? new Date(b.incomeDate).getTime() : 0
-        return dateA - dateB
-      },
-      onCell: () => ({ 'data-label': JPNames.incomeDate }),
-    },
-    {
-      title: JPNames.category,
-      dataIndex: 'category',
-      key: 'category',
-      className: 'cell-title',
-      onCell: () => ({ 'data-label': JPNames.category }),
-      render: (category: any) => category?.categoryName || '-',
-    },
-    {
-      title: JPNames.amount,
-      dataIndex: 'amount',
-      key: 'amount',
-      render: (amount: number, record: IncomeColumn) => `${amount} ${record.amountUnit}`,
-      sorter: (a: IncomeColumn, b: IncomeColumn) => a.amount - b.amount,
-      onCell: () => ({ 'data-label': JPNames.amount }),
-    },
-    {
-      title: JPNames.method,
-      dataIndex: 'method',
-      key: 'method',
-      render: (method: string | null) => method || '-',
-      onCell: () => ({ 'data-label': JPNames.method }),
-    },
-    {
-      title: JPNames.note,
-      dataIndex: 'note',
-      key: 'note',
-      render: (note: string | null) => note || '-',
-      onCell: () => ({ 'data-label': JPNames.note }),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      fixed: 'right' as const,
-      width: 150,
-      onCell: () => ({ 'data-label': '操作' }),
-      render: (_: any, record: IncomeColumn) => (
-        <Space size="middle">
-          <a>
-            <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "></i>
-            編集
-          </a>
-          <Popconfirm
-            title="削除確認"
-            description="本当に削除しますか？"
-            onConfirm={() => handleDeleteIncome(record)}
-            okText="削除"
-            cancelText="キャンセル"
-            okButtonProps={{ danger: true }}
-          >
-            <a>
-              <i className="i-material-symbols:delete-outline-rounded hover:i-material-symbols:delete-rounded "></i>
-              削除
-            </a>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ]
+  // 合計金額を計算 (derived state)
+  const totalIncome = useMemo(() => {
+    return (data as IncomeColumn[]).reduce((sum: number, item: IncomeColumn) => sum + item.amount, 0)
+  }, [data])
 
-  // データの取得
+  // データの取得 (Categories only - Incomes via hook)
   useEffect(() => {
-    fetchIncomes()
     fetchCategories()
   }, [])
-
-  // 収入データ取得
-  function fetchIncomes() {
-    getIncomes()
-      .then((res) => {
-        const incomeData = res?.data || []
-        setData(incomeData)
-
-        // 合計金額を計算
-        const total = incomeData.reduce((sum: number, item: IncomeColumn) => sum + item.amount, 0)
-        setTotalIncome(total)
-      })
-      .catch((error) => {
-        console.error(error)
-        notification.error({
-          title: '収入データ取得失敗',
-          description: error.message,
-          placement: 'bottomRight',
-        })
-      })
-  }
 
   // カテゴリデータ取得
   function fetchCategories() {
@@ -148,29 +70,14 @@ export default function Income() {
       })
   }
 
-  const toggleSelection = (record: IncomeColumn, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const isSelected = selectedRows.find((r) => r.id === record.id)
-    if (isSelected) {
-      setSelectedRows(selectedRows.filter((r) => r.id !== record.id))
-    } else {
-      setSelectedRows([...selectedRows, record])
-    }
-  }
-
   /*************** 新規収入を追加/収入を編集 ***************/
-  const [isAdd, setIsAdd] = useState(true)
   const [form] = Form.useForm<IncomeColumn>()
-  const [modalName, setModalName] = useState('')
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false)
 
   // モーダルの表示
-  const showModal = (isAdd: boolean, record?: IncomeColumn) => {
-    setIsModalOpen(true)
-    setIsAdd(isAdd)
-    setModalName(isAdd ? '新規収入' : '収入編集')
-    if (!isAdd && record) {
+  const showModal = (addMode: boolean, record?: IncomeColumn) => {
+    _showModal(addMode, record)
+    if (!addMode && record) {
       form.setFieldsValue({
         ...record,
         incomeDate: record.incomeDate ? dayjs(record.incomeDate) : null,
@@ -182,7 +89,7 @@ export default function Income() {
 
   // モーダルのキャンセル
   const handleCancel = () => {
-    setIsModalOpen(false)
+    _handleCancel()
     form.resetFields()
   }
 
@@ -208,28 +115,16 @@ export default function Income() {
         return addIncome(data as Partial<IncomeColumn>)
       })
       .then(() => {
-        setTableLoading(true)
-        return getIncomes()
-      })
-      .then((res) => {
-        setIsModalOpen(false)
+        handleSuccess() // fetches list
+        _handleCancel() // close modal
         setConfirmLoading(false)
         form.resetFields()
 
         message.success('収入を追加しました')
-        const incomeData = res?.data || []
-        setData(incomeData)
-
-        const total = incomeData.reduce((sum: number, item: IncomeColumn) => sum + item.amount, 0)
-        setTotalIncome(total)
-        setTableLoading(false)
       })
       .catch((error) => {
         setConfirmLoading(false)
-        setTableLoading(false)
-
         console.error(error)
-
         notification.error({
           title: '収入追加失敗',
           description: error.message,
@@ -251,28 +146,16 @@ export default function Income() {
         return updateIncome(values.id, data as Partial<IncomeColumn>)
       })
       .then(() => {
-        setTableLoading(true)
-        return getIncomes()
-      })
-      .then((res) => {
-        setIsModalOpen(false)
+        handleSuccess()
+        _handleCancel()
         setConfirmLoading(false)
         form.resetFields()
 
         message.success('収入を更新しました')
-        const incomeData = res?.data || []
-        setData(incomeData)
-
-        const total = incomeData.reduce((sum: number, item: IncomeColumn) => sum + item.amount, 0)
-        setTotalIncome(total)
-        setTableLoading(false)
       })
       .catch((error) => {
         setConfirmLoading(false)
-        setTableLoading(false)
-
         console.error(error)
-
         notification.error({
           title: '収入更新失敗',
           description: error.message,
@@ -281,69 +164,12 @@ export default function Income() {
       })
   }
 
-  /*************** 収入を削除 ***************/
-  const [selectedRows, setSelectedRows] = useState<IncomeColumn[]>([])
-
-  // テーブルの行選択時
-  function onRowSelectionChange(_selectedKeys: any, selectedRows: IncomeColumn[]) {
-    setSelectedRows(selectedRows)
-  }
-
-  // 削除実行
-  function executeDelete(rows: (IncomeColumn | null)[]) {
-    const cleanRows = rows.filter((r) => r !== null) as IncomeColumn[]
-    const deleteIds = cleanRows.map((row) => row.id)
-
-    deleteIncome(deleteIds)
-      .then(() => {
-        message.success(
-          `収入${cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`}を削除しました`
-        )
-
-        setTableLoading(true)
-        return getIncomes()
-      })
-      .then((res) => {
-        const incomeData = res?.data || []
-        setData(incomeData)
-
-        const total = incomeData.reduce((sum: number, item: IncomeColumn) => sum + item.amount, 0)
-        setTotalIncome(total)
-        setTableLoading(false)
-        setSelectedRows([])
-      })
-      .catch((error) => {
-        console.error(error)
-
-        notification.error({
-          title: '収入削除失敗',
-          description: `収入${
-            cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`
-          }の削除に失敗しました: ${error.message}`,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
-
-  // 削除ボタン押下時
-  function handleDeleteIncome(record?: IncomeColumn) {
-    if (record) {
-      executeDelete([record])
-    } else if (selectedRows.length) {
-      executeDelete(selectedRows)
-    } else {
-      message.warning('削除する収入を選択してください')
-    }
-  }
-
   return (
     <div className="book-page-container">
       <PageHeader
         title="収入管理"
         onAdd={() => showModal(true)}
-        onDelete={() => handleDeleteIncome()}
+        onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
@@ -357,7 +183,7 @@ export default function Income() {
       >
         <Statistic
           title={<span style={{ color: 'white', fontSize: '18px' }}>総収入</span>}
-          value={totalIncome}
+          value={totalIncome || 0}
           precision={0}
           prefix="¥"
           valueStyle={{ color: 'white', fontSize: '36px', fontWeight: 'bold' }}
@@ -370,7 +196,7 @@ export default function Income() {
 
       <PaginatedGrid
         className="book-page-content"
-        data={data}
+        data={data as IncomeColumn[]}
         renderItem={(record: IncomeColumn) => (
           <DoodleCard
             key={record.id}
@@ -384,7 +210,7 @@ export default function Income() {
             }}
             onDelete={(e) => {
               e.stopPropagation()
-              handleDeleteIncome(record)
+              handleDeleteAction(record)
             }}
           >
             <DoodleCardRow
@@ -393,7 +219,7 @@ export default function Income() {
             />
             <DoodleCardRow
               label={JPNames.amount}
-              value={`${record.amount} ${record.amountUnit}`}
+              value={`${record.amount || 0} ${record.amountUnit || ''}`}
             />
             <DoodleCardRow
               label={JPNames.method}
@@ -410,7 +236,7 @@ export default function Income() {
 
       {/* 収入インフォーモーダル */}
       <BookModal
-        title={modalName}
+        title={isAdd ? '新規収入' : '収入編集'}
         // width="80%"
         // maskClosable={false}
         open={isModalOpen}

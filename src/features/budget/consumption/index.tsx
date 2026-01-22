@@ -31,12 +31,29 @@ import {
 } from './api'
 import { getPurchasements } from '../purchasement/api'
 import { getAllInventory } from '../inventory/api'
+import { useBookPage } from '../../../hooks/useBookPage'
 
 export default function Consumption() {
+  const {
+    data,
+    loading,
+    selectedRows,
+    setSelectedRows,
+    isModalOpen,
+    isAdd,
+    editingRecord,
+    showModal: _showModal,
+    handleCancel: _handleCancel,
+    handleSuccess,
+    handleDeleteAction,
+  } = useBookPage({
+    fetchList: getConsumptions,
+    deleteItem: deleteConsumption,
+    itemName: '使用記録',
+  })
+
   // テーブルデータとカラム定義
-  const [data, setData] = useState<Array<ConsumptionColumn>>([])
   const [filteredData, setFilteredData] = useState<Array<ConsumptionColumn>>([])
-  const [tableLoading, setTableLoading] = useState<boolean>(false)
   const [purchasements, setPurchasements] = useState<Array<any>>([])
   const [availablePurchasements, setAvailablePurchasements] = useState<Array<any>>([])
   const [statistics, setStatistics] = useState<any>(null)
@@ -98,13 +115,16 @@ export default function Consumption() {
       render: (_: any, record: ConsumptionColumn) => (
         <Space size="middle">
           <a>
-            <i className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "></i>
+            <i
+              className="i-material-symbols:edit-document-outline-rounded hover:material-symbols:edit-document-rounded "
+              onClick={() => showModal(false, record)}
+            ></i>
             編集
           </a>
           <Popconfirm
             title="削除確認"
             description="本当に削除しますか？"
-            onConfirm={() => handleDeleteConsumption(record)}
+            onConfirm={() => handleDeleteAction(record)}
             okText="削除"
             cancelText="キャンセル"
             okButtonProps={{ danger: true }}
@@ -121,38 +141,24 @@ export default function Consumption() {
 
   // データの取得
   useEffect(() => {
-    fetchConsumptions()
     fetchPurchasements()
+  }, [])
+
+  // データ更新時に統計と在庫も更新
+  useEffect(() => {
     fetchStatistics()
     checkInventoryStatus()
-  }, [])
+  }, [data])
 
   // フィルタリング処理
   useEffect(() => {
+    const list = data as ConsumptionColumn[]
     if (selectedPurchasementFilter) {
-      setFilteredData(data.filter((item) => item.purchasementId === selectedPurchasementFilter))
+      setFilteredData(list.filter((item) => item.purchasementId === selectedPurchasementFilter))
     } else {
-      setFilteredData(data)
+      setFilteredData(list)
     }
   }, [data, selectedPurchasementFilter])
-
-  // 使用記録データ取得
-  function fetchConsumptions() {
-    getConsumptions()
-      .then((res) => {
-        setData(res?.data || [])
-      })
-      .catch((error) => {
-        console.error(error)
-        notification.error({
-          title: '使用記録データ取得失敗',
-          description: error.message,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
 
   // 購入記録データ取得
   function fetchPurchasements() {
@@ -213,20 +219,16 @@ export default function Consumption() {
   }
 
   /*************** 新規使用記録を追加/使用記録を編集 ***************/
-  const [isAdd, setIsAdd] = useState(true)
   const [form] = Form.useForm<ConsumptionColumn>()
-  const [modalName, setModalName] = useState('')
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false)
   const [selectedInventory, setSelectedInventory] = useState<any>(null)
   const [maxQuantity, setMaxQuantity] = useState<number>(0)
 
   // モーダルの表示
-  const showModal = (isAdd: boolean, record?: ConsumptionColumn) => {
-    setIsModalOpen(true)
-    setIsAdd(isAdd)
-    setModalName(isAdd ? '新規使用記録' : '使用記録編集')
-    if (!isAdd && record) {
+  const showModal = (addMode: boolean, record?: ConsumptionColumn) => {
+    _showModal(addMode, record)
+
+    if (!addMode && record) {
       form.setFieldsValue({
         ...record,
         consumptionDate: record.consumptionDate ? dayjs(record.consumptionDate) : null,
@@ -237,6 +239,10 @@ export default function Consumption() {
         setSelectedInventory(inventory)
         // 編集時は現在の使用量を戻して計算
         setMaxQuantity(inventory.availableQuantity + record.quantity)
+      } else {
+        // 在庫がなくても履歴表示のためにrecordから情報を復元（必要なら）
+        setSelectedInventory(null)
+        setMaxQuantity(record.quantity) // 最低限現状維持
       }
     } else {
       form.resetFields()
@@ -261,7 +267,7 @@ export default function Consumption() {
 
   // モーダルのキャンセル
   const handleCancel = () => {
-    setIsModalOpen(false)
+    _handleCancel()
     form.resetFields()
   }
 
@@ -289,27 +295,16 @@ export default function Consumption() {
         return addConsumption(data as Partial<ConsumptionColumn>)
       })
       .then(() => {
-        setTableLoading(true)
-        return getConsumptions()
-      })
-      .then((res) => {
-        setIsModalOpen(false)
+        handleSuccess() // hooks: fetchList
+        _handleCancel() // Close modal
         setConfirmLoading(false)
         form.resetFields()
 
         message.success('使用記録を追加しました')
-        setData(res?.data || [])
-        setTableLoading(false)
-        // 統計情報と在庫状況を更新
-        fetchStatistics()
-        checkInventoryStatus()
       })
       .catch((error) => {
         setConfirmLoading(false)
-        setTableLoading(false)
-
         console.error(error)
-
         notification.error({
           title: '使用記録追加失敗',
           description: error.message,
@@ -335,27 +330,16 @@ export default function Consumption() {
         return updateConsumption(values.id, data as Partial<ConsumptionColumn>)
       })
       .then(() => {
-        setTableLoading(true)
-        return getConsumptions()
-      })
-      .then((res) => {
-        setIsModalOpen(false)
+        handleSuccess()
+        _handleCancel()
         setConfirmLoading(false)
         form.resetFields()
 
         message.success('使用記録を更新しました')
-        setData(res?.data || [])
-        setTableLoading(false)
-        // 統計情報と在庫状況を更新
-        fetchStatistics()
-        checkInventoryStatus()
       })
       .catch((error) => {
         setConfirmLoading(false)
-        setTableLoading(false)
-
         console.error(error)
-
         notification.error({
           title: '使用記録更新失敗',
           description: error.message,
@@ -366,60 +350,9 @@ export default function Consumption() {
       })
   }
 
-  /*************** 使用記録を削除 ***************/
-  const [selectedRows, setSelectedRows] = useState<ConsumptionColumn[]>([])
-
   // テーブルの行選択時
   function onRowSelectionChange(_selectedKeys: any, selectedRows: ConsumptionColumn[]) {
     setSelectedRows(selectedRows)
-  }
-
-  // 削除実行
-  function executeDelete(rows: (ConsumptionColumn | null)[]) {
-    const cleanRows = rows.filter((r) => r !== null) as ConsumptionColumn[]
-    const deleteIds = cleanRows.map((row) => row.id)
-
-    deleteConsumption(deleteIds)
-      .then(() => {
-        message.success(
-          `使用記録${cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`}を削除しました`
-        )
-
-        setTableLoading(true)
-        return getConsumptions()
-      })
-      .then((res) => {
-        setData(res?.data || [])
-        setTableLoading(false)
-        setSelectedRows([])
-        // 統計情報と在庫状況を更新
-        fetchStatistics()
-        checkInventoryStatus()
-      })
-      .catch((error) => {
-        console.error(error)
-
-        notification.error({
-          title: '使用記録削除失敗',
-          description: `使用記録${
-            cleanRows.length > 1 ? `${cleanRows.length}件` : `ID: ${cleanRows[0].id}`
-          }の削除に失敗しました: ${error.message}`,
-          placement: 'bottomRight',
-          showProgress: true,
-          pauseOnHover: true,
-        })
-      })
-  }
-
-  // 削除ボタン押下時
-  function handleDeleteConsumption(record?: ConsumptionColumn) {
-    if (record) {
-      executeDelete([record])
-    } else if (selectedRows.length) {
-      executeDelete(selectedRows)
-    } else {
-      message.warning('削除する使用記録を選択してください')
-    }
   }
 
   return (
@@ -530,7 +463,7 @@ export default function Consumption() {
         </Button>
         <Button
           danger
-          onClick={() => handleDeleteConsumption()}
+          onClick={() => handleDeleteAction()}
         >
           削除
         </Button>
@@ -560,7 +493,7 @@ export default function Consumption() {
       <Table
         dataSource={filteredData}
         columns={columns}
-        loading={tableLoading}
+        loading={loading}
         rowKey="id"
         rowSelection={{
           type: 'checkbox',
@@ -572,7 +505,7 @@ export default function Consumption() {
 
       {/* 使用記録インフォーモーダル */}
       <BookModal
-        title={modalName}
+        title={isAdd ? '新規使用記録' : '使用記録編集'}
         // width="80%"
         // maskClosable={false}
         open={isModalOpen}
