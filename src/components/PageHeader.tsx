@@ -39,7 +39,16 @@ export default function PageHeader({
   const displayTitle = title ?? PATH_TO_TITLE[location.pathname] ?? title
 
   return (
-    <div style={{ marginBottom: '16px' }}>
+    <div
+      style={{
+        marginBottom: '16px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 99, // Ensure it's above other content
+        backgroundColor: 'var(--color-paper-white)', // Match page background
+        paddingTop: '10px', // Add breathing room when stuck
+      }}
+    >
       <h2 style={{ marginBottom: '16px' }}>{displayTitle}</h2>
       {data?.length ? (
         <Flex
