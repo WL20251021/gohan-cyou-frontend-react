@@ -6,7 +6,7 @@ import { getPurchasements } from '../purchasement/api'
 import { PurchasementColumn } from '../purchasement/columns'
 import { getIncomes } from '../income/api'
 import { IncomeColumn } from '../income/columns'
-import { getConsumptions } from '../consumption/api'
+import { getConsumption } from '../consumption/api'
 import { ConsumptionColumn } from '../consumption/columns'
 
 interface TodaySummary {
@@ -53,7 +53,7 @@ export default function TodaySummaryPage() {
       setExpenseDetails(todayExpenses)
 
       // 使用記録データ取得
-      const consumptionResponse = await getConsumptions()
+      const consumptionResponse = await getConsumption()
       const consumptionData: ConsumptionColumn[] = consumptionResponse.data || []
       const todayConsumptions = consumptionData.filter((item) => {
         if (!item.consumptionDate) return false

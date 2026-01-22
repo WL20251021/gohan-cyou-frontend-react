@@ -1,14 +1,14 @@
 import request from '@/utils/request'
 import { ConsumptionColumn } from './columns'
 
-export function getConsumptions() {
+export function getConsumption() {
   return request({
     url: 'budget/consumption',
     method: 'get',
   })
 }
 
-export function getConsumptionsByPage(page: number, pageSize: number) {
+export function getConsumptionByPage(page: number, pageSize: number) {
   return request({
     url: 'budget/consumption/page',
     method: 'get',
@@ -49,7 +49,7 @@ export function getConsumptionStatistics() {
   })
 }
 
-export function getConsumptionsByPurchasement(purchasementId: number) {
+export function getConsumptionByPurchasement(purchasementId: number) {
   return request({
     url: `budget/consumption/purchasement/${purchasementId}`,
     method: 'get',

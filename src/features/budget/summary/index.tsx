@@ -7,7 +7,7 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import { getPurchasements } from '../purchasement/api'
 import { PurchasementColumn } from '../purchasement/columns'
-import { getConsumptions } from '../consumption/api'
+import { getConsumption } from '../consumption/api'
 import { ConsumptionColumn } from '../consumption/columns'
 
 dayjs.extend(isoWeek)
@@ -43,7 +43,7 @@ export default function PurchasementSummaryPage() {
       const data: PurchasementColumn[] = response.data || []
 
       // 使用記録データも取得
-      const consumptionResponse = await getConsumptions()
+      const consumptionResponse = await getConsumption()
       const consumptionData: ConsumptionColumn[] = consumptionResponse.data || []
 
       // 選択された日付の範囲を計算

@@ -4,7 +4,7 @@ import BookModal from '../../../components/BookModal'
 import dayjs, { Dayjs } from 'dayjs'
 import { ConsumptionColumn, JPNames, QUANTITY_UNITS } from './columns'
 import { addConsumption, updateConsumption } from './api'
-import { getAllInventory } from '../inventory/api'
+import { getInStockItems } from '../inventory/api'
 
 interface ConsumptionModalProps {
   open: boolean
@@ -67,23 +67,15 @@ export function ConsumptionModal({
   // 在庫状況チェック
   const checkInventoryStatus = async () => {
     try {
-      const response = await getAllInventory()
-      const inventory = response?.data || []
-      const available: any[] = []
-
-      inventory.forEach((item: any) => {
-        if (item.availableQuantity > 0) {
-          available.push(item)
-        }
-      })
-
+      const response = await getInStockItems()
+      const available = response?.data || []
       setAvailablePurchasements(
         available.map((inv: any) => ({
-          id: inv.purchasementId,
-          goods: inv.goods,
-          store: inv.store,
-          purchaseDate: inv.purchaseDate,
-          availableQuantity: inv.availableQuantity,
+          id: inv.id,
+          goods: inv.purchasement.goods,
+          store: inv.purchasement.store,
+          purchasement: inv.purchasement,
+          remainingQuantity: inv.remainingQuantity,
           quantityUnit: inv.quantityUnit,
         }))
       )
@@ -97,7 +89,7 @@ export function ConsumptionModal({
     const inventory = availablePurchasements.find((p) => p.id === purchasementId)
     if (inventory) {
       setSelectedInventory(inventory)
-      setMaxQuantity(inventory.availableQuantity)
+      setMaxQuantity(inventory.remainingQuantity)
       // 数量単位を自動設定
       form.setFieldValue('quantityUnit', inventory.quantityUnit)
     } else {
@@ -116,6 +108,7 @@ export function ConsumptionModal({
         consumptionDate: values.consumptionDate
           ? dayjs(values.consumptionDate).format('YYYY-MM-DD')
           : null,
+        quantityUnit: selectedInventory?.quantityUnit || QUANTITY_UNITS.Piece,
       }
 
       if (isEditMode && editingRecord) {
@@ -203,9 +196,11 @@ export function ConsumptionModal({
             onChange={handlePurchasementChange}
             options={availablePurchasements.map((item) => ({
               label: `${item.goods?.goodsName || '商品不明'} - ${
-                item.store?.name || '店舗不明'
-              } (在庫: ${item.availableQuantity} ${item.quantityUnit}) - ${
-                item.purchaseDate ? dayjs(item.purchaseDate).format('YYYY-MM-DD') : '日付不明'
+                item.store?.storeName || '店舗不明'
+              } (在庫: ${item.remainingQuantity} ${item.quantityUnit}) - ${
+                item.purchasement.purchaseDate
+                  ? dayjs(item.purchasement.purchaseDate).format('YYYY-MM-DD')
+                  : '日付不明'
               }`,
               value: item.id,
             }))}
@@ -217,9 +212,9 @@ export function ConsumptionModal({
             description={
               <div>
                 <div>商品: {selectedInventory.goods?.goodsName || '不明'}</div>
-                <div>店舗: {selectedInventory.store?.name || '不明'}</div>
+                <div>店舗: {selectedInventory.store?.storeName || '不明'}</div>
                 <div style={{ fontWeight: 'bold', color: '#1890ff' }}>
-                  利用可能数量: {maxQuantity.toFixed(2)} {selectedInventory.quantityUnit}
+                  利用可能数量: {maxQuantity.toFixed(2)} {selectedInventory?.quantityUnit}
                 </div>
               </div>
             }
@@ -229,51 +224,38 @@ export function ConsumptionModal({
           />
         )}
         <Form.Item label={JPNames.quantity}>
-          <Space.Compact style={{ width: '100%' }}>
-            <Form.Item
-              name="quantity"
-              noStyle
-              rules={[
-                { required: true, message: '数量を入力してください!' },
-                {
-                  validator: (_, value) => {
-                    if (value && maxQuantity > 0 && value > maxQuantity) {
-                      return Promise.reject(
-                        new Error(`在庫不足: 最大 ${maxQuantity.toFixed(2)} まで入力可能です`)
-                      )
-                    }
-                    return Promise.resolve()
-                  },
+          <Form.Item
+            name="quantity"
+            noStyle
+            rules={[
+              { required: true, message: '数量を入力してください!' },
+              {
+                validator: (_, value) => {
+                  if (value && maxQuantity > 0 && value > maxQuantity) {
+                    return Promise.reject(
+                      new Error(`在庫不足: 最大 ${maxQuantity.toFixed(2)} まで入力可能です`)
+                    )
+                  }
+                  return Promise.resolve()
                 },
-              ]}
-            >
-              <InputNumber
-                min={0}
-                max={maxQuantity > 0 ? maxQuantity : undefined}
-                step={0.01}
-                style={{ width: '70%' }}
-                placeholder={
-                  maxQuantity > 0 ? `最大: ${maxQuantity.toFixed(2)}` : '購入記録を選択してください'
-                }
-              />
-            </Form.Item>
-            <Form.Item
-              name="quantityUnit"
-              noStyle
-            >
-              <Select
-                style={{ width: '30%' }}
-                options={Object.entries(QUANTITY_UNITS).map(([_, value]) => ({
-                  label: value,
-                  value: value,
-                }))}
-              />
-            </Form.Item>
-          </Space.Compact>
+              },
+            ]}
+          >
+            <InputNumber
+              min={0}
+              max={maxQuantity > 0 ? maxQuantity : undefined}
+              step={0.01}
+              style={{ width: '70%' }}
+              addonAfter={selectedInventory ? selectedInventory.quantityUnit : QUANTITY_UNITS.Piece}
+              placeholder={
+                maxQuantity > 0 ? `最大: ${maxQuantity.toFixed(2)}` : '購入記録を選択してください'
+              }
+            />
+          </Form.Item>
         </Form.Item>
         <Form.Item
-          label={JPNames.note}
-          name="note"
+          label={JPNames.description}
+          name="description"
         >
           <Input.TextArea
             rows={3}

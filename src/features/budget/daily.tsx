@@ -31,7 +31,7 @@ import { getIncomes, deleteIncome } from './income/api'
 import { IncomeColumn, JPIncomeCategory } from './income/columns'
 import IncomeModal from './income/IncomeModal'
 
-import { getConsumptions, deleteConsumption } from './consumption/api'
+import { getConsumption, deleteConsumption } from './consumption/api'
 import { ConsumptionColumn } from './consumption/columns'
 import { ConsumptionModal } from './consumption/ConsumptionModal'
 
@@ -126,7 +126,7 @@ export default function DailyPurchasementPage() {
   // 使用記録を取得
   const fetchDailyConsumptions = async (date: Dayjs) => {
     try {
-      const response = await getConsumptions()
+      const response = await getConsumption()
       const allConsumptions: ConsumptionColumn[] = response.data || []
 
       // 選択された日付の使用記録のみフィルター
