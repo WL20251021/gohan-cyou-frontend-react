@@ -1,19 +1,19 @@
 import request from '@/utils/request'
-import type { InventoryItem, InventorySummary } from './types.ts'
+import type { InventoryColumn, GoodsInventory, InventoryStats } from './columns.ts'
 
 /**
  * すべての在庫を取得
  */
 export function getAllInventory() {
-  return request<InventoryItem[]>({
-    url: 'budget/inventory',
+  return request<InventoryColumn[]>({
+    url: 'budget/inventories',
     method: 'get',
   })
 }
 
 export function getAllInventoryByPage(page: number, pageSize: number) {
-  return request<{ data: InventoryItem[]; total: number }>({
-    url: 'budget/inventory/page',
+  return request<{ data: InventoryColumn[]; total: number }>({
+    url: 'budget/inventories/page',
     method: 'get',
     params: { page, pageSize },
   })
@@ -23,18 +23,27 @@ export function getAllInventoryByPage(page: number, pageSize: number) {
  * 在庫サマリーを取得
  */
 export function getInventorySummary() {
-  return request<InventorySummary>({
-    url: 'budget/inventory/summary',
+  return request<InventoryStats>({
+    url: 'budget/inventories/stats',
     method: 'get',
   })
 }
 
 /**
+ * 在庫ありアイテムを取得
+ */
+export function getInStockItems() {
+  return request<InventoryColumn[]>({
+    url: 'budget/inventories/in-stock',
+    method: 'get',
+  })
+}
+/**
  * 在庫切れアイテムを取得
  */
 export function getOutOfStockItems() {
-  return request<InventoryItem[]>({
-    url: 'budget/inventory/out-of-stock',
+  return request<InventoryColumn[]>({
+    url: 'budget/inventories/out-of-stock',
     method: 'get',
   })
 }
@@ -44,8 +53,8 @@ export function getOutOfStockItems() {
  * @param goodsId 商品ID
  */
 export function getInventoryByGoods(goodsId: number) {
-  return request<InventoryItem | null>({
-    url: `budget/inventory/goods/${goodsId}`,
+  return request<GoodsInventory | null>({
+    url: `budget/inventories/goods/${goodsId}`,
     method: 'get',
   })
 }

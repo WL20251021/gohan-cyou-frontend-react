@@ -165,22 +165,24 @@ export default function BookDetailModal({
         </div>
 
         {/* Main Actions */}
-        <Button
-          className="doodle-btn-primary"
-          block
-          icon={<EditOutlined />}
-          onClick={onEdit}
-          style={{
-            height: '48px',
-            fontSize: '1.1rem',
-            fontWeight: 'bold',
-            border: '2px solid var(--color-ink-black)',
-            background: 'var(--color-candy-pink)',
-            color: 'white',
-          }}
-        >
-          編集する
-        </Button>
+        {onEdit && (
+          <Button
+            className="doodle-btn-primary"
+            block
+            icon={<EditOutlined />}
+            onClick={onEdit}
+            style={{
+              height: '48px',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              border: '2px solid var(--color-ink-black)',
+              background: 'var(--color-candy-pink)',
+              color: 'white',
+            }}
+          >
+            編集する
+          </Button>
+        )}
         <Button
           block
           icon={<CloseOutlined />}

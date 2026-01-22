@@ -62,9 +62,6 @@ export default function DailyPurchasementPage() {
   const [isEditMode, setIsEditMode] = useState(false)
   const [editingRecord, setEditingRecord] = useState<PurchasementColumn | null>(null)
 
-  // 初期データ取得
-  // categories not needed
-
   // 日付が変更されたときにデータを取得
   useEffect(() => {
     fetchDailyPurchases(selectedDate)
@@ -754,7 +751,6 @@ export default function DailyPurchasementPage() {
         initialDate={selectedDate}
         onCancel={handleIncomeCancel}
         onSuccess={handleIncomeSuccess}
-        categories={categories}
       />
 
       {/* 使用記録追加・編集モーダル */}

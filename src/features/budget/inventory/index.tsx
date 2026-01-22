@@ -1,32 +1,24 @@
-import { useState, useEffect } from 'react'
-import { Card, Space, Tag, Statistic, Row, Col, Select, Button, Input, message } from 'antd'
-import {
-  ReloadOutlined,
-  WarningOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-} from '@ant-design/icons'
-import type { ColumnsType } from 'antd/es/table'
-import { getAllInventory, getInventorySummary, getOutOfStockItems } from './api'
-import type { InventoryItem, InventorySummary, GoodsType } from './types'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Card, Space, Tag, Statistic, Row, Col, Select, Button, Input } from 'antd'
+import { ReloadOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
+import { getAllInventory, getInStockItems, getInventorySummary, getOutOfStockItems } from './api'
+import PageHeader from '../../../components/PageHeader'
+import PaginatedGrid from '../../../components/PaginatedGrid'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
+import BookDetailModal from '../../../components/BookDetailModal'
+import { useBookPage } from '../../../hooks/useBookPage'
 import {
   type InventoryColumn,
-  formatInventoryList,
-  getStockStatus,
+  type InventoryStats,
+  type GoodsInventory,
   formatDate,
   STOCK_STATUS,
   STOCK_STATUS_NAMES,
   STOCK_STATUS_COLORS,
   JPNames,
 } from './columns'
-
-// 商品タイプの日本語名を定義
-const GOODS_TYPE_NAMES: Record<GoodsType, string> = {
-  '0': '使い切り商品',
-  '1': '消耗品・半耐久財',
-  '2': '耐久消費財',
-}
+import { JPNames as JPPurchasement } from '../purchasement/columns'
+import { JPNames as JPGoods } from '../goods/columns'
 
 const { Search } = Input
 
@@ -34,263 +26,102 @@ const { Search } = Input
  * 在庫管理コンポーネント
  */
 export default function Inventory() {
-  const [loading, setLoading] = useState(false)
-  const [inventory, setInventory] = useState<InventoryColumn[]>([])
-  const [summary, setSummary] = useState<InventorySummary | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [searchText, setSearchText] = useState('')
 
-  useEffect(() => {
-    fetchInventoryData()
-  }, [])
-
-  /**
-   * 在庫データを取得
-   */
-  function fetchInventoryData(stockStatus?: string) {
-    setLoading(true)
-
-    const currentStatus = stockStatus || filterStatus
+  // Custom fetch function that handles status filtering
+  const fetchInventoryWithFilter = useCallback(async () => {
     const getStockByStatus = {
       all: getAllInventory,
-      [STOCK_STATUS.IN_STOCK]: getAllInventory,
+      [STOCK_STATUS.IN_STOCK]: getInStockItems,
       [STOCK_STATUS.OUT_OF_STOCK]: getOutOfStockItems,
     }
-    const status = currentStatus as keyof typeof getStockByStatus
+    const status =
+      filterStatus === 'all' || !getStockByStatus[filterStatus as keyof typeof getStockByStatus]
+        ? 'all'
+        : filterStatus
 
-    Promise.all([getStockByStatus[status](), getInventorySummary()])
-      .then(([inventoryRes, summaryRes]) => {
-        const inventoryData = inventoryRes?.data || []
-        setInventory(formatInventoryList(inventoryData))
-        setSummary(summaryRes?.data || null)
-      })
-      .catch((error) => {
-        console.error(error)
-        message.error('在庫データの取得に失敗しました')
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }
+    const res = await getStockByStatus[status as keyof typeof getStockByStatus]()
+    return { data: res.data || [] }
+  }, [filterStatus])
 
-  /**
-   * フィルター処理（検索のみ、状態フィルターはAPIで処理）
-   */
-  const filteredInventory = inventory.filter((item) => {
-    // 検索フィルター
-    if (searchText) {
-      const searchLower = searchText.toLowerCase()
-      const goodsName = item.goods?.goodsName?.toLowerCase() || ''
-      const storeName = item.store?.name?.toLowerCase() || ''
-      return goodsName.includes(searchLower) || storeName.includes(searchLower)
-    }
-
-    return true
+  const {
+    data,
+    selectedRows,
+    toggleSelection,
+    handleSuccess,
+    isDetailOpen,
+    detailRecord,
+    showDetail,
+    closeDetail,
+    nextDetail,
+    prevDetail,
+    hasNext,
+    hasPrev,
+  } = useBookPage<InventoryColumn>({
+    fetchList: fetchInventoryWithFilter,
+    deleteItem: async () => {}, // No delete action
+    itemName: '在庫',
   })
 
-  /**
-   * テーブルのカラム定義
-   */
-  const columns: ColumnsType<InventoryColumn> = [
-    {
-      title: JPNames.purchasementId,
-      dataIndex: 'purchasementId',
-      key: 'purchasementId',
-      width: 100,
-      sorter: (a, b) => a.purchasementId - b.purchasementId,
-      className: 'cell-id',
-      onCell: () => ({ 'data-label': JPNames.purchasementId }) as any,
-    },
-    {
-      title: JPNames.goodsName,
-      dataIndex: ['goods', 'goodsName'],
-      key: 'goodsName',
-      width: 200,
-      fixed: 'left',
-      render: (text) => text || '-',
-      className: 'cell-title',
-      onCell: () => ({ 'data-label': JPNames.goodsName }) as any,
-    },
-    {
-      title: 'カテゴリー',
-      dataIndex: ['goods', 'category', 'jpName'],
-      key: 'category',
-      width: 120,
-      render: (text) => text || '-',
-      onCell: () => ({ 'data-label': 'カテゴリー' }) as any,
-    },
-    {
-      title: 'ブランド',
-      dataIndex: ['goods', 'brand', 'name'],
-      key: 'brand',
-      width: 120,
-      render: (text) => text || '-',
-      onCell: () => ({ 'data-label': 'ブランド' }) as any,
-    },
-    {
-      title: '商品タイプ',
-      dataIndex: ['goods', 'goodsType'],
-      key: 'goodsType',
-      width: 140,
-      render: (type: GoodsType) => (type ? GOODS_TYPE_NAMES[type] : '-'),
-      onCell: () => ({ 'data-label': '商品タイプ' }) as any,
-    },
-    {
-      title: JPNames.storeName,
-      dataIndex: ['store', 'name'],
-      key: 'storeName',
-      width: 150,
-      render: (text) => text || '-',
-      onCell: () => ({ 'data-label': JPNames.storeName }) as any,
-    },
-    {
-      title: JPNames.availableQuantity,
-      dataIndex: 'availableQuantity',
-      key: 'availableQuantity',
-      width: 120,
-      align: 'right',
-      render: (value, record) => (
-        <span>
-          {value.toFixed(2)} {record.quantityUnit}
-        </span>
-      ),
-      sorter: (a, b) => a.availableQuantity - b.availableQuantity,
-      onCell: () => ({ 'data-label': JPNames.availableQuantity }) as any,
-    },
-    {
-      title: JPNames.purchasedQuantity,
-      dataIndex: 'purchasedQuantity',
-      key: 'purchasedQuantity',
-      width: 120,
-      align: 'right',
-      render: (value, record) => (
-        <span>
-          {value.toFixed(2)} {record.quantityUnit}
-        </span>
-      ),
-      onCell: () => ({ 'data-label': JPNames.purchasedQuantity }) as any,
-    },
-    {
-      title: JPNames.consumedQuantity,
-      dataIndex: 'consumedQuantity',
-      key: 'consumedQuantity',
-      width: 120,
-      align: 'right',
-      render: (value, record) => (
-        <span>
-          {value.toFixed(2)} {record.quantityUnit}
-        </span>
-      ),
-      onCell: () => ({ 'data-label': JPNames.consumedQuantity }) as any,
-    },
-    {
-      title: JPNames.stockStatus,
-      dataIndex: 'stockStatus',
-      key: 'stockStatus',
-      width: 120,
-      align: 'center',
-      onCell: () => ({ 'data-label': JPNames.stockStatus }) as any,
-      render: (status) => {
-        if (!status) return '-'
-        const color = STOCK_STATUS_COLORS[status as keyof typeof STOCK_STATUS_COLORS]
-        const name = STOCK_STATUS_NAMES[status as keyof typeof STOCK_STATUS_NAMES]
-        let icon = <CheckCircleOutlined />
-        if (status === STOCK_STATUS.OUT_OF_STOCK) icon = <CloseCircleOutlined />
+  // Summary State
+  const [summary, setSummary] = useState<InventoryStats | null>(null)
 
-        return (
-          <Tag
-            color={color}
-            icon={icon}
-          >
-            {name}
-          </Tag>
-        )
-      },
-      filters: [
-        { text: STOCK_STATUS_NAMES.in_stock, value: STOCK_STATUS.IN_STOCK },
-        {
-          text: STOCK_STATUS_NAMES.out_of_stock,
-          value: STOCK_STATUS.OUT_OF_STOCK,
-        },
-      ],
-      onFilter: (value, record) => record.stockStatus === value,
-    },
-    {
-      title: JPNames.purchaseDate,
-      dataIndex: 'purchaseDate',
-      key: 'purchaseDate',
-      width: 120,
-      render: (date) => formatDate(date),
-      sorter: (a, b) =>
-        new Date(a.purchaseDate || 0).getTime() - new Date(b.purchaseDate || 0).getTime(),
-      onCell: () => ({ 'data-label': JPNames.purchaseDate }) as any,
-    },
-    {
-      title: JPNames.lastConsumptionDate,
-      dataIndex: 'lastConsumptionDate',
-      key: 'lastConsumptionDate',
-      width: 120,
-      render: (date) => formatDate(date),
-      sorter: (a, b) =>
-        new Date(a.lastConsumptionDate || 0).getTime() -
-        new Date(b.lastConsumptionDate || 0).getTime(),
-      onCell: () => ({ 'data-label': JPNames.lastConsumptionDate }) as any,
-    },
-  ]
+  // Fetch Summary independent of list
+  useEffect(() => {
+    getInventorySummary()
+      .then((res) => {
+        setSummary(res?.data || null)
+      })
+      .catch(console.error)
+  }, [])
+
+  // Filter logic for Search Text (Client side)
+  const filteredData = useMemo(() => {
+    if (!searchText) return data
+    const lower = searchText.toLowerCase()
+    return data.filter((item) => {
+      const goodsName = item.goods?.goodsName?.toLowerCase() || ''
+      return goodsName.includes(lower)
+    })
+  }, [data, searchText])
 
   return (
-    <div style={{ padding: '24px' }}>
-      {/* サマリーカード */}
-      <Row
-        gutter={16}
-        style={{ marginBottom: 16 }}
-      >
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="在庫アイテム総数"
-              value={summary?.totalItems || 0}
-              suffix="品目"
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="利用可能アイテム"
-              value={summary?.availableItems || 0}
-              suffix="品目"
-              valueStyle={{ color: '#3f8600' }}
-              prefix={<CheckCircleOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="低在庫アイテム"
-              value={summary?.lowStockItems || 0}
-              suffix="品目"
-              valueStyle={{ color: '#faad14' }}
-              prefix={<WarningOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="在庫切れアイテム"
-              value={summary?.outOfStockItems || 0}
-              suffix="品目"
-              valueStyle={{ color: '#cf1322' }}
-              prefix={<CloseCircleOutlined />}
-            />
-          </Card>
-        </Col>
-      </Row>
+    <div className="book-page-container">
+      <PageHeader
+        title="在庫管理"
+        data={data as any[]}
+      />
 
-      {/* フィルターと検索 */}
-      <Card style={{ marginBottom: 16 }}>
+      <div className="book-page-content">
+        {/* サマリーカード */}
+        <Row
+          gutter={16}
+          style={{ marginBottom: 16 }}
+        >
+          <Col span={12}>
+            <Card>
+              <Statistic
+                title="在庫アイテム総数"
+                value={summary?.inStockCount || 0}
+                suffix="品目"
+              />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card>
+              <Statistic
+                title="在庫切れアイテム"
+                value={summary?.outOfStockCount || 0}
+                suffix="品目"
+                valueStyle={{ color: '#cf1322' }}
+                prefix={<CloseCircleOutlined />}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        {/* フィルターと検索 */}
         <Space
           size="middle"
           style={{ width: '100%' }}
@@ -298,10 +129,7 @@ export default function Inventory() {
           <Select
             style={{ width: 150 }}
             value={filterStatus}
-            onChange={(value) => {
-              setFilterStatus(value)
-              fetchInventoryData(value)
-            }}
+            onChange={(value) => setFilterStatus(value)}
             options={[
               { label: 'すべて', value: 'all' },
               {
@@ -314,115 +142,152 @@ export default function Inventory() {
               },
             ]}
           />
-          <Search
-            placeholder="商品名・店舗名で検索"
-            allowClear
-            style={{ width: 300 }}
-            onSearch={setSearchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
+          {/* <Search
+              placeholder="商品名で検索"
+              allowClear
+              style={{ width: 300 }}
+              onSearch={setSearchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            /> */}
           <Button
             icon={<ReloadOutlined />}
-            onClick={() => fetchInventoryData(filterStatus)}
-            loading={loading}
+            onClick={() => handleSuccess()}
           >
             更新
           </Button>
         </Space>
-      </Card>
 
-      {/* 在庫テーブル */}
-      <h2 className="mb-4">在庫一覧</h2>
-      <div className="doodle-card-grid mt-6">
-        {filteredInventory.map((record) => {
-          // Status render logic
-          const status = record.stockStatus
-          const color = STOCK_STATUS_COLORS[status as keyof typeof STOCK_STATUS_COLORS]
-          const name = STOCK_STATUS_NAMES[status as keyof typeof STOCK_STATUS_NAMES]
-          let icon = <CheckCircleOutlined />
-          if (status === STOCK_STATUS.OUT_OF_STOCK) icon = <CloseCircleOutlined />
+        {/* 在庫データグリッド */}
+        <PaginatedGrid
+          data={filteredData as InventoryColumn[]}
+          renderItem={(record: InventoryColumn) => {
+            const status = record.remainingQuantity
+              ? STOCK_STATUS.IN_STOCK
+              : STOCK_STATUS.OUT_OF_STOCK
 
-          return (
-            <DoodleCard
-              key={record.purchasementId}
-              id={record.purchasementId}
-              title={record.goods?.goodsName || '-'}
-            >
-              <DoodleCardRow
-                label="カテゴリー"
-                value={record.goods?.category?.jpName || '-'}
-              />
-              <DoodleCardRow
-                label="ブランド"
-                value={record.goods?.brand?.name || '-'}
-              />
-              <DoodleCardRow
-                label="商品タイプ"
-                value={record.goods?.goodsType ? GOODS_TYPE_NAMES[record.goods.goodsType] : '-'}
-              />
-              <DoodleCardRow
-                label={JPNames.storeName}
-                value={record.store?.name || '-'}
-              />
+            const color = STOCK_STATUS_COLORS[status as keyof typeof STOCK_STATUS_COLORS]
+            const name = STOCK_STATUS_NAMES[status as keyof typeof STOCK_STATUS_NAMES]
+            let icon =
+              status === STOCK_STATUS.OUT_OF_STOCK ? (
+                <CloseCircleOutlined />
+              ) : (
+                <CheckCircleOutlined />
+              )
 
-              <div className="my-2 border-t border-dashed border-gray-300 dark:border-gray-600"></div>
-
-              <DoodleCardRow
-                label={JPNames.availableQuantity}
-                value={`${record.availableQuantity.toFixed(2)} ${record.quantityUnit}`}
-              />
-              <DoodleCardRow
-                label={JPNames.purchasedQuantity}
-                value={`${record.purchasedQuantity.toFixed(2)} ${record.quantityUnit}`}
-              />
-              <DoodleCardRow
-                label={JPNames.consumedQuantity}
-                value={`${record.consumedQuantity.toFixed(2)} ${record.quantityUnit}`}
-              />
-
-              <div className="mt-2">
+            return (
+              <DoodleCard
+                key={record.purchasement.id}
+                id={record.purchasement.id}
+                title={record.goods?.goodsName || '-'}
+                // inventory is read only
+                selected={!!selectedRows.find((r) => r.purchasement.id === record.purchasement.id)}
+                onClick={() => showDetail(record)}
+              >
                 <DoodleCardRow
-                  label={JPNames.stockStatus}
-                  value={
-                    status ? (
-                      <Tag
-                        color={color}
-                        icon={icon}
-                      >
-                        {name}
-                      </Tag>
-                    ) : (
-                      '-'
-                    )
-                  }
+                  label={JPGoods.goodsName}
+                  value={record.goods?.goodsName || '-'}
                 />
-              </div>
 
-              <DoodleCardRow
-                label={JPNames.purchaseDate}
-                value={formatDate(record.purchaseDate)}
-              />
-              <DoodleCardRow
-                label={JPNames.lastConsumptionDate}
-                value={formatDate(record.lastConsumptionDate)}
-              />
-            </DoodleCard>
-          )
-        })}
+                <div className="my-2 border-t border-dashed border-gray-300 dark:border-gray-600"></div>
+
+                <DoodleCardRow
+                  label={JPNames.remainingQuantity}
+                  value={`${record.remainingQuantity} ${record.quantityUnit}`}
+                />
+                <div className="mt-2">
+                  <DoodleCardRow
+                    label={JPNames.stockStatus}
+                    value={
+                      status ? (
+                        <Tag
+                          color={color}
+                          icon={icon}
+                        >
+                          {name}
+                        </Tag>
+                      ) : (
+                        // fallback
+                        '-'
+                      )
+                    }
+                  />
+                </div>
+
+                <DoodleCardRow
+                  label={JPPurchasement.purchaseDate}
+                  value={formatDate(record.purchasement?.purchaseDate)}
+                />
+              </DoodleCard>
+            )
+          }}
+        />
       </div>
-      {/* <Table
-        columns={columns}
-        dataSource={filteredInventory}
-        rowKey="purchasementId"
-        loading={loading}
-        pagination={{
-          showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total) => `全 ${total} 件`,
-          defaultPageSize: 20,
-          pageSizeOptions: ['10', '20', '50', '100'],
-        }}
-      /> */}
+
+      <BookDetailModal
+        manualFlip={true}
+        open={isDetailOpen}
+        title={detailRecord?.goods?.goodsName || '詳細'}
+        subtitle="在庫詳細"
+        onClose={closeDetail}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+        onNext={nextDetail}
+        onPrev={prevDetail}
+        rowJustify="start"
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-4">
+            <DoodleCardRow
+              label={JPGoods.goodsName}
+              value={detailRecord.goods?.goodsName || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.remainingQuantity}
+              value={`${detailRecord.remainingQuantity} ${detailRecord.quantityUnit}`}
+            />
+            <DoodleCardRow
+              label={JPPurchasement.purchaseDate}
+              value={formatDate(detailRecord.purchasement?.purchaseDate)}
+            />
+            <DoodleCardRow
+              label={JPNames.stockStatus}
+              value={
+                (
+                  detailRecord.remainingQuantity ? STOCK_STATUS.IN_STOCK : STOCK_STATUS.OUT_OF_STOCK
+                ) ? (
+                  <Tag
+                    color={
+                      STOCK_STATUS_COLORS[
+                        (detailRecord.remainingQuantity
+                          ? STOCK_STATUS.IN_STOCK
+                          : STOCK_STATUS.OUT_OF_STOCK) as keyof typeof STOCK_STATUS_COLORS
+                      ]
+                    }
+                    icon={
+                      detailRecord.remainingQuantity ? (
+                        <CheckCircleOutlined />
+                      ) : (
+                        <CloseCircleOutlined />
+                      )
+                    }
+                  >
+                    {
+                      STOCK_STATUS_NAMES[
+                        (detailRecord.remainingQuantity
+                          ? STOCK_STATUS.IN_STOCK
+                          : STOCK_STATUS.OUT_OF_STOCK) as keyof typeof STOCK_STATUS_NAMES
+                      ]
+                    }
+                  </Tag>
+                ) : (
+                  // fallback
+                  '-'
+                )
+              }
+            />
+          </div>
+        )}
+      </BookDetailModal>
     </div>
   )
 }

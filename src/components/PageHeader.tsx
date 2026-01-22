@@ -4,9 +4,9 @@ import { useLocation } from 'react-router'
 
 interface PageHeaderProps {
   title?: string
-  onAdd: () => void
-  onDelete: () => void
-  deleteDisabled: boolean
+  onAdd?: () => void
+  onDelete?: () => void
+  deleteDisabled?: boolean
   data?: any[]
 }
 
@@ -50,35 +50,39 @@ export default function PageHeader({
       className="book-page-header"
     >
       <h2 style={{ marginBottom: '16px' }}>{displayTitle}</h2>
-      {data?.length ? (
+      {data?.length || onAdd || onDelete ? (
         <Flex
           gap="small"
           align="start"
         >
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={onAdd}
-          >
-            新規
-          </Button>
-          <Popconfirm
-            title="削除確認"
-            description="本当に削除しますか？"
-            onConfirm={onDelete}
-            okText="削除"
-            cancelText="キャンセル"
-            okButtonProps={{ danger: true }}
-            disabled={deleteDisabled}
-          >
+          {onAdd && (
             <Button
-              danger
-              disabled={deleteDisabled}
-              className="hover:!border-current"
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={onAdd}
             >
-              削除
+              新規
             </Button>
-          </Popconfirm>
+          )}
+          {onDelete && (
+            <Popconfirm
+              title="削除確認"
+              description="本当に削除しますか？"
+              onConfirm={onDelete}
+              okText="削除"
+              cancelText="キャンセル"
+              okButtonProps={{ danger: true }}
+              disabled={deleteDisabled}
+            >
+              <Button
+                danger
+                disabled={deleteDisabled}
+                className="hover:!border-current"
+              >
+                削除
+              </Button>
+            </Popconfirm>
+          )}
         </Flex>
       ) : (
         <></>
