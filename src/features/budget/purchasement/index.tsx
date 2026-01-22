@@ -15,6 +15,7 @@ import {
 } from 'antd'
 import dayjs from 'dayjs'
 import BookModal from '../../../components/BookModal'
+import BookDetailModal from '../../../components/BookDetailModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
@@ -630,7 +631,16 @@ export default function Purchasement() {
     handleSuccess,
     handleDelete,
     handleDeleteAction,
-  } = useBookPage({
+    isDetailOpen,
+    detailRecord,
+    showDetail,
+    closeDetail,
+    handleDetailEdit,
+    nextDetail,
+    prevDetail,
+    hasNext,
+    hasPrev,
+  } = useBookPage<PurchasementColumn>({
     fetchList: getPurchasements,
     deleteItem: deletePurchasement,
     itemName: '購入記録',
@@ -657,6 +667,7 @@ export default function Purchasement() {
             title={record.purchaseDate ? dayjs(record.purchaseDate).format('YYYY-MM-DD') : '-'}
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
+            onClick={() => showDetail(record)}
             onEdit={(e) => {
               e.stopPropagation()
               showModal(false, record)
@@ -718,6 +729,81 @@ export default function Purchasement() {
         onCancel={handleCancel}
         onSuccess={handleSuccess}
       />
+
+      <BookDetailModal
+        open={isDetailOpen}
+        title={
+          detailRecord?.purchaseDate
+            ? dayjs(detailRecord.purchaseDate).format('YYYY-MM-DD')
+            : '購入記録'
+        }
+        subtitle="購入記録詳細"
+        id={detailRecord?.id}
+        onClose={closeDetail}
+        onEdit={handleDetailEdit}
+        onNext={nextDetail}
+        onPrev={prevDetail}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-4">
+            <DoodleCardRow
+              label={JPNames.purchaseDate}
+              value={
+                detailRecord.purchaseDate
+                  ? dayjs(detailRecord.purchaseDate).format('YYYY-MM-DD')
+                  : '-'
+              }
+            />
+            <DoodleCardRow
+              label="商品"
+              value={detailRecord.goods?.goodsName || '-'}
+            />
+            <DoodleCardRow
+              label="店舗"
+              value={detailRecord.store?.storeName || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.unitPrice}
+              value={`${detailRecord.unitPrice} 円`}
+            />
+            <DoodleCardRow
+              label={JPNames.quantity}
+              value={`${detailRecord.quantity} ${detailRecord.quantityUnit}`}
+            />
+            <DoodleCardRow
+              label={JPNames.paymentMethod}
+              value={detailRecord.paymentMethod || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.taxRate}
+              value={
+                detailRecord.taxRate
+                  ? TAX_CATEGORY_NAMES[detailRecord.taxRate as keyof typeof TAX_CATEGORY_NAMES] +
+                    (detailRecord.isTaxIncluded ? '税込み' : '税抜き')
+                  : '-'
+              }
+            />
+            <DoodleCardRow
+              label={JPNames.taxAmount}
+              value={`${detailRecord.taxAmount} 円`}
+            />
+            <DoodleCardRow
+              label={JPNames.discountAmount}
+              value={`${detailRecord.discountType === DISCOUNT_TYPES.FIXED ? '固定金額' : '割引' + detailRecord.discountRate + '%'} ${detailRecord.discountAmount} 円`}
+            />
+            <DoodleCardRow
+              label={JPNames.totalPrice}
+              value={`${detailRecord.totalPrice} 円`}
+            />
+            <DoodleCardRow
+              label={JPNames.description}
+              value={detailRecord.description || '-'}
+            />
+          </div>
+        )}
+      </BookDetailModal>
     </div>
   )
 }

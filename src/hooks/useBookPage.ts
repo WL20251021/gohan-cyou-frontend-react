@@ -15,6 +15,48 @@ export function useBookPage<T extends { id: any }>(options: BookPageOptions<T>) 
   const [loading, setLoading] = useState(false)
   const [selectedRows, setSelectedRows] = useState<T[]>([])
 
+  // Detail View State
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [detailRecord, setDetailRecord] = useState<T | null>(null)
+
+  const showDetail = (record: T) => {
+    setDetailRecord(record)
+    setIsDetailOpen(true)
+  }
+
+  const closeDetail = () => {
+    setIsDetailOpen(false)
+    setDetailRecord(null)
+  }
+
+  const handleDetailEdit = () => {
+    if (detailRecord) {
+      closeDetail()
+      showModal(false, detailRecord)
+    }
+  }
+
+  const nextDetail = () => {
+    if (!detailRecord) return
+    const currentIndex = data.findIndex((r) => r.id === detailRecord.id)
+    if (currentIndex !== -1 && currentIndex < data.length - 1) {
+      setDetailRecord(data[currentIndex + 1])
+    }
+  }
+
+  const prevDetail = () => {
+    if (!detailRecord) return
+    const currentIndex = data.findIndex((r) => r.id === detailRecord.id)
+    if (currentIndex > 0) {
+      setDetailRecord(data[currentIndex - 1])
+    }
+  }
+
+  const hasNext = detailRecord
+    ? data.findIndex((r) => r.id === detailRecord.id) < data.length - 1
+    : false
+  const hasPrev = detailRecord ? data.findIndex((r) => r.id === detailRecord.id) > 0 : false
+
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isAdd, setIsAdd] = useState(true)
@@ -136,6 +178,17 @@ export function useBookPage<T extends { id: any }>(options: BookPageOptions<T>) 
     isAdd,
     editingRecord,
     showModal,
+
+    // Detail View Logic
+    isDetailOpen,
+    detailRecord,
+    showDetail,
+    closeDetail,
+    handleDetailEdit,
+    nextDetail,
+    prevDetail,
+    hasNext,
+    hasPrev,
     handleCancel,
     handleSuccess,
 

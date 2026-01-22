@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import type { Color } from 'antd/es/color-picker'
 import { Form, Input, notification, message, ColorPicker } from 'antd'
 import BookModal from '../../../components/BookModal'
+import BookDetailModal from '../../../components/BookDetailModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
@@ -173,7 +174,16 @@ export default function Category() {
     handleSuccess,
     handleDelete,
     handleDeleteAction,
-  } = useBookPage({
+    isDetailOpen,
+    detailRecord,
+    showDetail,
+    closeDetail,
+    handleDetailEdit,
+    nextDetail,
+    prevDetail,
+    hasNext,
+    hasPrev,
+  } = useBookPage<CategoryColumn>({
     fetchList: getCategories,
     deleteItem: deleteCategory,
     itemName: 'カテゴリー',
@@ -198,6 +208,7 @@ export default function Category() {
             title={record.categoryName}
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
+            onClick={() => showDetail(record)}
             onEdit={(e) => {
               e.stopPropagation()
               showModal(false, record)
@@ -243,6 +254,57 @@ export default function Category() {
         onCancel={handleCancel}
         onSuccess={handleSuccess}
       />
+
+      <BookDetailModal
+        open={isDetailOpen}
+        title={detailRecord?.categoryName}
+        subtitle="Category Details"
+        id={detailRecord?.id}
+        onClose={closeDetail}
+        onEdit={handleDetailEdit}
+        onNext={nextDetail}
+        onPrev={prevDetail}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-4">
+            <DoodleCardRow
+              label={JPNames.categoryName}
+              value={detailRecord.categoryName}
+            />
+            <DoodleCardRow
+              label={JPNames.icon}
+              value={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <i
+                    className={detailRecord.icon}
+                    style={{ fontSize: '1.2rem' }}
+                  ></i>
+                  <span>{detailRecord.icon}</span>
+                </div>
+              }
+            />
+            <DoodleCardRow
+              label={JPNames.color}
+              value={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      backgroundColor: `#${detailRecord.color}`,
+                      border: '2px solid var(--color-ink-black)',
+                      borderRadius: '4px',
+                    }}
+                  />
+                  <span>#{detailRecord.color}</span>
+                </div>
+              }
+            />
+          </div>
+        )}
+      </BookDetailModal>
     </div>
   )
 }

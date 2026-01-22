@@ -15,6 +15,7 @@ import {
   message,
 } from 'antd'
 import BookModal from '../../components/BookModal'
+import BookDetailModal from '../../components/BookDetailModal'
 import PageHeader from '../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../components/DoodleCard'
 import PaginatedGrid from '../../components/PaginatedGrid'
@@ -438,7 +439,16 @@ export default function Recipe() {
     handleSuccess,
     handleDelete,
     handleDeleteAction,
-  } = useBookPage({
+    isDetailOpen,
+    detailRecord,
+    showDetail,
+    closeDetail,
+    handleDetailEdit,
+    nextDetail,
+    prevDetail,
+    hasNext,
+    hasPrev,
+  } = useBookPage<RecipeColumn>({
     fetchList: getRecipes,
     deleteItem: deleteRecipe,
     itemName: 'レシピ',
@@ -464,6 +474,7 @@ export default function Recipe() {
             title={record.recipeName}
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
+            onClick={() => showDetail(record)}
             onEdit={(e) => {
               e.stopPropagation()
               showModal(false, record)
@@ -503,6 +514,50 @@ export default function Recipe() {
         onCancel={handleCancel}
         onSuccess={handleSuccess}
       />
+
+      <BookDetailModal
+        open={isDetailOpen}
+        title={detailRecord?.recipeName}
+        subtitle="レシピ詳細"
+        id={detailRecord?.id}
+        onClose={closeDetail}
+        onEdit={handleDetailEdit}
+        onNext={nextDetail}
+        onPrev={prevDetail}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-4">
+            <DoodleCardRow
+              label={JPNames.recipeName}
+              value={detailRecord.recipeName}
+            />
+            <DoodleCardRow
+              label={JPNames.description}
+              value={detailRecord.description || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.servings}
+              value={`${detailRecord.servings} 人分`}
+            />
+            <DoodleCardRow
+              label={JPNames.totalTime}
+              value={`${detailRecord.totalTime} 分`}
+            />
+            <DoodleCardRow
+              label={JPNames.difficulty}
+              value={
+                <Rate
+                  disabled
+                  value={detailRecord.difficulty || 0}
+                  style={{ fontSize: 16 }}
+                />
+              }
+            />
+          </div>
+        )}
+      </BookDetailModal>
     </div>
   )
 }

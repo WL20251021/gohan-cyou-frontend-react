@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, Select, notification, message } from 'antd'
 import BookModal from '../../../components/BookModal'
+import BookDetailModal from '../../../components/BookDetailModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
@@ -210,7 +211,16 @@ export default function Store() {
     handleSuccess,
     handleDelete,
     handleDeleteAction,
-  } = useBookPage({
+    isDetailOpen,
+    detailRecord,
+    showDetail,
+    closeDetail,
+    handleDetailEdit,
+    nextDetail,
+    prevDetail,
+    hasNext,
+    hasPrev,
+  } = useBookPage<StoreColumn>({
     fetchList: getStores,
     deleteItem: deleteStores,
     itemName: '店舗',
@@ -235,6 +245,7 @@ export default function Store() {
             title={record.storeName}
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
+            onClick={() => showDetail(record)}
             onEdit={(e) => {
               e.stopPropagation()
               showModal(false, record)
@@ -290,6 +301,69 @@ export default function Store() {
         onCancel={handleCancel}
         onSuccess={handleSuccess}
       />
+
+      <BookDetailModal
+        open={isDetailOpen}
+        title={detailRecord?.storeName}
+        subtitle="店舗詳細"
+        id={detailRecord?.id}
+        onClose={closeDetail}
+        onEdit={handleDetailEdit}
+        onNext={nextDetail}
+        onPrev={prevDetail}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-4">
+            <DoodleCardRow
+              label={JPNames.storeName}
+              value={detailRecord.storeName}
+            />
+            <DoodleCardRow
+              label={JPNames.storeType}
+              value={
+                JPStoreTypes[
+                  Object.keys(STORES).find(
+                    (k) => STORES[k as keyof typeof STORES] === detailRecord.storeType
+                  ) as keyof typeof JPStoreTypes
+                ] || detailRecord.storeType
+              }
+            />
+            <DoodleCardRow
+              label={JPNames.country}
+              value={
+                JPCountries[detailRecord.country as keyof typeof JPCountries] ||
+                detailRecord.country
+              }
+            />
+            <DoodleCardRow
+              label={JPNames.city}
+              value={detailRecord.city || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.address}
+              value={detailRecord.address || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.url}
+              value={
+                detailRecord.url ? (
+                  <a
+                    href={detailRecord.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {detailRecord.url}
+                  </a>
+                ) : (
+                  '-'
+                )
+              }
+            />
+          </div>
+        )}
+      </BookDetailModal>
     </div>
   )
 }

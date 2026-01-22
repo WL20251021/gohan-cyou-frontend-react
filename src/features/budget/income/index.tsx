@@ -12,6 +12,7 @@ import {
   Card,
 } from 'antd'
 import BookModal from '../../../components/BookModal'
+import BookDetailModal from '../../../components/BookDetailModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
@@ -37,7 +38,16 @@ export default function Income() {
     handleSuccess,
     handleDelete,
     handleDeleteAction,
-  } = useBookPage({
+    isDetailOpen,
+    detailRecord,
+    showDetail,
+    closeDetail,
+    handleDetailEdit,
+    nextDetail,
+    prevDetail,
+    hasNext,
+    hasPrev,
+  } = useBookPage<IncomeColumn>({
     fetchList: getIncomes,
     deleteItem: deleteIncome,
     itemName: '収入',
@@ -51,7 +61,10 @@ export default function Income() {
 
   // 合計金額を計算 (derived state)
   const totalIncome = useMemo(() => {
-    return (data as IncomeColumn[]).reduce((sum: number, item: IncomeColumn) => sum + item.amount, 0)
+    return (data as IncomeColumn[]).reduce(
+      (sum: number, item: IncomeColumn) => sum + item.amount,
+      0
+    )
   }, [data])
 
   // データの取得 (Categories only - Incomes via hook)
@@ -204,6 +217,7 @@ export default function Income() {
             title={record.incomeDate ? dayjs(record.incomeDate).format('YYYY-MM-DD') : '-'}
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
+            onClick={() => showDetail(record)}
             onEdit={(e) => {
               e.stopPropagation()
               showModal(false, record)
@@ -347,6 +361,40 @@ export default function Income() {
           </Form.Item>
         </Form>
       </BookModal>
+
+      <BookDetailModal
+        open={isDetailOpen}
+        title={detailRecord?.incomeDate ? dayjs(detailRecord.incomeDate).format('YYYY-MM-DD') : '-'}
+        subtitle="Income Details"
+        id={detailRecord?.id}
+        onClose={closeDetail}
+        onEdit={handleDetailEdit}
+        onNext={nextDetail}
+        onPrev={prevDetail}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-4">
+            <DoodleCardRow
+              label={JPNames.category}
+              value={detailRecord.category?.categoryName || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.amount}
+              value={`${detailRecord.amount} ${detailRecord.amountUnit}`}
+            />
+            <DoodleCardRow
+              label={JPNames.method}
+              value={detailRecord.method || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.note}
+              value={detailRecord.note || '-'}
+            />
+          </div>
+        )}
+      </BookDetailModal>
     </div>
   )
 }

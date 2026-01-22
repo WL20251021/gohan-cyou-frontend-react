@@ -7,7 +7,7 @@ import {
   CloseCircleOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { getAllInventory, getInventorySummary, getLowStockItems, getOutOfStockItems } from './api'
+import { getAllInventory, getInventorySummary, getOutOfStockItems } from './api'
 import type { InventoryItem, InventorySummary, GoodsType } from './types'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import {
@@ -54,7 +54,6 @@ export default function Inventory() {
     const getStockByStatus = {
       all: getAllInventory,
       [STOCK_STATUS.IN_STOCK]: getAllInventory,
-      [STOCK_STATUS.LOW_STOCK]: getLowStockItems,
       [STOCK_STATUS.OUT_OF_STOCK]: getOutOfStockItems,
     }
     const status = currentStatus as keyof typeof getStockByStatus
@@ -196,7 +195,6 @@ export default function Inventory() {
         const color = STOCK_STATUS_COLORS[status as keyof typeof STOCK_STATUS_COLORS]
         const name = STOCK_STATUS_NAMES[status as keyof typeof STOCK_STATUS_NAMES]
         let icon = <CheckCircleOutlined />
-        if (status === STOCK_STATUS.LOW_STOCK) icon = <WarningOutlined />
         if (status === STOCK_STATUS.OUT_OF_STOCK) icon = <CloseCircleOutlined />
 
         return (
@@ -210,7 +208,6 @@ export default function Inventory() {
       },
       filters: [
         { text: STOCK_STATUS_NAMES.in_stock, value: STOCK_STATUS.IN_STOCK },
-        { text: STOCK_STATUS_NAMES.low_stock, value: STOCK_STATUS.LOW_STOCK },
         {
           text: STOCK_STATUS_NAMES.out_of_stock,
           value: STOCK_STATUS.OUT_OF_STOCK,
@@ -312,10 +309,6 @@ export default function Inventory() {
                 value: STOCK_STATUS.IN_STOCK,
               },
               {
-                label: STOCK_STATUS_NAMES.low_stock,
-                value: STOCK_STATUS.LOW_STOCK,
-              },
-              {
                 label: STOCK_STATUS_NAMES.out_of_stock,
                 value: STOCK_STATUS.OUT_OF_STOCK,
               },
@@ -347,7 +340,6 @@ export default function Inventory() {
           const color = STOCK_STATUS_COLORS[status as keyof typeof STOCK_STATUS_COLORS]
           const name = STOCK_STATUS_NAMES[status as keyof typeof STOCK_STATUS_NAMES]
           let icon = <CheckCircleOutlined />
-          if (status === STOCK_STATUS.LOW_STOCK) icon = <WarningOutlined />
           if (status === STOCK_STATUS.OUT_OF_STOCK) icon = <CloseCircleOutlined />
 
           return (

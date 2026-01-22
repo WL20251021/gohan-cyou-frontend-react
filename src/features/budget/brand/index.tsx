@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, notification, message } from 'antd'
 import BookModal from '../../../components/BookModal'
+import BookDetailModal from '../../../components/BookDetailModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
@@ -166,7 +167,16 @@ export default function Brand() {
     handleSuccess,
     handleDelete,
     handleDeleteAction,
-  } = useBookPage({
+    isDetailOpen,
+    detailRecord,
+    showDetail,
+    closeDetail,
+    handleDetailEdit,
+    nextDetail,
+    prevDetail,
+    hasNext,
+    hasPrev,
+  } = useBookPage<BrandColumn>({
     fetchList: getBrands,
     deleteItem: deleteBrands,
     itemName: 'ブランド',
@@ -192,6 +202,7 @@ export default function Brand() {
             title={record.brandName}
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
+            onClick={() => showDetail(record)}
             onEdit={(e) => {
               e.stopPropagation()
               showModal(false, record)
@@ -237,6 +248,52 @@ export default function Brand() {
         onCancel={handleCancel}
         onSuccess={handleSuccess}
       />
+
+      <BookDetailModal
+        open={isDetailOpen}
+        title={detailRecord?.brandName}
+        subtitle="ブランド詳細"
+        id={detailRecord?.id}
+        onClose={closeDetail}
+        onEdit={handleDetailEdit}
+        onNext={nextDetail}
+        onPrev={prevDetail}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-4">
+            <DoodleCardRow
+              label={JPNames.brandName}
+              value={detailRecord.brandName}
+            />
+            <DoodleCardRow
+              label={JPNames.description}
+              value={detailRecord.description || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.country}
+              value={detailRecord.country || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.website}
+              value={
+                detailRecord.website ? (
+                  <a
+                    href={detailRecord.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {detailRecord.website}
+                  </a>
+                ) : (
+                  '-'
+                )
+              }
+            />
+          </div>
+        )}
+      </BookDetailModal>
     </div>
   )
 }

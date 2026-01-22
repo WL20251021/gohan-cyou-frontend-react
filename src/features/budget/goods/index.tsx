@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, Select, notification, message, Upload, Image, Space, Button } from 'antd'
 import BookModal from '../../../components/BookModal'
+import BookDetailModal from '../../../components/BookDetailModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
@@ -406,7 +407,16 @@ export default function Goods() {
     handleSuccess,
     handleDelete,
     handleDeleteAction,
-  } = useBookPage({
+    isDetailOpen,
+    detailRecord,
+    showDetail,
+    closeDetail,
+    handleDetailEdit,
+    nextDetail,
+    prevDetail,
+    hasNext,
+    hasPrev,
+  } = useBookPage<GoodsColumn>({
     fetchList: getGoods,
     deleteItem: deleteGoods,
     itemName: '商品',
@@ -479,6 +489,7 @@ export default function Goods() {
             title={record.goodsName}
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
+            onClick={() => showDetail(record)}
             onEdit={(e) => {
               e.stopPropagation()
               showModal(false, record)
@@ -525,6 +536,50 @@ export default function Goods() {
         onCancel={handleCancel}
         onSuccess={handleSuccess}
       />
+
+      <BookDetailModal
+        open={isDetailOpen}
+        title={detailRecord?.goodsName}
+        subtitle="Goods Details"
+        id={detailRecord?.id}
+        onClose={closeDetail}
+        onEdit={handleDetailEdit}
+        onNext={nextDetail}
+        onPrev={prevDetail}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+      >
+        {detailRecord && (
+          <div className="flex flex-col gap-4">
+            {detailRecord.imageName && (
+              <div className="mb-2">
+                <Image
+                  src={genImageUrl(detailRecord.imageName)}
+                  alt={JPNames.imageName}
+                  width={200}
+                  style={{ objectFit: 'contain', borderRadius: '8px', maxHeight: '300px' }}
+                />
+              </div>
+            )}
+            <DoodleCardRow
+              label={JPNames.goodsName}
+              value={detailRecord.goodsName}
+            />
+            <DoodleCardRow
+              label={JPNames.category}
+              value={detailRecord.category?.categoryName || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.brand}
+              value={detailRecord.brand?.brandName || '-'}
+            />
+            <DoodleCardRow
+              label={JPNames.memo}
+              value={detailRecord.memo || '-'}
+            />
+          </div>
+        )}
+      </BookDetailModal>
     </div>
   )
 }

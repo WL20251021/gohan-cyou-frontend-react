@@ -22,18 +22,6 @@ export function getInventorySummary() {
 }
 
 /**
- * 低在庫アイテムを取得
- * @param threshold 低在庫のしきい値（デフォルト: 10）
- */
-export function getLowStockItems(threshold?: number) {
-  return request<InventoryItem[]>({
-    url: 'budget/inventory/low-stock',
-    method: 'get',
-    params: { threshold },
-  })
-}
-
-/**
  * 在庫切れアイテムを取得
  */
 export function getOutOfStockItems() {
@@ -50,17 +38,6 @@ export function getOutOfStockItems() {
 export function getInventoryByGoods(goodsId: number) {
   return request<InventoryItem | null>({
     url: `budget/inventory/goods/${goodsId}`,
-    method: 'get',
-  })
-}
-
-/**
- * 特定の店舗の在庫を取得
- * @param storeId 店舗ID
- */
-export function getInventoryByStore(storeId: number) {
-  return request<InventoryItem[]>({
-    url: `budget/inventory/store/${storeId}`,
     method: 'get',
   })
 }
