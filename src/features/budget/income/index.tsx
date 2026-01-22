@@ -3,7 +3,6 @@ import {
   Form,
   InputNumber,
   Select,
-  Space,
   notification,
   message,
   DatePicker,
@@ -18,17 +17,14 @@ import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
 import { RiseOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import { IncomeColumn, JPNames, INCOME_METHODS, AMOUNT_UNITS } from './columns'
+import { IncomeColumn, JPNames, JPIncomeCategory, IncomeCategory } from './columns'
 import { getIncomes, addIncome, updateIncome, deleteIncome } from './api'
-import { getCategories } from '../category/api'
 import { useBookPage } from '../../../hooks/useBookPage'
 
 export default function Income() {
   const {
     data,
-    loading, // used by PaginatedGrid? No, it just takes data. But logical to have.
     selectedRows,
-    // setSelectedRows,
     toggleSelection,
     isModalOpen,
     isAdd,
@@ -53,12 +49,6 @@ export default function Income() {
     itemName: '収入',
   })
 
-  // テーブルデータとカラム定義
-  // const [data, setData] = useState<Array<IncomeColumn>>([])
-  // const [tableLoading, setTableLoading] = useState<boolean>(false)
-  // const [totalIncome, setTotalIncome] = useState<number>(0)
-  const [categories, setCategories] = useState<Array<any>>([])
-
   // 合計金額を計算 (derived state)
   const totalIncome = useMemo(() => {
     return (data as IncomeColumn[]).reduce(
@@ -66,22 +56,6 @@ export default function Income() {
       0
     )
   }, [data])
-
-  // データの取得 (Categories only - Incomes via hook)
-  useEffect(() => {
-    fetchCategories()
-  }, [])
-
-  // カテゴリデータ取得
-  function fetchCategories() {
-    getCategories()
-      .then((res) => {
-        setCategories(res?.data || [])
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-  }
 
   /*************** 新規収入を追加/収入を編集 ***************/
   const [form] = Form.useForm<IncomeColumn>()
@@ -210,6 +184,7 @@ export default function Income() {
       <PaginatedGrid
         className="book-page-content"
         data={data as IncomeColumn[]}
+        onAdd={() => showModal(true)}
         renderItem={(record: IncomeColumn) => (
           <DoodleCard
             key={record.id}
@@ -229,19 +204,15 @@ export default function Income() {
           >
             <DoodleCardRow
               label={JPNames.category}
-              value={record.category?.categoryName || '-'}
+              value={JPIncomeCategory[record.category as keyof typeof JPIncomeCategory] || '-'}
             />
             <DoodleCardRow
               label={JPNames.amount}
-              value={`${record.amount || 0} ${record.amountUnit || ''}`}
+              value={`${record.amount || 0} 円`}
             />
             <DoodleCardRow
-              label={JPNames.method}
-              value={record.method || '-'}
-            />
-            <DoodleCardRow
-              label={JPNames.note}
-              value={record.note || '-'}
+              label={JPNames.description}
+              value={record.description || '-'}
               truncate
             />
           </DoodleCard>
@@ -252,8 +223,6 @@ export default function Income() {
       <BookModal
         manualFlip={true}
         title={isAdd ? '新規収入' : '収入編集'}
-        // width="80%"
-        // maskClosable={false}
         open={isModalOpen}
         confirmLoading={confirmLoading}
         onOk={handleConfirmIncome}
@@ -284,7 +253,7 @@ export default function Income() {
           <Form.Item
             label={JPNames.incomeDate}
             name="incomeDate"
-            rules={[{ required: true, message: 'カテゴリを選択してください!' }]}
+            rules={[{ required: true, message: '収入日を選択してください!' }]}
           >
             <DatePicker
               style={{ width: '100%' }}
@@ -293,15 +262,15 @@ export default function Income() {
           </Form.Item>
           <Form.Item
             label={JPNames.category}
-            name="categoryId"
+            name="category"
             rules={[{ required: true, message: 'カテゴリを選択してください!' }]}
           >
             <Select
               allowClear
               placeholder="カテゴリを選択"
-              options={categories.map((item) => ({
-                label: item.jpName,
-                value: item.id,
+              options={Object.entries(IncomeCategory).map(([key, item]) => ({
+                label: item,
+                value: key,
               }))}
             />
           </Form.Item>
@@ -309,50 +278,24 @@ export default function Income() {
             label={JPNames.amount}
             required={true}
           >
-            <Space.Compact style={{ width: '100%' }}>
-              <Form.Item
-                name="amount"
-                noStyle
-                rules={[{ required: true, message: '金額を入力してください!' }]}
-              >
-                <InputNumber
-                  min={0}
-                  step={1}
-                  style={{ width: '70%' }}
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(value) => Number(value?.replace(/,/g, '') || 0) as 0}
-                />
-              </Form.Item>
-              <Form.Item
-                name="amountUnit"
-                noStyle
-              >
-                <Select
-                  style={{ width: '30%' }}
-                  options={Object.entries(AMOUNT_UNITS).map(([key, value]) => ({
-                    label: value,
-                    value: value,
-                  }))}
-                />
-              </Form.Item>
-            </Space.Compact>
+            <Form.Item
+              name="amount"
+              noStyle
+              rules={[{ required: true, message: '金額を入力してください!' }]}
+            >
+              <InputNumber
+                min={0}
+                step={1}
+                style={{ width: '70%' }}
+                addonAfter="円"
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => Number(value?.replace(/,/g, '') || 0) as 0}
+              />
+            </Form.Item>
           </Form.Item>
           <Form.Item
-            label={JPNames.method}
-            name="method"
-          >
-            <Select
-              allowClear
-              placeholder="受取方法を選択"
-              options={Object.entries(INCOME_METHODS).map(([key, value]) => ({
-                label: value,
-                value: value,
-              }))}
-            />
-          </Form.Item>
-          <Form.Item
-            label={JPNames.note}
-            name="note"
+            label={JPNames.description}
+            name="description"
           >
             <Input.TextArea
               rows={3}
@@ -367,7 +310,7 @@ export default function Income() {
         manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.incomeDate ? dayjs(detailRecord.incomeDate).format('YYYY-MM-DD') : '-'}
-        subtitle="Income Details"
+        subtitle="収入詳細"
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}
@@ -381,19 +324,17 @@ export default function Income() {
           <div className="flex flex-col gap-4">
             <DoodleCardRow
               label={JPNames.category}
-              value={detailRecord.category?.categoryName || '-'}
+              value={
+                JPIncomeCategory[detailRecord.category as keyof typeof JPIncomeCategory] || '-'
+              }
             />
             <DoodleCardRow
               label={JPNames.amount}
-              value={`${detailRecord.amount} ${detailRecord.amountUnit}`}
+              value={`${detailRecord.amount} 円`}
             />
             <DoodleCardRow
-              label={JPNames.method}
-              value={detailRecord.method || '-'}
-            />
-            <DoodleCardRow
-              label={JPNames.note}
-              value={detailRecord.note || '-'}
+              label={JPNames.description}
+              value={detailRecord.description || '-'}
             />
           </div>
         )}

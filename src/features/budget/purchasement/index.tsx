@@ -661,6 +661,7 @@ export default function Purchasement() {
       <PaginatedGrid
         className="book-page-content"
         data={data as PurchasementColumn[]}
+        onAdd={() => showModal(true)}
         renderItem={(record: PurchasementColumn) => (
           <DoodleCard
             key={record.id}

@@ -238,6 +238,7 @@ export default function Store() {
       />
       <PaginatedGrid
         className="book-page-content"
+        onAdd={() => showModal(true)}
         data={data as StoreColumn[]}
         renderItem={(record: StoreColumn) => (
           <DoodleCard

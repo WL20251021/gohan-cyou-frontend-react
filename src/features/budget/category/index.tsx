@@ -103,7 +103,9 @@ export function CategoryModal({
       onOk={handleSaveCategory}
       onCancel={onCancel}
       okText="保存"
-      cancelText="キャンセル"      zIndex={zIndex}    >
+      cancelText="キャンセル"
+      zIndex={zIndex}
+    >
       <Form
         form={form}
         className="p-8"
@@ -203,6 +205,7 @@ export default function Category() {
       <PaginatedGrid
         className="book-page-content"
         data={data as CategoryColumn[]}
+        onAdd={() => showModal(true)}
         renderItem={(record: CategoryColumn) => (
           <DoodleCard
             key={record.id}

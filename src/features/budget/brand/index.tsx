@@ -199,6 +199,7 @@ export default function Brand() {
       <PaginatedGrid
         className="book-page-content"
         data={data as BrandColumn[]}
+        onAdd={() => showModal(true)}
         renderItem={(record: BrandColumn) => (
           <DoodleCard
             key={record.id}

@@ -3,7 +3,7 @@ import { IncomeColumn } from './columns'
 
 export function getIncomes() {
   return request({
-    url: 'budget/income/',
+    url: 'budget/income',
     method: 'get',
   })
 }
@@ -18,7 +18,7 @@ export function getIncomesByPage(page: number, pageSize: number) {
 
 export function addIncome(data: Partial<IncomeColumn>) {
   return request({
-    url: 'budget/income/',
+    url: 'budget/income',
     method: 'post',
     data,
   })
@@ -34,7 +34,7 @@ export function updateIncome(id: number, data: Partial<IncomeColumn>) {
 
 export function deleteIncome(ids: number[]) {
   return request({
-    url: 'budget/income/',
+    url: 'budget/income',
     method: 'delete',
     data: ids,
   })

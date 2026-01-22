@@ -1,4 +1,4 @@
-import { Button, Flex, Empty, Popconfirm } from 'antd'
+import { Button, Flex, Popconfirm } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useLocation } from 'react-router'
 
@@ -81,15 +81,7 @@ export default function PageHeader({
           </Popconfirm>
         </Flex>
       ) : (
-        <Empty description="データなし">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={onAdd}
-          >
-            新規
-          </Button>
-        </Empty>
+        <></>
       )}
     </div>
   )

@@ -485,6 +485,7 @@ export default function Goods() {
       <PaginatedGrid
         className="book-page-content"
         data={data as GoodsColumn[]}
+        onAdd={() => showModal(true)}
         renderItem={(record: GoodsColumn) => (
           <DoodleCard
             key={record.id}

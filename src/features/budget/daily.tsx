@@ -33,7 +33,7 @@ import { getPurchasements, deletePurchasement } from './purchasement/api'
 import { PurchasementModal } from './purchasement/index'
 import { PurchasementColumn } from './purchasement/columns'
 import { getIncomes, addIncome, updateIncome, deleteIncome } from './income/api'
-import { IncomeColumn, INCOME_METHODS, AMOUNT_UNITS } from './income/columns'
+import { IncomeColumn, JPIncomeCategory } from './income/columns'
 import { getCategories } from './category/api'
 import { getConsumptions, deleteConsumption } from './consumption/api'
 import { ConsumptionColumn } from './consumption/columns'
@@ -214,7 +214,6 @@ export default function DailyPurchasementPage() {
     incomeForm.setFieldsValue({
       incomeDate: selectedDate,
       amount: 0,
-      amountUnit: '円',
     })
     setIsIncomeModalOpen(true)
   }
@@ -637,7 +636,7 @@ export default function DailyPurchasementPage() {
                   </Button>,
                   <Popconfirm
                     title="削除確認"
-                    description={`「${item.category?.categoryName || '不明'}」の収入記録を削除しますか？`}
+                    description={`「${JPIncomeCategory[item.category as keyof typeof JPIncomeCategory] || '不明'}」の収入記録を削除しますか？`}
                     onConfirm={() => handleDeleteIncome(item)}
                     okText="削除"
                     cancelText="キャンセル"
@@ -657,7 +656,7 @@ export default function DailyPurchasementPage() {
                   title={
                     <div>
                       <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                        {item.category?.categoryName || '-'}
+                        {JPIncomeCategory[item.category as keyof typeof JPIncomeCategory] || '-'}
                       </span>
                       <Tag
                         color="green"
@@ -665,19 +664,13 @@ export default function DailyPurchasementPage() {
                       >
                         収入
                       </Tag>
-                      {item.method && (
-                        <Tag
-                          color="blue"
-                          style={{ marginLeft: '4px' }}
-                        >
-                          {item.method}
-                        </Tag>
-                      )}
                     </div>
                   }
                   description={
-                    item.note ? (
-                      <div style={{ marginTop: '4px', color: '#666' }}>メモ: {item.note}</div>
+                    item.description ? (
+                      <div style={{ marginTop: '4px', color: '#666' }}>
+                        メモ: {item.description}
+                      </div>
                     ) : null
                   }
                 />
@@ -690,7 +683,7 @@ export default function DailyPurchasementPage() {
                     textAlign: 'right',
                   }}
                 >
-                  +{item.amount.toLocaleString()} {item.amountUnit}
+                  +{item.amount.toLocaleString()} 円
                 </div>
               </List.Item>
             )}
@@ -851,33 +844,20 @@ export default function DailyPurchasementPage() {
             label="金額"
             required={true}
           >
-            <Space.Compact style={{ width: '100%' }}>
-              <Form.Item
-                name="amount"
-                noStyle
-                rules={[{ required: true, message: '金額を入力してください' }]}
-              >
-                <InputNumber
-                  min={0}
-                  step={1}
-                  style={{ width: '70%' }}
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(value) => (Number(value?.replace(/,/g, '')) || 0) as 0}
-                />
-              </Form.Item>
-              <Form.Item
-                name="amountUnit"
-                noStyle
-              >
-                <Select
-                  style={{ width: '30%' }}
-                  options={Object.entries(AMOUNT_UNITS).map(([_, value]) => ({
-                    label: value,
-                    value: value,
-                  }))}
-                />
-              </Form.Item>
-            </Space.Compact>
+            <Form.Item
+              name="amount"
+              noStyle
+              rules={[{ required: true, message: '金額を入力してください' }]}
+            >
+              <InputNumber
+                min={0}
+                step={1}
+                style={{ width: '70%' }}
+                addonAfter="円"
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => (Number(value?.replace(/,/g, '')) || 0) as 0}
+              />
+            </Form.Item>
           </Form.Item>
 
           <Form.Item
