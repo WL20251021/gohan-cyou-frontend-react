@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 import {
-  Flex,
-  Table,
   Button,
   Form,
   Input,
@@ -14,13 +12,13 @@ import {
   Row,
   Col,
   Radio,
-  Checkbox,
   Popconfirm,
 } from 'antd'
 import dayjs from 'dayjs'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
+import PaginatedGrid from '../../../components/PaginatedGrid'
 import {
   PurchasementColumn,
   JPNames,
@@ -900,7 +898,7 @@ export default function Purchasement() {
   }
 
   return (
-    <div className="h-[cal(100vh - 7rem)]">
+    <div className="book-page-container">
       <PageHeader
         title="購入記録一覧"
         onAdd={() => showModal(true)}
@@ -908,8 +906,10 @@ export default function Purchasement() {
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
-      <div className="doodle-card-grid mt-6">
-        {data.map((record) => (
+      <PaginatedGrid
+        className="book-page-content"
+        data={data}
+        renderItem={(record: PurchasementColumn) => (
           <DoodleCard
             key={record.id}
             id={record.id}
@@ -966,8 +966,8 @@ export default function Purchasement() {
               }
             />
           </DoodleCard>
-        ))}
-      </div>
+        )}
+      />
 
       {/* 購入記録追加・編集モーダル */}
       <PurchasementModal

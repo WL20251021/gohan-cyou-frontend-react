@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react'
 import {
-  Flex,
-  Table,
-  Button,
   Form,
   InputNumber,
   Select,
@@ -13,12 +10,12 @@ import {
   Input,
   Statistic,
   Card,
-  Checkbox,
   Popconfirm,
 } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
+import PaginatedGrid from '../../../components/PaginatedGrid'
 import { RiseOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { IncomeColumn, JPNames, INCOME_METHODS, AMOUNT_UNITS } from './columns'
@@ -342,7 +339,7 @@ export default function Income() {
   }
 
   return (
-    <div className="h-[cal(100vh - 7rem)]">
+    <div className="book-page-container">
       <PageHeader
         title="収入管理"
         onAdd={() => showModal(true)}
@@ -371,8 +368,10 @@ export default function Income() {
         </div>
       </Card>
 
-      <div className="doodle-card-grid mt-6">
-        {data.map((record) => (
+      <PaginatedGrid
+        className="book-page-content"
+        data={data}
+        renderItem={(record: IncomeColumn) => (
           <DoodleCard
             key={record.id}
             id={record.id}
@@ -406,8 +405,8 @@ export default function Income() {
               truncate
             />
           </DoodleCard>
-        ))}
-      </div>
+        )}
+      />
 
       {/* 収入インフォーモーダル */}
       <BookModal

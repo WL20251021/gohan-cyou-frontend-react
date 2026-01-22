@@ -423,7 +423,7 @@ export default function Consumption() {
   }
 
   return (
-    <div className="h-[cal(100vh - 7rem)]">
+    <div className="book-page-container">
       <h2>使用記録一覧</h2>
 
       {/* 統計情報カード */}
@@ -566,7 +566,7 @@ export default function Consumption() {
           type: 'checkbox',
           onChange: onRowSelectionChange,
         }}
-        className="mt-6"
+        className="book-page-content"
         scroll={{ x: 'max-content' }}
       />
 

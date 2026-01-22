@@ -1,19 +1,9 @@
 import { useState, useEffect } from 'react'
-import {
-  Flex,
-  Table,
-  Button,
-  Form,
-  Input,
-  Space,
-  notification,
-  message,
-  Checkbox,
-  Popconfirm,
-} from 'antd'
+import { Form, Input, Space, notification, message, Popconfirm } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
+import PaginatedGrid from '../../../components/PaginatedGrid'
 import { BrandColumn, JPNames } from './columns'
 import { getBrands, addBrand, updateBrand, deleteBrands } from './api'
 
@@ -355,7 +345,7 @@ export default function Brand() {
   }
 
   return (
-    <div className="h-[cal(100vh - 7rem)]">
+    <div className="book-page-container">
       <PageHeader
         title="ブランド一覧"
         onAdd={() => showModal(true)}
@@ -364,8 +354,10 @@ export default function Brand() {
         data={data}
       />
 
-      <div className="doodle-card-grid mt-6">
-        {data.map((record) => (
+      <PaginatedGrid
+        className="book-page-content"
+        data={data}
+        renderItem={(record: BrandColumn) => (
           <DoodleCard
             key={record.id}
             id={record.id}
@@ -407,23 +399,8 @@ export default function Brand() {
               value={record.description || '-'}
             />
           </DoodleCard>
-        ))}
-      </div>
-      {/* <Table
-        dataSource={data}
-        columns={columns}
-        loading={tableLoading}
-        rowKey="id"
-        onRow={(record) => ({
-          onClick: () => showModal(false, record),
-        })}
-        rowSelection={{
-          type: 'checkbox',
-          onChange: onRowSelectionChange,
-        }}
-        className="mt-6"
-        scroll={{ x: 'max-content' }}
-      /> */}
+        )}
+      />
 
       {/* ブランド追加・編集モーダル */}
       <BrandAddModal

@@ -1,21 +1,10 @@
 import { useState, useEffect } from 'react'
 import type { Color } from 'antd/es/color-picker'
-import {
-  Flex,
-  Table,
-  Button,
-  Form,
-  Input,
-  Space,
-  notification,
-  message,
-  ColorPicker,
-  Checkbox,
-  Popconfirm,
-} from 'antd'
+import { Form, Input, Space, notification, message, ColorPicker, Popconfirm } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
+import PaginatedGrid from '../../../components/PaginatedGrid'
 import { CategoryColumn, JPNames } from './columns'
 import { getCategories, addCategory, updateCategory, deleteCategory } from './api'
 
@@ -339,7 +328,7 @@ export default function Category() {
   }
 
   return (
-    <div className="h-[cal(100vh - 7rem)]">
+    <div className="book-page-container">
       <PageHeader
         title="カテゴリー一覧"
         onAdd={() => showModal('add')}
@@ -347,8 +336,10 @@ export default function Category() {
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
-      <div className="doodle-card-grid mt-6">
-        {data.map((record) => (
+      <PaginatedGrid
+        className="book-page-content"
+        data={data}
+        renderItem={(record: CategoryColumn) => (
           <DoodleCard
             key={record.id}
             id={record.id}
@@ -393,8 +384,8 @@ export default function Category() {
               value={record.description || '-'}
             />
           </DoodleCard>
-        ))}
-      </div>
+        )}
+      />
 
       {/* カテゴリー追加/編集モーダル */}
       <CategoryModal

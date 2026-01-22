@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import {
-  Table,
   Button,
   Form,
   Input,
@@ -14,19 +13,15 @@ import {
   Col,
   Rate,
   message,
-  Checkbox,
-  Modal,
-  Popconfirm,
 } from 'antd'
 import BookModal from '../../components/BookModal'
 import PageHeader from '../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../components/DoodleCard'
+import PaginatedGrid from '../../components/PaginatedGrid'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import { RecipeColumn, JPNames } from './columns'
 import { getRecipes, addRecipe, updateRecipe, deleteRecipe } from './api'
-import { batchSaveIngredients, deleteIngredientsByRecipe } from './ingredient/api'
 import type { RecipeIngredient } from './ingredient/columns'
-import { batchSaveInstructions, deleteInstructionsByRecipe } from './instructions/api'
 import type { instructions } from './instructions/columns'
 import { getGoods } from '../budget/goods/api'
 
@@ -590,8 +585,10 @@ export default function Recipe() {
         data={data}
       />
 
-      <div className="doodle-card-grid mt-6">
-        {data.map((record) => (
+      <PaginatedGrid
+        className="book-page-content"
+        data={data}
+        renderItem={(record: RecipeColumn) => (
           <DoodleCard
             key={record.id}
             id={record.id}
@@ -626,8 +623,8 @@ export default function Recipe() {
               }
             />
           </DoodleCard>
-        ))}
-      </div>
+        )}
+      />
 
       {/* レシピ追加・編集モーダル */}
       <RecipeModal

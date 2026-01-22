@@ -41,13 +41,13 @@ export default function PageHeader({
   return (
     <div
       style={{
-        marginBottom: '16px',
         position: 'sticky',
         top: 0,
         zIndex: 99, // Ensure it's above other content
         backgroundColor: 'var(--color-paper-white)', // Match page background
-        paddingTop: '10px', // Add breathing room when stuck
+        padding: '32px 48px 10px', // Add breathing room when stuck
       }}
+      className="book-page-header"
     >
       <h2 style={{ marginBottom: '16px' }}>{displayTitle}</h2>
       {data?.length ? (

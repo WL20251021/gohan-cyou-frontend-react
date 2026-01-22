@@ -39,7 +39,7 @@
   background-size: 100% 1.6rem;
   background-attachment: local;
 
-  padding: 32px 48px;
+  /* padding: 32px 48px; */
   overflow-y: auto;
 
   /* Very subtle spine shadow */
@@ -66,6 +66,29 @@
   /* Allow content to fill */
   display: block;
   padding: 0;
+}
+
+.book-page-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-wood-light);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.book-page-header {
+  flex: 0 0 auto;
+}
+
+.book-page-content {
+  flex: 1;
+  width: calc(100% + 12px);
+  height: calc(100% - 120px);
+  box-sizing: border-box;
+  padding: 0 64px 32px 32px;
+  overflow-y: scroll;
 }
 
 #book-modal-left-target {

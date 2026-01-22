@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import {
-  Flex,
   Button,
   Form,
   Input,
@@ -15,6 +14,7 @@ import {
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
+import PaginatedGrid from '../../../components/PaginatedGrid'
 import type { UploadFile } from 'antd'
 import { GoodsColumn, JPNames } from './columns'
 import {
@@ -647,7 +647,7 @@ export default function Goods() {
   }
 
   return (
-    <div className="h-[cal(100vh - 7rem)]">
+    <div className="book-page-container">
       <PageHeader
         title="商品一覧"
         onAdd={() => showModal(true)}
@@ -655,8 +655,10 @@ export default function Goods() {
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
-      <div className="doodle-card-grid mt-6">
-        {data.map((record) => (
+      <PaginatedGrid
+        className="book-page-content"
+        data={data}
+        renderItem={(record: GoodsColumn) => (
           <DoodleCard
             key={record.id}
             id={record.id}
@@ -698,8 +700,8 @@ export default function Goods() {
               truncate
             />
           </DoodleCard>
-        ))}
-      </div>
+        )}
+      />
 
       {/* 商品追加・編集モーダル */}
       <GoodsAddModal

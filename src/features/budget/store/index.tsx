@@ -1,20 +1,9 @@
 import { useState, useEffect } from 'react'
-import {
-  Flex,
-  Table,
-  Button,
-  Form,
-  Input,
-  Select,
-  Space,
-  notification,
-  message,
-  Checkbox,
-  Popconfirm,
-} from 'antd'
+import { Form, Input, Select, Space, notification, message, Popconfirm } from 'antd'
 import BookModal from '../../../components/BookModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
+import PaginatedGrid from '../../../components/PaginatedGrid'
 import {
   StoreColumn,
   JPNames,
@@ -424,7 +413,7 @@ export default function Store() {
   }
 
   return (
-    <div className="h-[cal(100vh - 7rem)]">
+    <div className="book-page-container">
       <PageHeader
         title="店舗一覧"
         onAdd={handleAdd}
@@ -432,8 +421,10 @@ export default function Store() {
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
-      <div className="doodle-card-grid mt-6">
-        {data.map((record) => {
+      <PaginatedGrid
+        className="book-page-content"
+        data={data}
+        renderItem={(record: StoreColumn) => {
           const storeTypeKey = Object.keys(STORES).find(
             (k) => STORES[k as keyof typeof STORES] === record.storeType
           ) as keyof typeof JPStoreTypes
@@ -490,8 +481,8 @@ export default function Store() {
               />
             </DoodleCard>
           )
-        })}
-      </div>
+        }}
+      />
 
       {/* 店舗追加・編集モーダル */}
       <StoreAddModal
