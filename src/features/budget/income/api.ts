@@ -39,3 +39,11 @@ export function deleteIncome(ids: number[]) {
     data: ids,
   })
 }
+
+// stats
+export function getIncomeSummary() {
+  return request({
+    url: 'budget/income/stats',
+    method: 'get',
+  })
+}

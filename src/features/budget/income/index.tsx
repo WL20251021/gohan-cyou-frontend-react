@@ -1,24 +1,13 @@
-import { useState, useEffect, useMemo } from 'react'
-import {
-  Form,
-  InputNumber,
-  Select,
-  notification,
-  message,
-  DatePicker,
-  Input,
-  Statistic,
-  Card,
-} from 'antd'
+import { useState, useMemo } from 'react'
+import { Form, InputNumber, Select, notification, message, DatePicker, Input } from 'antd'
 import BookModal from '../../../components/BookModal'
 import BookDetailModal from '../../../components/BookDetailModal'
 import PageHeader from '../../../components/PageHeader'
 import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
 import PaginatedGrid from '../../../components/PaginatedGrid'
-import { RiseOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import { IncomeColumn, JPNames, JPIncomeCategory, IncomeCategory } from './columns'
-import { getIncomes, addIncome, updateIncome, deleteIncome } from './api'
+import { IncomeColumn, JPNames, JPIncomeCategory } from './columns'
+import { getIncomes, addIncome, updateIncome, deleteIncome, getIncomeSummary } from './api'
 import { useBookPage } from '../../../hooks/useBookPage'
 
 export default function Income() {
@@ -49,13 +38,22 @@ export default function Income() {
     itemName: '収入',
   })
 
-  // 合計金額を計算 (derived state)
-  const totalIncome = useMemo(() => {
-    return (data as IncomeColumn[]).reduce(
-      (sum: number, item: IncomeColumn) => sum + item.amount,
-      0
-    )
-  }, [data])
+  // 合計金額取得
+  const [incomeSummary, setIncomeSummary] = useState<{ totalMonthly: number; totalYearly: number }>(
+    {
+      totalMonthly: 0,
+      totalYearly: 0,
+    }
+  )
+  useMemo(() => {
+    getIncomeSummary()
+      .then((res) => {
+        setIncomeSummary(res?.data || { totalMonthly: 0, totalYearly: 0 })
+      })
+      .catch((error) => {
+        console.error('収入サマリーの取得に失敗しました:', error)
+      })
+  }, [])
 
   /*************** 新規収入を追加/収入を編集 ***************/
   const [form] = Form.useForm<IncomeColumn>()
@@ -161,25 +159,19 @@ export default function Income() {
         data={data}
       />
 
-      {/* 合計収入カード */}
-      <Card
+      {/* 合計収入カード (Design Updated) */}
+      <div
         style={{
-          marginBottom: '24px',
-          background: 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)',
+          margin: '10px 48px',
+          padding: '16px',
+          border: '2px solid var(--border-color)',
+          borderRadius: 'var(--radius-doodle-sm)',
+          backgroundColor: 'var(--color-primary-lightest)',
         }}
       >
-        <Statistic
-          title={<span style={{ color: 'white', fontSize: '18px' }}>総収入</span>}
-          value={totalIncome || 0}
-          precision={0}
-          prefix="¥"
-          valueStyle={{ color: 'white', fontSize: '36px', fontWeight: 'bold' }}
-          suffix={<RiseOutlined />}
-        />
-        <div style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)' }}>
-          {data.length}件の収入記録
-        </div>
-      </Card>
+        <p>今月の収入：{incomeSummary.totalMonthly} 円</p>
+        <p>本年度の収入：{incomeSummary.totalYearly} 円</p>
+      </div>
 
       <PaginatedGrid
         className="book-page-content"
@@ -268,7 +260,7 @@ export default function Income() {
             <Select
               allowClear
               placeholder="カテゴリを選択"
-              options={Object.entries(IncomeCategory).map(([key, item]) => ({
+              options={Object.entries(JPIncomeCategory).map(([key, item]) => ({
                 label: item,
                 value: key,
               }))}
