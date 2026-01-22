@@ -491,7 +491,7 @@ export default function Recipe() {
             />
             <DoodleCardRow
               label={JPNames.totalTime}
-              value={`${record.totalTime}分`}
+              value={`${record.totalTime || 0}分`}
             />
             <DoodleCardRow
               label={JPNames.difficulty}
@@ -542,11 +542,11 @@ export default function Recipe() {
             />
             <DoodleCardRow
               label={JPNames.servings}
-              value={`${detailRecord.servings} 人分`}
+              value={`${detailRecord.servings || 0} 人分`}
             />
             <DoodleCardRow
               label={JPNames.totalTime}
-              value={`${detailRecord.totalTime} 分`}
+              value={`${detailRecord.totalTime || 0} 分`}
             />
             <DoodleCardRow
               label={JPNames.difficulty}

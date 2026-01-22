@@ -186,7 +186,7 @@ h6 {
   font-family: var(--font-display);
   font-weight: bold;
   color: var(--color-pencil-gray);
-  font-size: 0.85em;
+  font-size: 1em;
   margin-right: 8px;
   padding: 2px 4px;
 }

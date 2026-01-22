@@ -451,7 +451,7 @@ export default function HomePage() {
                 color: 'var(--color-ink-black)',
               }}
             >
-              🚀 クイックアクション
+              クイックアクション
             </span>
           }
           style={{
