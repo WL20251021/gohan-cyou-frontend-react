@@ -212,6 +212,7 @@ function RecipeModal({
 
   return (
     <BookModal
+      manualFlip={true}
       title={isEditMode ? 'レシピ編集' : '新規レシピ'}
       open={open}
       onOk={handleSave}
@@ -516,6 +517,7 @@ export default function Recipe() {
       />
 
       <BookDetailModal
+        manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.recipeName}
         subtitle="レシピ詳細"

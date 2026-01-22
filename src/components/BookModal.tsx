@@ -15,6 +15,7 @@ interface BookModalProps {
   children?: ReactNode
   width?: string | number
   maskClosable?: boolean
+  manualFlip?: boolean
 }
 
 export default function BookModal({
@@ -27,6 +28,7 @@ export default function BookModal({
   cancelText = 'Cancel',
   footer,
   children,
+  manualFlip = false,
 }: BookModalProps) {
   const { setFlip } = useBook()
   const [targetParams, setTargetParams] = useState<{
@@ -44,8 +46,10 @@ export default function BookModal({
   }, [])
 
   useEffect(() => {
-    setFlip(open)
-  }, [open, setFlip])
+    if (!manualFlip) {
+      setFlip(open)
+    }
+  }, [open, setFlip, manualFlip])
 
   if (!open || !targetParams) return null
 

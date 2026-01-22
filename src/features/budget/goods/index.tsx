@@ -247,6 +247,7 @@ export function GoodsAddModal({
 
   return (
     <BookModal
+      manualFlip={true}
       title={isEditMode ? '商品を編集' : '商品を追加'}
       // width="80%"
       // maskClosable={false}
@@ -538,6 +539,7 @@ export default function Goods() {
       />
 
       <BookDetailModal
+        manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.goodsName}
         subtitle="Goods Details"

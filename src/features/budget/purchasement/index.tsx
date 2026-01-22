@@ -244,6 +244,7 @@ export function PurchasementModal({
   return (
     <>
       <BookModal
+        manualFlip={true}
         title={isEditMode ? '購入記録を編集' : '購入記録を追加'}
         // width="50%"
         // maskClosable={false}
@@ -731,6 +732,7 @@ export default function Purchasement() {
       />
 
       <BookDetailModal
+        manualFlip={true}
         open={isDetailOpen}
         title={
           detailRecord?.purchaseDate

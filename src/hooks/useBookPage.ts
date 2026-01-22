@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { message, notification, Modal } from 'antd'
+import { useBook } from '../context/BookContext'
 
 export interface BookPageOptions<T> {
   fetchList: () => Promise<{ data: T[] }>
@@ -10,6 +11,7 @@ export interface BookPageOptions<T> {
 
 export function useBookPage<T extends { id: any }>(options: BookPageOptions<T>) {
   const { fetchList, deleteItem, itemName = '項目', manualFetch = false } = options
+  const { setFlip } = useBook()
 
   const [data, setData] = useState<T[]>([])
   const [loading, setLoading] = useState(false)
@@ -61,6 +63,11 @@ export function useBookPage<T extends { id: any }>(options: BookPageOptions<T>) 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isAdd, setIsAdd] = useState(true)
   const [editingRecord, setEditingRecord] = useState<T | null>(null)
+
+  // Sync Flip State
+  useEffect(() => {
+    setFlip(isModalOpen || isDetailOpen)
+  }, [isModalOpen, isDetailOpen, setFlip])
 
   const fetchData = useCallback(() => {
     setLoading(true)

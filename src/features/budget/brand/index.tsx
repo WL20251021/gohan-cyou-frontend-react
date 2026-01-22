@@ -89,6 +89,7 @@ export function BrandAddModal({
 
   return (
     <BookModal
+      manualFlip={true}
       title={isEditMode ? 'ブランドを編集' : 'ブランドを追加'}
       // width="80%"
       // maskClosable={false}
@@ -250,6 +251,7 @@ export default function Brand() {
       />
 
       <BookDetailModal
+        manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.brandName}
         subtitle="ブランド詳細"

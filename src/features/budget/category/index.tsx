@@ -92,6 +92,7 @@ export function CategoryModal({
 
   return (
     <BookModal
+      manualFlip={true}
       title={mode === 'add' ? 'カテゴリーを追加' : 'カテゴリーを編集'}
       // width="80%"
       // maskClosable={false}
@@ -256,6 +257,7 @@ export default function Category() {
       />
 
       <BookDetailModal
+        manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.categoryName}
         subtitle="Category Details"

@@ -22,6 +22,7 @@ interface BookDetailModalProps {
   hasPrev?: boolean
   children?: ReactNode
   rowJustify?: 'start' | 'center' | 'end' | 'space-between' | 'space-around' | 'space-evenly'
+  manualFlip?: boolean
 }
 
 export default function BookDetailModal({
@@ -37,6 +38,7 @@ export default function BookDetailModal({
   hasPrev,
   children,
   rowJustify,
+  manualFlip = false,
 }: BookDetailModalProps) {
   const { setFlip } = useBook()
   const [targetParams, setTargetParams] = useState<{
@@ -54,8 +56,10 @@ export default function BookDetailModal({
   }, [])
 
   useEffect(() => {
-    setFlip(open)
-  }, [open, setFlip])
+    if (!manualFlip) {
+      setFlip(open)
+    }
+  }, [open, setFlip, manualFlip])
 
   if (!open || !targetParams) return null
 

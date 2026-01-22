@@ -505,6 +505,7 @@ export default function Consumption() {
 
       {/* 使用記録インフォーモーダル */}
       <BookModal
+        manualFlip={true}
         title={isAdd ? '新規使用記録' : '使用記録編集'}
         // width="80%"
         // maskClosable={false}

@@ -250,6 +250,7 @@ export default function Income() {
 
       {/* 収入インフォーモーダル */}
       <BookModal
+        manualFlip={true}
         title={isAdd ? '新規収入' : '収入編集'}
         // width="80%"
         // maskClosable={false}
@@ -363,6 +364,7 @@ export default function Income() {
       </BookModal>
 
       <BookDetailModal
+        manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.incomeDate ? dayjs(detailRecord.incomeDate).format('YYYY-MM-DD') : '-'}
         subtitle="Income Details"

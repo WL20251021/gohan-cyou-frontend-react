@@ -105,6 +105,7 @@ export function StoreAddModal({
 
   return (
     <BookModal
+      manualFlip={true}
       title={isEditMode ? '店舗を編集' : '店舗を追加'}
       // width="80%" // Removed as BookModal handles width via layout
       // maskClosable={false}
@@ -303,6 +304,7 @@ export default function Store() {
       />
 
       <BookDetailModal
+        manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.storeName}
         subtitle="店舗詳細"
