@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, message } from 'antd'
-import notification from '../../../components/DoodleNotification'
-import BookModal from '../../../components/BookModal'
-import BookDetailModal from '../../../components/BookDetailModal'
-import PageHeader from '../../../components/PageHeader'
-import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
-import PaginatedGrid from '../../../components/PaginatedGrid'
+import notification from '@/components/DoodleNotification'
+import BookModal from '@/components/BookModal'
+import BookDetailModal from '@/components/BookDetailModal'
+import PageHeader from '@/components/PageHeader'
+import DoodleCard, { DoodleCardRow } from '@/components/DoodleCard'
+import PaginatedGrid from '@/components/PaginatedGrid'
 import { BrandColumn, JPNames } from './columns'
 import { getBrands, addBrand, updateBrand, deleteBrands } from './api'
 
-import { useBookPage } from '../../../hooks/useBookPage'
+import { useBookPage } from '@/hooks/useBookPage'
 
 // ブランド追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function BrandAddModal({

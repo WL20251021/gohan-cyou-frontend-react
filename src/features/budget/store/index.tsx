@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, Select, message } from 'antd'
-import notification from '../../../components/DoodleNotification'
-import BookModal from '../../../components/BookModal'
-import BookDetailModal from '../../../components/BookDetailModal'
-import PageHeader from '../../../components/PageHeader'
-import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
-import PaginatedGrid from '../../../components/PaginatedGrid'
+import notification from '@/components/DoodleNotification'
+import BookModal from '@/components/BookModal'
+import BookDetailModal from '@/components/BookDetailModal'
+import PageHeader from '@/components/PageHeader'
+import DoodleCard, { DoodleCardRow } from '@/components/DoodleCard'
+import PaginatedGrid from '@/components/PaginatedGrid'
 import {
   StoreColumn,
   JPNames,
@@ -17,7 +17,7 @@ import {
   COUNTRIES,
 } from './columns'
 import { getStores, addStore, updateStore, deleteStores } from './api'
-import { useBookPage } from '../../../hooks/useBookPage'
+import { useBookPage } from '@/hooks/useBookPage'
 
 // 店舗追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function StoreAddModal({

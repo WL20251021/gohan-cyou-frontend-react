@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, Space, Tag, Statistic, Row, Col, Select, Button, Input } from 'antd'
 import { ReloadOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { getAllInventory, getInStockItems, getInventorySummary, getOutOfStockItems } from './api'
-import PageHeader from '../../../components/PageHeader'
-import PaginatedGrid from '../../../components/PaginatedGrid'
-import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
-import BookDetailModal from '../../../components/BookDetailModal'
-import { useBookPage } from '../../../hooks/useBookPage'
+import PageHeader from '@/components/PageHeader'
+import PaginatedGrid from '@/components/PaginatedGrid'
+import DoodleCard, { DoodleCardRow } from '@/components/DoodleCard'
+import BookDetailModal from '@/components/BookDetailModal'
+import { useBookPage } from '@/hooks/useBookPage'
 import {
   type InventoryColumn,
   type InventoryStats,

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, Select, message, Upload, Image, Space, Button } from 'antd'
-import notification from '../../../components/DoodleNotification'
-import BookModal from '../../../components/BookModal'
-import BookDetailModal from '../../../components/BookDetailModal'
-import PageHeader from '../../../components/PageHeader'
-import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
-import PaginatedGrid from '../../../components/PaginatedGrid'
+import notification from '@/components/DoodleNotification'
+import BookModal from '@/components/BookModal'
+import BookDetailModal from '@/components/BookDetailModal'
+import PageHeader from '@/components/PageHeader'
+import DoodleCard, { DoodleCardRow } from '@/components/DoodleCard'
+import PaginatedGrid from '@/components/PaginatedGrid'
 import type { UploadFile } from 'antd'
 import { GoodsColumn, JPNames } from './columns'
 import {
@@ -21,7 +21,7 @@ import { getBrands } from '../brand/api'
 import { CategoryAddModal } from '../category/index'
 import { BrandAddModal } from '../brand/index'
 import { type FileType } from '@/utils/file'
-import { useBookPage } from '../../../hooks/useBookPage'
+import { useBookPage } from '@/hooks/useBookPage'
 
 // 商品追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function GoodsAddModal({

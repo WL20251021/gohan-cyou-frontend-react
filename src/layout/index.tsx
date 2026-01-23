@@ -1,7 +1,7 @@
 import 'virtual:uno.css'
-import '../style/reset.css'
-import '../style/book.css'
-import '../style/book_modal.css'
+import '@/style/reset.css'
+import '@/style/book.css'
+import '@/style/book_modal.css'
 import { Outlet, useNavigate, useLocation } from 'react-router'
 import { Menu, Avatar, Dropdown, Flex } from 'antd'
 import {
@@ -16,7 +16,7 @@ import {
   TagOutlined,
 } from '@ant-design/icons'
 import { useState, useEffect } from 'react'
-import { BookProvider, useBook } from '../context/BookContext'
+import { BookProvider, useBook } from '@/context/BookContext'
 
 function LayoutInner() {
   const navigate = useNavigate()

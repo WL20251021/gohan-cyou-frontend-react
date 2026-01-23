@@ -13,12 +13,12 @@ import {
   Rate,
   message,
 } from 'antd'
-import notification from '../../components/DoodleNotification'
-import BookModal from '../../components/BookModal'
-import BookDetailModal from '../../components/BookDetailModal'
-import PageHeader from '../../components/PageHeader'
-import DoodleCard, { DoodleCardRow } from '../../components/DoodleCard'
-import PaginatedGrid from '../../components/PaginatedGrid'
+import notification from '@/components/DoodleNotification'
+import BookModal from '@/components/BookModal'
+import BookDetailModal from '@/components/BookDetailModal'
+import PageHeader from '@/components/PageHeader'
+import DoodleCard, { DoodleCardRow } from '@/components/DoodleCard'
+import PaginatedGrid from '@/components/PaginatedGrid'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import { RecipeColumn, JPNames } from './columns'
 import { getRecipes, addRecipe, updateRecipe, deleteRecipe } from './api'
@@ -422,7 +422,7 @@ function RecipeModal({
   )
 }
 
-import { useBookPage } from '../../hooks/useBookPage'
+import { useBookPage } from '@/hooks/useBookPage'
 
 // (Keep RecipeModal definition and interfaces as is...)
 

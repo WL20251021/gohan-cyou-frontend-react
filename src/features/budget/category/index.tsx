@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
 import type { Color } from 'antd/es/color-picker'
 import { Form, Input, message, ColorPicker } from 'antd'
-import notification from '../../../components/DoodleNotification'
-import BookModal from '../../../components/BookModal'
-import BookDetailModal from '../../../components/BookDetailModal'
-import PageHeader from '../../../components/PageHeader'
-import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
-import PaginatedGrid from '../../../components/PaginatedGrid'
+import notification from '@/components/DoodleNotification'
+import BookModal from '@/components/BookModal'
+import BookDetailModal from '@/components/BookDetailModal'
+import PageHeader from '@/components/PageHeader'
+import DoodleCard, { DoodleCardRow } from '@/components/DoodleCard'
+import PaginatedGrid from '@/components/PaginatedGrid'
 import { CategoryColumn, JPNames } from './columns'
 import { getCategories, addCategory, updateCategory, deleteCategory } from './api'
-import { useBookPage } from '../../../hooks/useBookPage'
+import { useBookPage } from '@/hooks/useBookPage'
 
 // カテゴリモーダルコンポーネント（追加・編集両方に対応、他のコンポーネントから使用可能）
 export function CategoryModal({

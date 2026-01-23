@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { message, Modal } from 'antd'
-import notification from '../components/DoodleNotification'
-import { useBook } from '../context/BookContext'
+import notification from '@/components/DoodleNotification'
+import { useBook } from '@/context/BookContext'
 
 export interface BookPageOptions<T> {
   fetchList: () => Promise<{ data: T[] }>

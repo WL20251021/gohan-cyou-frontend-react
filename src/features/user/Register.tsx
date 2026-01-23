@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Form, Input, Button, Card, Typography, Select } from 'antd'
-import notification from '../../components/DoodleNotification'
+import notification from '@/components/DoodleNotification'
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons'
 import { register } from './api'
 import { useNavigate } from 'react-router'

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Form, Input, InputNumber, Select, Space, DatePicker, Alert, message } from 'antd'
-import BookModal from '../../../components/BookModal'
+import BookModal from '@/components/BookModal'
 import dayjs, { Dayjs } from 'dayjs'
 import { ConsumptionColumn, JPNames, QUANTITY_UNITS } from './columns'
 import { addConsumption, updateConsumption } from './api'

@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Button, Space } from 'antd'
-import { useBook } from '../context/BookContext'
+import { useBook } from '@/context/BookContext'
 
 interface BookModalProps {
   open: boolean

@@ -7,7 +7,7 @@ import {
   EditOutlined,
   CloseOutlined,
 } from '@ant-design/icons'
-import { useBook } from '../context/BookContext'
+import { useBook } from '@/context/BookContext'
 
 interface BookDetailModalProps {
   open: boolean

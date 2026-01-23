@@ -9,7 +9,7 @@ import { getPurchasements } from '../purchasement/api'
 import { PurchasementColumn } from '../purchasement/columns'
 import { getConsumption } from '../consumption/api'
 import { ConsumptionColumn } from '../consumption/columns'
-import PageHeader from '../../../components/PageHeader'
+import PageHeader from '@/components/PageHeader'
 
 dayjs.extend(isoWeek)
 dayjs.extend(isSameOrAfter)

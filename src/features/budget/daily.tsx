@@ -27,7 +27,7 @@ import IncomeModal from './income/IncomeModal'
 import { deleteConsumption } from './consumption/api'
 import { ConsumptionColumn } from './consumption/columns'
 import { ConsumptionModal } from './consumption/ConsumptionModal'
-import PageHeader from '../../components/PageHeader'
+import PageHeader from '@/components/PageHeader'
 
 export default function DailyPurchasementPage() {
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs())

@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react'
 import IncomeModal from './IncomeModal'
-import BookDetailModal from '../../../components/BookDetailModal'
-import PageHeader from '../../../components/PageHeader'
-import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
-import PaginatedGrid from '../../../components/PaginatedGrid'
+import BookDetailModal from '@/components/BookDetailModal'
+import PageHeader from '@/components/PageHeader'
+import DoodleCard, { DoodleCardRow } from '@/components/DoodleCard'
+import PaginatedGrid from '@/components/PaginatedGrid'
 import dayjs from 'dayjs'
 import { IncomeColumn, JPNames, JPIncomeCategory } from './columns'
 import { getIncomes, deleteIncome, getIncomeSummary } from './api'
-import { useBookPage } from '../../../hooks/useBookPage'
+import { useBookPage } from '@/hooks/useBookPage'
 
 export default function Income() {
   const {

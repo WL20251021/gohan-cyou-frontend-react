@@ -12,13 +12,13 @@ import {
   Col,
   Radio,
 } from 'antd'
-import notification from '../../../components/DoodleNotification'
+import notification from '@/components/DoodleNotification'
 import dayjs from 'dayjs'
-import BookModal from '../../../components/BookModal'
-import BookDetailModal from '../../../components/BookDetailModal'
-import PageHeader from '../../../components/PageHeader'
-import DoodleCard, { DoodleCardRow } from '../../../components/DoodleCard'
-import PaginatedGrid from '../../../components/PaginatedGrid'
+import BookModal from '@/components/BookModal'
+import BookDetailModal from '@/components/BookDetailModal'
+import PageHeader from '@/components/PageHeader'
+import DoodleCard, { DoodleCardRow } from '@/components/DoodleCard'
+import PaginatedGrid from '@/components/PaginatedGrid'
 import {
   PurchasementColumn,
   JPNames,
