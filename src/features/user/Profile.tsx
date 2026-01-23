@@ -14,15 +14,26 @@ export default function Profile() {
   const [form] = Form.useForm()
   const [passwordForm] = Form.useForm()
 
-  // ユーザー情報の取得（仮のユーザーID=1）
+  // ユーザー情報の取得（保存された user_id を利用）
   useEffect(() => {
     fetchUserData()
   }, [])
 
   const fetchUserData = () => {
     setLoading(true)
-    // TODO: 実際のユーザーIDをトークンから取得
-    const userId = 1
+    const stored = localStorage.getItem('user_id')
+    const userId = stored ? Number(stored) : null
+
+    if (!userId) {
+      setLoading(false)
+      notification.error({
+        title: 'ユーザー情報取得失敗',
+        description: 'ログイン情報が見つかりません。再ログインしてください。',
+        placement: 'bottomRight',
+      })
+      return
+    }
+
     getUser(userId)
       .then((res) => {
         setUser(res?.data)
@@ -136,12 +147,12 @@ export default function Profile() {
                 {JPUserRoles[user.role as keyof typeof JPUserRoles]}
               </Descriptions.Item>
               <Descriptions.Item label={JPNames.nickname}>{user.nickname || '-'}</Descriptions.Item>
-              <Descriptions.Item label={JPNames.isActive}>
-                {user.isActive ? '有効' : '無効'}
+              <Descriptions.Item label={JPNames.active}>
+                {user.active ? '有効' : '無効'}
               </Descriptions.Item>
             </Descriptions>
           </>
-        )}
+        ) : null}
       </Card>
 
       {/* ユーザー情報編集モーダル */}
@@ -187,8 +198,8 @@ export default function Profile() {
             <Input placeholder="アバター画像のURL" />
           </Form.Item>
           <Form.Item
-            name="isActive"
-            label={JPNames.isActive}
+            name="active"
+            label={JPNames.active}
             valuePropName="checked"
           >
             <Switch />

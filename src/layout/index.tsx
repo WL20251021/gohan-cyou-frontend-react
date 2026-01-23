@@ -23,6 +23,7 @@ function LayoutInner() {
   const location = useLocation()
   const [selectedKey, setSelectedKey] = useState('')
   const { isPageFlipped } = useBook()
+  const [username, setUsername] = useState('User')
 
   // Intro Animation State
   const [splashVisible, setSplashVisible] = useState(true)
@@ -47,6 +48,21 @@ function LayoutInner() {
       setOpenKeys(['recipe'])
     }
   }, [location.pathname])
+
+  // ログイン後に localStorage に保存されたユーザー名を表示
+  useEffect(() => {
+    const name = localStorage.getItem('user_name')
+    setUsername(name || 'User')
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'user_name' || e.key === 'user_id') {
+        setUsername(localStorage.getItem('user_name') || 'User')
+      }
+    }
+
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
 
   const menuItems = [
     {
@@ -238,7 +254,7 @@ function LayoutInner() {
                   whiteSpace: 'nowrap',
                 }}
               >
-                User
+                {username}
               </span>
             </div>
             <div

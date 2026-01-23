@@ -19,7 +19,7 @@ export class UserColumn {
   role: UserRole = UserRole.User
   nickname: string = ''
   avatar: string = ''
-  isActive: boolean = true
+  active: boolean = true
   createdAt: Date | string = ''
   updatedAt: Date | string = ''
 }
@@ -32,7 +32,7 @@ export const JPNames = {
   jpRole: 'ロール',
   nickname: 'ニックネーム',
   avatar: 'アバター',
-  isActive: '有効',
+  active: '有効',
   createdAt: '作成日時',
   updatedAt: '更新日時',
 }

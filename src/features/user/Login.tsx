@@ -23,6 +23,37 @@ export default function Login() {
         if (res?.data?.token) {
           // トークンを保存
           window.document.cookie = `jwt=${res.data.token}; path=/;`
+
+          // 可能ならレスポンス／トークンからユーザーIDとユーザー名を抽出して localStorage に保存
+          try {
+            let userId: any =
+              res?.data?.user?.id ?? res?.data?.userId ?? res?.data?.id ?? res?.data?.user_id
+            let username: any =
+              res?.data?.user?.username ??
+              res?.data?.username ??
+              res?.data?.userName ??
+              res?.data?.name
+
+            if (!userId && res.data.token) {
+              const parts = res.data.token.split('.')
+              if (parts.length >= 2) {
+                const payload = JSON.parse(atob(parts[1]))
+                userId = userId ?? payload.id ?? payload.userId ?? payload.sub ?? payload.uid
+                username = username ?? payload.username ?? payload.name
+              }
+            }
+
+            if (userId) {
+              localStorage.setItem('user_id', String(userId))
+            }
+            if (username) {
+              localStorage.setItem('user_name', String(username))
+            }
+          } catch (e) {
+            // 上書きは行わない。デコードに失敗しても処理は続行
+            console.warn('トークンからユーザー情報を抽出できませんでした', e)
+          }
+
           notification.success({
             title: 'ログイン成功',
             description: 'ダッシュボードにリダイレクトします',
