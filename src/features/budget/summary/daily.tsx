@@ -12,21 +12,21 @@ import {
   EditOutlined,
 } from '@ant-design/icons'
 import dayjs, { Dayjs } from 'dayjs'
-import { deletePurchasement } from './purchasement/api'
+import { deletePurchasement } from '../purchasement/api'
 import {
   getTotalIncomeBetween,
   getTotalConsumptionBetween,
   getTotalPurchasementBetween,
-} from './summary/api'
-import { PurchasementModal } from './purchasement/index'
-import { PurchasementColumn } from './purchasement/columns'
-import { deleteIncome } from './income/api'
-import { IncomeColumn, JPIncomeCategory } from './income/columns'
-import IncomeModal from './income/IncomeModal'
+} from './api'
+import { PurchasementModal } from '../purchasement/index'
+import { PurchasementColumn } from '../purchasement/columns'
+import { deleteIncome } from '../income/api'
+import { IncomeColumn, JPIncomeCategory } from '../income/columns'
+import IncomeModal from '../income/IncomeModal'
 
-import { deleteConsumption } from './consumption/api'
-import { ConsumptionColumn } from './consumption/columns'
-import { ConsumptionModal } from './consumption/ConsumptionModal'
+import { deleteConsumption } from '../consumption/api'
+import { ConsumptionColumn } from '../consumption/columns'
+import { ConsumptionModal } from '../consumption/ConsumptionModal'
 import PageHeader from '@/components/PageHeader'
 
 export default function DailyPurchasementPage() {

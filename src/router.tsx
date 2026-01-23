@@ -16,8 +16,7 @@ import Income from './features/budget/income'
 import Inventory from './features/budget/inventory'
 // budgetBook
 import BudgetSummary from './features/budget/summary'
-import DailyBudget from './features/budget/daily'
-import Today from './features/budget/summary/today'
+import DailyBudget from './features/budget/summary/daily'
 
 const router = createBrowserRouter([
   {
@@ -83,15 +82,11 @@ const router = createBrowserRouter([
             children: [
               {
                 index: true,
-                Component: BudgetSummary,
-              },
-              {
-                path: 'daily',
                 Component: DailyBudget,
               },
               {
                 path: ':range',
-                Component: Today,
+                Component: BudgetSummary,
               },
             ],
           },

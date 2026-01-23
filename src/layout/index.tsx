@@ -62,11 +62,6 @@ function LayoutInner() {
         {
           key: '/budget/summary',
           icon: <ShoppingOutlined />,
-          label: '集計',
-        },
-        {
-          key: '/budget/summary/daily',
-          icon: <ShoppingOutlined />,
           label: '家計記入',
         },
         {
