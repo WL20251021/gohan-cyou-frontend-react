@@ -6,13 +6,13 @@ import {
   InputNumber,
   Select,
   Space,
-  notification,
   message,
   DatePicker,
   Row,
   Col,
   Radio,
 } from 'antd'
+import notification from '../../../components/DoodleNotification'
 import dayjs from 'dayjs'
 import BookModal from '../../../components/BookModal'
 import BookDetailModal from '../../../components/BookDetailModal'
@@ -193,35 +193,45 @@ export function PurchasementModal({
     form.setFieldValue('goodsId', newGoods.id)
   }
 
+  const TAX_RATES = {
+    STANDARD: 10,
+    REDUCED: 8,
+    TAX_FREE: 0,
+    TAX_EXEMPT: 0,
+    NO_TAX: 0,
+  }
+
   // 合計金額を計算
-  function calculateTotalPrice() {
+  function calculateTotalPrice({ taxRate }: { taxRate?: string } = {}) {
     const quantity = form.getFieldValue('quantity') || 0
     const unitPrice = form.getFieldValue('unitPrice') || 0
     let totalPrice = quantity * unitPrice
     // 税金
     const isTaxIncluded = form.getFieldValue('isTaxIncluded')
-    const taxAmount = totalPrice * (taxRateDisplay / 100)
+    const taxRateFloat = taxRate
+      ? TAX_RATES[taxRate as keyof typeof TAX_RATES] / 100
+      : taxRateDisplay / 100
+    const taxAmount = isTaxIncluded
+      ? (totalPrice * taxRateFloat) / (1 + taxRateFloat)
+      : totalPrice * taxRateFloat
     totalPrice += isTaxIncluded ? 0 : taxAmount
     form.setFieldValue('taxAmount', taxAmount)
-    // setTaxAmount(taxAmount)
     // 値引き
     const discountType = form.getFieldValue('discountType')
     const discountRate = form.getFieldValue('discountRate') || 0
     const discount =
       discountType === DISCOUNT_TYPES.PERCENTAGE
-        ? (discountRate * totalPrice) / 100
+        ? (totalPrice * discountRate) / 100
         : form.getFieldValue('discountAmount') || 0
-    // setDiscountAmount(discount)
     form.setFieldValue('discountAmount', discount)
     totalPrice -= discount
     // 最終合計金額
     form.setFieldValue('totalPrice', totalPrice)
-    // setTotalPrice(totalPrice)
   }
 
   // 税率変更時
-  function handleTaxRateChange() {
-    switch (form.getFieldValue('taxRate')) {
+  function handleTaxRateChange(value: any) {
+    switch (value) {
       case TAX_CATEGORIES.STANDARD:
         setTaxRateDisplay(10) // 日本の標準税率は10%
         break
@@ -231,7 +241,7 @@ export function PurchasementModal({
       default:
         setTaxRateDisplay(0) // 非課税・不課税・免税は税率0%
     }
-    calculateTotalPrice()
+    calculateTotalPrice({ taxRate: value })
   }
 
   // 値引き種類変更時
@@ -246,8 +256,6 @@ export function PurchasementModal({
       <BookModal
         manualFlip={true}
         title={isEditMode ? '購入記録を編集' : '購入記録を追加'}
-        // width="50%"
-        // maskClosable={false}
         open={open}
         confirmLoading={confirmLoading}
         onOk={handleSave}
@@ -359,6 +367,7 @@ export function PurchasementModal({
               </Button>
             </Space.Compact>
           </Form.Item>
+          {/* quantity */}
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -376,7 +385,7 @@ export function PurchasementModal({
                       min={0}
                       step={1}
                       style={{ width: '70%' }}
-                      onChange={calculateTotalPrice}
+                      onChange={() => calculateTotalPrice()}
                     />
                   </Form.Item>
                   <Form.Item
@@ -411,7 +420,7 @@ export function PurchasementModal({
                       step={1}
                       style={{ width: '70%' }}
                       addonAfter="円"
-                      onChange={calculateTotalPrice}
+                      onChange={() => calculateTotalPrice()}
                     />
                   </Form.Item>
                 </Space.Compact>
@@ -432,7 +441,7 @@ export function PurchasementModal({
                   <Radio.Group
                     optionType="button"
                     buttonStyle="solid"
-                    onChange={calculateTotalPrice}
+                    onChange={() => calculateTotalPrice()}
                   >
                     <Radio value={true}>税込（内税）</Radio>
                     <Radio value={false}>税抜（外税）</Radio>
@@ -511,7 +520,6 @@ export function PurchasementModal({
                 labelCol={{ span: 6 }}
                 wrapperCol={{ span: 18 }}
               >
-                {/* TODO: Readonlyのスタイルを調整 */}
                 <InputNumber
                   min={0}
                   step={1}
@@ -523,7 +531,7 @@ export function PurchasementModal({
                       : '値引き額を入力（任意）'
                   }
                   addonAfter="円"
-                  onChange={calculateTotalPrice}
+                  onChange={() => calculateTotalPrice()}
                   disabled={discountType === DISCOUNT_TYPES.PERCENTAGE}
                 />
               </Form.Item>
@@ -545,7 +553,7 @@ export function PurchasementModal({
                     style={{ width: '100%' }}
                     placeholder="割引率を入力（任意）"
                     addonAfter="%"
-                    onChange={calculateTotalPrice}
+                    onChange={() => calculateTotalPrice()}
                   />
                 </Form.Item>
               </Col>
@@ -567,7 +575,7 @@ export function PurchasementModal({
                   style={{ width: '100%' }}
                   placeholder="自動計算されます"
                   addonAfter="円"
-                  onChange={calculateTotalPrice}
+                  onChange={() => calculateTotalPrice()}
                   disabled={true}
                 />
               </Form.Item>
@@ -617,7 +625,7 @@ export function PurchasementModal({
   )
 }
 
-import { useBookPage } from '../../../hooks/useBookPage'
+import { useBookPage } from '@/hooks/useBookPage'
 
 export default function Purchasement() {
   const {
