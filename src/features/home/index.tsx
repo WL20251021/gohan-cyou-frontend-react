@@ -368,12 +368,13 @@ export default function HomePage() {
           <Button
             size="large"
             style={{
+              marginTop: '40px',
               border: 'var(--border-doodle)',
               boxShadow: 'var(--shadow-button)',
               fontWeight: 'bold',
               borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px',
               background: '#fff',
-              transform: 'rotate(1deg)',
+              transform: 'rotate(3deg)',
             }}
             onClick={() => navigate('/budget/summary')}
           >
@@ -497,31 +498,6 @@ export default function HomePage() {
               <Button
                 size="large"
                 block
-                icon={<FallOutlined />}
-                onClick={() => navigate('/budget/purchasement')}
-                style={{
-                  border: 'var(--border-doodle)',
-                  height: '50px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  background: 'var(--color-candy-pink)',
-                  color: '#fff',
-                  boxShadow: 'var(--shadow-button)',
-                  fontFamily: 'var(--font-doodle)',
-                  borderRadius: '225px 15px 255px 15px / 15px 225px 15px 255px',
-                }}
-              >
-                支出管理
-              </Button>
-            </Col>
-            <Col
-              xs={24}
-              sm={12}
-              md={6}
-            >
-              <Button
-                size="large"
-                block
                 icon={<RiseOutlined />}
                 onClick={() => navigate('/budget/income')}
                 style={{
@@ -537,6 +513,31 @@ export default function HomePage() {
                 }}
               >
                 収入管理
+              </Button>
+            </Col>
+            <Col
+              xs={24}
+              sm={12}
+              md={6}
+            >
+              <Button
+                size="large"
+                block
+                icon={<FallOutlined />}
+                onClick={() => navigate('/budget/purchasement')}
+                style={{
+                  border: 'var(--border-doodle)',
+                  height: '50px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  background: 'var(--color-candy-pink)',
+                  color: '#fff',
+                  boxShadow: 'var(--shadow-button)',
+                  fontFamily: 'var(--font-doodle)',
+                  borderRadius: '225px 15px 255px 15px / 15px 225px 15px 255px',
+                }}
+              >
+                支出管理
               </Button>
             </Col>
             <Col
