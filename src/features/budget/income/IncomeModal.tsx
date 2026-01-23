@@ -128,7 +128,6 @@ export default function IncomeModal({
 
   return (
     <BookModal
-      manualFlip={true}
       title={isAdd ? '新規収入' : '収入編集'}
       open={open}
       confirmLoading={confirmLoading}

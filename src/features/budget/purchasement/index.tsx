@@ -254,7 +254,6 @@ export function PurchasementModal({
   return (
     <>
       <BookModal
-        manualFlip={true}
         title={isEditMode ? '購入記録を編集' : '購入記録を追加'}
         open={open}
         confirmLoading={confirmLoading}

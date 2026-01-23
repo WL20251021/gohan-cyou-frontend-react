@@ -33,19 +33,31 @@ export default function BookModal({
   zIndex,
 }: BookModalProps) {
   const { setFlip } = useBook()
+  const [computedZ, setComputedZ] = useState<number | undefined>(undefined)
   const [targetParams, setTargetParams] = useState<{
     element: HTMLElement
     tabElement: HTMLElement
   } | null>(null)
 
   useEffect(() => {
-    // Find portal targets on mount
-    const root = document.getElementById('book-modal-root')
-    const tabRoot = document.getElementById('book-modal-left-target')
-    if (root && tabRoot) {
-      setTargetParams({ element: root, tabElement: tabRoot })
+    // Find portal targets on mount and when opening (layout may render after this component)
+    const findTargets = () => {
+      const root = document.getElementById('book-modal-root')
+      const tabRoot = document.getElementById('book-modal-left-target')
+      if (root && tabRoot) {
+        setTargetParams({ element: root, tabElement: tabRoot })
+        return true
+      }
+      return false
     }
-  }, [])
+
+    if (!findTargets()) {
+      const t = window.setTimeout(() => {
+        findTargets()
+      }, 50)
+      return () => window.clearTimeout(t)
+    }
+  }, [open])
 
   useEffect(() => {
     if (!manualFlip) {
@@ -53,9 +65,45 @@ export default function BookModal({
     }
   }, [open, setFlip, manualFlip])
 
+  // When opened, compute a topmost z-index and apply to portal targets so modal appears above other elements.
+  useEffect(() => {
+    if (!open || !targetParams) {
+      setComputedZ(undefined)
+      return
+    }
+
+    let maxZ = 0
+    const all = Array.from(document.querySelectorAll<HTMLElement>('body *'))
+    for (const el of all) {
+      const cs = window.getComputedStyle(el)
+      const zi = cs.zIndex
+      if (!zi || zi === 'auto') continue
+      const n = parseInt(zi, 10)
+      if (!Number.isNaN(n)) maxZ = Math.max(maxZ, n)
+    }
+
+    const desired = Math.max(maxZ + 10, 9999)
+    setComputedZ(desired)
+
+    const rootEl = targetParams.element
+    const tabEl = targetParams.tabElement
+    const origRootZ = rootEl.style.zIndex
+    const origTabZ = tabEl.style.zIndex
+    rootEl.style.zIndex = String(desired)
+    tabEl.style.zIndex = String(desired)
+
+    return () => {
+      rootEl.style.zIndex = origRootZ
+      tabEl.style.zIndex = origTabZ
+      setComputedZ(undefined)
+    }
+  }, [open, targetParams])
+
   if (!open || !targetParams) return null
 
   // Left Sidebar Content: Title + Footer Actions
+  const finalZ = typeof zIndex === 'number' ? zIndex : computedZ
+
   const sidebarContent = (
     <div
       style={{
@@ -70,7 +118,7 @@ export default function BookModal({
         flexDirection: 'column',
         padding: '32px 24px',
         justifyContent: 'space-between',
-        zIndex: zIndex,
+        zIndex: finalZ,
       }}
     >
       {/* 1. Title Area (Big, Bold, Boxed) */}
@@ -158,7 +206,7 @@ export default function BookModal({
         backgroundSize: '25px 25px',
         overflowY: 'auto',
         padding: '32px 40px',
-        zIndex: zIndex,
+        zIndex: finalZ,
       }}
     >
       {children}

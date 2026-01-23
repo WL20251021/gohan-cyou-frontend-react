@@ -283,6 +283,14 @@
   overflow: auto;
 }
 
+/* Allow page interactions when modal layer is empty; only portal children receive events */
+.book-page-modal-layer {
+  pointer-events: none;
+}
+.book-page-modal-layer > * {
+  pointer-events: auto;
+}
+
 .book-modal-content {
   width: 100%;
 }
