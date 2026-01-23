@@ -110,7 +110,7 @@ function LayoutInner() {
         {
           key: '/budget/purchasement',
           icon: <ShoppingCartOutlined />,
-          label: '買い物記録',
+          label: '支出管理',
         },
         {
           key: '/budget/inventory',

@@ -16,7 +16,7 @@ const PATH_TO_TITLE: Record<string, string> = {
   '/budget/category': 'カテゴリ',
   '/budget/brand': 'ブランド',
   '/budget/goods': '商品',
-  '/budget/purchasement': '買い物記録',
+  '/budget/purchasement': '支出管理',
   '/budget/income': '収入管理',
   '/recipe': 'レシピ管理',
   '/budget/inventory': '在庫管理',
