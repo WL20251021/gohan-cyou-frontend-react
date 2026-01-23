@@ -49,7 +49,7 @@ export default function PageHeader({
       }}
       className="book-page-header"
     >
-      <h2 style={{ marginBottom: '16px' }}>{displayTitle}</h2>
+      <h2 style={{ marginBottom: '16px', fontSize: '24px', fontWeight: 'bold' }}>{displayTitle}</h2>
       {data?.length || onAdd || onDelete ? (
         <Flex
           gap="small"

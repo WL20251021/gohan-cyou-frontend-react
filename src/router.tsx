@@ -92,17 +92,21 @@ const router = createBrowserRouter([
                 Component: DailyBudget,
               },
               {
-                path: 'today',
+                path: ':range',
                 Component: Today,
               },
-              {
-                path: 'weekly',
-                Component: Weekly,
-              },
-              {
-                path: 'monthly',
-                Component: Monthly,
-              },
+              // {
+              //   path: 'today',
+              //   Component: Today,
+              // },
+              // {
+              //   path: 'weekly',
+              //   Component: Weekly,
+              // },
+              // {
+              //   path: 'monthly',
+              //   Component: Monthly,
+              // },
             ],
           },
         ],

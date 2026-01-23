@@ -136,8 +136,7 @@ export default function WeeklySummaryPage() {
       title: '金額',
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount: number, record: IncomeColumn) =>
-        `${amount.toLocaleString()} ${record.amountUnit}`,
+      render: (amount: number) => `${amount.toLocaleString()} 円`,
       width: 120,
     },
     {

@@ -279,14 +279,20 @@ export default function DailyPurchasementPage() {
   }
 
   return (
-    <div className="book-page-container">
+    <div
+      className="book-page-container"
+      style={{
+        display: 'flex',
+      }}
+    >
       <PageHeader title="1日の家計記入" />
 
-      <div className="book-page-content">
+      <div style={{ padding: '0 60px 50px', flex: 1, overflowY: 'auto' }}>
         {/* 日付選択カード */}
         <Row
           gutter={16}
           align="middle"
+          style={{ margin: '20px 0' }}
         >
           <Col
             flex="auto"
