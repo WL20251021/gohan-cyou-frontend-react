@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react'
 import { Card, Statistic, Row, Col, Table, Spin, message, Tag } from 'antd'
 import { ShoppingCartOutlined, DollarOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import { getPurchasements } from '../purchasement/api'
 import { PurchasementColumn } from '../purchasement/columns'
-import { getIncomes } from '../income/api'
 import { IncomeColumn } from '../income/columns'
-import { getConsumption } from '../consumption/api'
 import { ConsumptionColumn } from '../consumption/columns'
+import {
+  getTotalIncomeBetween,
+  getTotalConsumptionBetween,
+  getTotalPurchasementBetween,
+} from './api'
 
 interface TodaySummary {
   totalIncome: number
   totalExpense: number
+  totalConsumption: number
   balance: number
 }
 
@@ -20,6 +23,7 @@ export default function TodaySummaryPage() {
   const [summary, setSummary] = useState<TodaySummary>({
     totalIncome: 0,
     totalExpense: 0,
+    totalConsumption: 0,
     balance: 0,
   })
   const [incomeDetails, setIncomeDetails] = useState<IncomeColumn[]>([])
@@ -33,38 +37,40 @@ export default function TodaySummaryPage() {
     setLoading(true)
     try {
       // 収入データ取得
-      const incomeResponse = await getIncomes()
-      const incomeData: IncomeColumn[] = incomeResponse.data || []
-      const todayIncomes = incomeData.filter((item) => {
-        if (!item.incomeDate) return false
-        return dayjs(item.incomeDate).isSame(today, 'day')
+      const incomeResponse = await getTotalIncomeBetween({
+        dateFrom: today.format('YYYY-MM-DD'),
+        dateTo: today.format('YYYY-MM-DD'),
       })
+      const todayIncomes: IncomeColumn[] = incomeResponse.data || []
       const totalIncome = todayIncomes.reduce((sum, item) => sum + (item.amount || 0), 0)
       setIncomeDetails(todayIncomes)
 
       // 支出データ取得
-      const expenseResponse = await getPurchasements()
-      const expenseData: PurchasementColumn[] = expenseResponse.data || []
-      const todayExpenses = expenseData.filter((item) => {
-        if (!item.purchaseDate) return false
-        return dayjs(item.purchaseDate).isSame(today, 'day')
+      const expenseResponse = await getTotalPurchasementBetween({
+        dateFrom: today.format('YYYY-MM-DD'),
+        dateTo: today.format('YYYY-MM-DD'),
       })
+      const todayExpenses: PurchasementColumn[] = expenseResponse.data || []
       const totalExpense = todayExpenses.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
       setExpenseDetails(todayExpenses)
 
       // 使用記録データ取得
-      const consumptionResponse = await getConsumption()
-      const consumptionData: ConsumptionColumn[] = consumptionResponse.data || []
-      const todayConsumptions = consumptionData.filter((item) => {
-        if (!item.consumptionDate) return false
-        return dayjs(item.consumptionDate).isSame(today, 'day')
+      const consumptionResponse = await getTotalConsumptionBetween({
+        dateFrom: today.format('YYYY-MM-DD'),
+        dateTo: today.format('YYYY-MM-DD'),
       })
+      const todayConsumptions: ConsumptionColumn[] = consumptionResponse.data || []
+      const totalConsumption = todayConsumptions.reduce(
+        (sum, item) => sum + (item.quantity * item?.purchasement.totalPrice || 0),
+        0
+      )
       setConsumptionDetails(todayConsumptions)
 
       // 収支計算
       setSummary({
         totalIncome,
         totalExpense,
+        totalConsumption,
         balance: totalIncome - totalExpense,
       })
     } catch (error) {
@@ -222,7 +228,7 @@ export default function TodaySummaryPage() {
         >
           <Col
             xs={24}
-            sm={8}
+            sm={6}
           >
             <Card>
               <Statistic
@@ -242,7 +248,7 @@ export default function TodaySummaryPage() {
           </Col>
           <Col
             xs={24}
-            sm={8}
+            sm={6}
           >
             <Card>
               <Statistic
@@ -262,7 +268,23 @@ export default function TodaySummaryPage() {
           </Col>
           <Col
             xs={24}
-            sm={8}
+            sm={6}
+          >
+            <Card>
+              <Statistic
+                title="消費"
+                value={summary.totalConsumption}
+                precision={0}
+                suffix="円"
+                valueStyle={{ color: summary.totalConsumption >= 0 ? '#3f8600' : '#cf1322' }}
+                prefix={summary.totalConsumption >= 0 ? '+' : ''}
+              />
+              <div style={{ marginTop: '8px', color: '#666' }}>{consumptionDetails.length}件</div>
+            </Card>
+          </Col>
+          <Col
+            xs={24}
+            sm={6}
           >
             <Card>
               <Statistic

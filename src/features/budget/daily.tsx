@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Card, DatePicker, Button, Space, Statistic, message, Row, Col, Tag } from 'antd'
+import {
+  Card,
+  DatePicker,
+  Button,
+  Space,
+  Statistic,
+  message,
+  Row,
+  Col,
+  Tag,
+  List,
+  Popconfirm,
+} from 'antd'
 import {
   BookOutlined,
   DollarOutlined,
@@ -7,20 +19,26 @@ import {
   FallOutlined,
   LeftOutlined,
   RightOutlined,
+  DeleteOutlined,
+  EditOutlined,
 } from '@ant-design/icons'
 import dayjs, { Dayjs } from 'dayjs'
-import { getPurchasements, deletePurchasement } from './purchasement/api'
+import { deletePurchasement } from './purchasement/api'
+import {
+  getTotalIncomeBetween,
+  getTotalConsumptionBetween,
+  getTotalPurchasementBetween,
+} from './summary/api'
 import { PurchasementModal } from './purchasement/index'
 import { PurchasementColumn } from './purchasement/columns'
-import { getIncomes, deleteIncome } from './income/api'
+import { deleteIncome } from './income/api'
 import { IncomeColumn, JPIncomeCategory } from './income/columns'
 import IncomeModal from './income/IncomeModal'
 
-import { getConsumption, deleteConsumption } from './consumption/api'
+import { deleteConsumption } from './consumption/api'
 import { ConsumptionColumn } from './consumption/columns'
 import { ConsumptionModal } from './consumption/ConsumptionModal'
 import PageHeader from '../../components/PageHeader'
-import DoodleCard, { DoodleCardRow } from '../../components/DoodleCard'
 
 export default function DailyPurchasementPage() {
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs())
@@ -36,6 +54,7 @@ export default function DailyPurchasementPage() {
   const [editingIncome, setEditingIncome] = useState<IncomeColumn | null>(null)
 
   // 使用記録関連の状態
+  const [totalConsumption, setTotalConsumption] = useState(0)
   const [dailyConsumptions, setDailyConsumptions] = useState<ConsumptionColumn[]>([])
   const [isConsumptionModalOpen, setIsConsumptionModalOpen] = useState(false)
   const [isConsumptionEditMode, setIsConsumptionEditMode] = useState(false)
@@ -57,14 +76,11 @@ export default function DailyPurchasementPage() {
   const fetchDailyPurchases = async (date: Dayjs) => {
     setLoading(true)
     try {
-      const response = await getPurchasements()
-      const allPurchases: PurchasementColumn[] = response.data || []
-
-      // 選択された日付の購入記録のみフィルター
-      const dailyData = allPurchases.filter((item) => {
-        if (!item.purchaseDate) return false
-        return dayjs(item.purchaseDate).isSame(date, 'day')
+      const response = await getTotalPurchasementBetween({
+        dateFrom: date.format('YYYY-MM-DD'),
+        dateTo: date.format('YYYY-MM-DD'),
       })
+      const dailyData: PurchasementColumn[] = response.data || []
 
       setDailyPurchases(dailyData)
 
@@ -83,14 +99,11 @@ export default function DailyPurchasementPage() {
   const fetchDailyIncomes = async (date: Dayjs) => {
     setLoading(true)
     try {
-      const response = await getIncomes()
-      const allIncomes: IncomeColumn[] = response.data || []
-
-      // 選択された日付の収入記録のみフィルター
-      const dailyData = allIncomes.filter((item) => {
-        if (!item.incomeDate) return false
-        return dayjs(item.incomeDate).isSame(date, 'day')
+      const response = await getTotalIncomeBetween({
+        dateFrom: date.format('YYYY-MM-DD'),
+        dateTo: date.format('YYYY-MM-DD'),
       })
+      const dailyData: IncomeColumn[] = response.data || []
 
       setDailyIncomes(dailyData)
 
@@ -110,16 +123,19 @@ export default function DailyPurchasementPage() {
   // 使用記録を取得
   const fetchDailyConsumptions = async (date: Dayjs) => {
     try {
-      const response = await getConsumption()
-      const allConsumptions: ConsumptionColumn[] = response.data || []
-
-      // 選択された日付の使用記録のみフィルター
-      const dailyData = allConsumptions.filter((item) => {
-        if (!item.consumptionDate) return false
-        return dayjs(item.consumptionDate).isSame(date, 'day')
+      const response = await getTotalConsumptionBetween({
+        dateFrom: date.format('YYYY-MM-DD'),
+        dateTo: date.format('YYYY-MM-DD'),
       })
-
+      const dailyData: ConsumptionColumn[] = response.data || []
       setDailyConsumptions(dailyData)
+
+      // 合計金額を計算
+      const total = dailyData.reduce(
+        (sum, item) => sum + (item.quantity * item?.purchasement.totalPrice || 0),
+        0
+      )
+      setTotalConsumption(total)
     } catch (error) {
       message.error('使用記録の取得に失敗しました')
       console.error('使用記録取得失敗:', error)
@@ -144,7 +160,8 @@ export default function DailyPurchasementPage() {
     setSelectedDate(selectedDate.add(1, 'day'))
   }
 
-  // 新規追加モーダルを開く
+  /* 支出 */
+  // 支出追加モーダルを開く
   const handleAddPurchasement = () => {
     setIsEditMode(false)
     setEditingRecord(null)
@@ -170,6 +187,7 @@ export default function DailyPurchasementPage() {
     handleCancel()
   }
 
+  /* 収入 */
   // 収入追加モーダルを開く
   const handleAddIncome = () => {
     setIsIncomeEditMode(false)
@@ -208,6 +226,7 @@ export default function DailyPurchasementPage() {
     }
   }
 
+  /* 使用記録 */
   // 使用記録追加モーダルを開く
   const handleAddConsumption = () => {
     setIsConsumptionEditMode(false)
@@ -261,74 +280,69 @@ export default function DailyPurchasementPage() {
 
   return (
     <div className="book-page-container">
-      <PageHeader
-        title="1日の家計記入"
-        // onAdd is removed because we have multiple add buttons below
-      />
+      <PageHeader title="1日の家計記入" />
 
       <div className="book-page-content">
         {/* 日付選択カード */}
-        <Card style={{ marginBottom: '1rem' }}>
-          <Row
-            gutter={16}
-            align="middle"
+        <Row
+          gutter={16}
+          align="middle"
+        >
+          <Col
+            flex="auto"
+            style={{ display: 'flex', alignItems: 'center', gap: '16px' }}
           >
-            <Col
-              flex="auto"
-              style={{ display: 'flex', alignItems: 'center', gap: '16px' }}
-            >
-              <span style={{ fontWeight: 'bold', fontSize: '16px' }}>記入日:</span>
+            <span style={{ fontWeight: 'bold', fontSize: '16px' }}>記入日:</span>
+            <Button
+              icon={<LeftOutlined />}
+              onClick={handlePreviousDay}
+              title="前日"
+            />
+            <DatePicker
+              value={selectedDate}
+              onChange={handleDateChange}
+              format="YYYY年MM月DD日"
+              style={{ width: '200px' }}
+              allowClear={false}
+            />
+            <Button
+              icon={<RightOutlined />}
+              onClick={handleNextDay}
+              title="翌日"
+            />
+          </Col>
+          <Col>
+            <Space>
               <Button
-                icon={<LeftOutlined />}
-                onClick={handlePreviousDay}
-                title="前日"
-              />
-              <DatePicker
-                value={selectedDate}
-                onChange={handleDateChange}
-                format="YYYY年MM月DD日"
-                style={{ width: '200px' }}
-                allowClear={false}
-              />
+                type="default"
+                variant="filled"
+                color="danger"
+                icon={<FallOutlined />}
+                onClick={handleAddPurchasement}
+              >
+                支出を追加
+              </Button>
               <Button
-                icon={<RightOutlined />}
-                onClick={handleNextDay}
-                title="翌日"
-              />
-            </Col>
-            <Col>
-              <Space>
-                <Button
-                  type="default"
-                  variant="filled"
-                  color="danger"
-                  icon={<FallOutlined />}
-                  onClick={handleAddPurchasement}
-                >
-                  支出を追加
-                </Button>
-                <Button
-                  type="default"
-                  variant="filled"
-                  color="primary"
-                  icon={<RiseOutlined />}
-                  onClick={handleAddIncome}
-                >
-                  収入を追加
-                </Button>
-                <Button
-                  type="default"
-                  variant="filled"
-                  color="purple"
-                  icon={<BookOutlined />}
-                  onClick={handleAddConsumption}
-                >
-                  使用記録を追加
-                </Button>
-              </Space>
-            </Col>
-          </Row>
-        </Card>
+                type="default"
+                variant="filled"
+                color="primary"
+                icon={<RiseOutlined />}
+                onClick={handleAddIncome}
+              >
+                収入を追加
+              </Button>
+              <Button
+                type="default"
+                variant="filled"
+                color="purple"
+                icon={<BookOutlined />}
+                onClick={handleAddConsumption}
+              >
+                使用記録を追加
+              </Button>
+            </Space>
+          </Col>
+        </Row>
 
         {/* 収支サマリーカード */}
         <Row
@@ -452,44 +466,89 @@ export default function DailyPurchasementPage() {
               <p>この日の購入記録はまだありません</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {dailyPurchases.map((item) => (
-                <DoodleCard
-                  key={item.id}
-                  id={item.id}
-                  title={item.goods?.goodsName || '商品未設定'}
-                  onEdit={() => handleEdit(item)}
-                  onDelete={() => handleDelete(item)}
-                  clickable={false}
+            <List
+              itemLayout="horizontal"
+              dataSource={dailyPurchases}
+              renderItem={(item) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      type="link"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEdit(item)}
+                    >
+                      編集
+                    </Button>,
+                    <Popconfirm
+                      title="削除確認"
+                      description={`「${item.goods?.goodsName || '不明'}」の購入記録を削除しますか？`}
+                      onConfirm={() => handleDelete(item)}
+                      okText="削除"
+                      cancelText="キャンセル"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Button
+                        type="link"
+                        danger
+                        icon={<DeleteOutlined />}
+                      >
+                        削除
+                      </Button>
+                    </Popconfirm>,
+                  ]}
                 >
-                  <DoodleCardRow
-                    label="店舗"
-                    value={item.store?.storeName || '-'}
+                  <List.Item.Meta
+                    title={
+                      <div>
+                        <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                          {item.goods?.goodsName || '商品未設定'}
+                        </span>
+                        {item.store && (
+                          <Tag
+                            color="blue"
+                            style={{ marginLeft: '8px' }}
+                          >
+                            {item.store.storeName}
+                          </Tag>
+                        )}
+                        {item.paymentMethod && (
+                          <Tag
+                            color="green"
+                            style={{ marginLeft: '4px' }}
+                          >
+                            {item.paymentMethod}
+                          </Tag>
+                        )}
+                      </div>
+                    }
+                    description={
+                      <div style={{ marginTop: '8px' }}>
+                        <div>
+                          数量: {item.quantity} {item.quantityUnit} × 単価: {item.unitPrice}{' '}
+                          {item.priceUnit}
+                        </div>
+                        {item.description && (
+                          <div style={{ marginTop: '4px', color: '#666' }}>
+                            メモ: {item.description}
+                          </div>
+                        )}
+                      </div>
+                    }
                   />
-                  <DoodleCardRow
-                    label="金額"
-                    value={`¥${item.totalPrice.toLocaleString()}`}
-                    valueStyle={{ color: '#cf1322', fontWeight: 'bold' }}
-                  />
-                  <DoodleCardRow
-                    label="詳細"
-                    value={`${item.quantity}${item.quantityUnit} @${item.unitPrice}${item.priceUnit}`}
-                  />
-                  {item.paymentMethod && (
-                    <DoodleCardRow
-                      label="支払"
-                      value={item.paymentMethod}
-                    />
-                  )}
-                  {item.description && (
-                    <DoodleCardRow
-                      label="メモ"
-                      value={item.description}
-                    />
-                  )}
-                </DoodleCard>
-              ))}
-            </div>
+                  <div
+                    style={{
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      color: '#cf1322',
+                      minWidth: '120px',
+                      textAlign: 'right',
+                    }}
+                  >
+                    ¥{item.totalPrice.toLocaleString()}
+                  </div>
+                </List.Item>
+              )}
+            />
           )}
         </Card>
 
@@ -515,30 +574,73 @@ export default function DailyPurchasementPage() {
               <p>この日の収入記録はまだありません</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {dailyIncomes.map((item) => (
-                <DoodleCard
-                  key={item.id}
-                  id={item.id}
-                  title={JPIncomeCategory[item.category as keyof typeof JPIncomeCategory] || '収入'}
-                  onEdit={() => handleEditIncome(item)}
-                  onDelete={() => handleDeleteIncome(item)}
-                  clickable={false}
+            <List
+              itemLayout="horizontal"
+              dataSource={dailyIncomes}
+              renderItem={(item) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      type="link"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEditIncome(item)}
+                    >
+                      編集
+                    </Button>,
+                    <Popconfirm
+                      title="削除確認"
+                      description={`「${JPIncomeCategory[item.category as keyof typeof JPIncomeCategory] || '不明'}」の収入記録を削除しますか？`}
+                      onConfirm={() => handleDeleteIncome(item)}
+                      okText="削除"
+                      cancelText="キャンセル"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Button
+                        type="link"
+                        danger
+                        icon={<DeleteOutlined />}
+                      >
+                        削除
+                      </Button>
+                    </Popconfirm>,
+                  ]}
                 >
-                  <DoodleCardRow
-                    label="金額"
-                    value={`+${item.amount.toLocaleString()} 円`}
-                    valueStyle={{ color: '#52c41a', fontWeight: 'bold' }}
+                  <List.Item.Meta
+                    title={
+                      <div>
+                        <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                          {JPIncomeCategory[item.category as keyof typeof JPIncomeCategory] || '-'}
+                        </span>
+                        <Tag
+                          color="green"
+                          style={{ marginLeft: '8px' }}
+                        >
+                          収入
+                        </Tag>
+                      </div>
+                    }
+                    description={
+                      item.description ? (
+                        <div style={{ marginTop: '4px', color: '#666' }}>
+                          メモ: {item.description}
+                        </div>
+                      ) : null
+                    }
                   />
-                  {item.description && (
-                    <DoodleCardRow
-                      label="メモ"
-                      value={item.description}
-                    />
-                  )}
-                </DoodleCard>
-              ))}
-            </div>
+                  <div
+                    style={{
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      color: '#52c41a',
+                      minWidth: '120px',
+                      textAlign: 'right',
+                    }}
+                  >
+                    +{item.amount.toLocaleString()} 円
+                  </div>
+                </List.Item>
+              )}
+            />
           )}
         </Card>
 
@@ -563,33 +665,80 @@ export default function DailyPurchasementPage() {
               <p>この日の使用記録はまだありません</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {dailyConsumptions.map((item) => (
-                <DoodleCard
-                  key={item.id}
-                  id={item.id}
-                  title={item.purchasement?.goods?.goodsName || '商品未設定'}
-                  onEdit={() => handleEditConsumption(item)}
-                  onDelete={() => handleDeleteConsumption(item)}
-                  clickable={false}
+            <List
+              itemLayout="horizontal"
+              dataSource={dailyConsumptions}
+              renderItem={(item) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      type="link"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEditConsumption(item)}
+                    >
+                      編集
+                    </Button>,
+                    <Popconfirm
+                      title="削除確認"
+                      description={`「${item.purchasement?.goods?.goodsName || '不明'}」の使用記録を削除しますか？`}
+                      onConfirm={() => handleDeleteConsumption(item)}
+                      okText="削除"
+                      cancelText="キャンセル"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Button
+                        type="link"
+                        danger
+                        icon={<DeleteOutlined />}
+                      >
+                        削除
+                      </Button>
+                    </Popconfirm>,
+                  ]}
                 >
-                  <DoodleCardRow
-                    label="店舗"
-                    value={item.purchasement?.store?.name || '-'}
+                  <List.Item.Meta
+                    title={
+                      <div>
+                        <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                          {item.purchasement?.goods?.goodsName || '商品未設定'}
+                        </span>
+                        {item.purchasement?.store && (
+                          <Tag
+                            color="blue"
+                            style={{ marginLeft: '8px' }}
+                          >
+                            {item.purchasement.store.storeName}
+                          </Tag>
+                        )}
+                        {item.purchasement?.goods?.brand && (
+                          <Tag
+                            color="purple"
+                            style={{ marginLeft: '4px' }}
+                          >
+                            {item.purchasement.goods.brand.brandName}
+                          </Tag>
+                        )}
+                      </div>
+                    }
+                    description={
+                      <div style={{ marginTop: '8px' }}>
+                        <div>
+                          使用量: {item.quantity} {item.quantityUnit}
+                        </div>
+                        <div style={{ color: '#666', marginTop: '4px' }}>
+                          購入日: {dayjs(item.purchasement?.purchaseDate).format('YYYY年MM月DD日')}
+                        </div>
+                        {item.description && (
+                          <div style={{ marginTop: '4px', color: '#666' }}>
+                            メモ: {item.description}
+                          </div>
+                        )}
+                      </div>
+                    }
                   />
-                  <DoodleCardRow
-                    label="使用量"
-                    value={`${item.quantity} ${item.quantityUnit}`}
-                  />
-                  {item.description && (
-                    <DoodleCardRow
-                      label="メモ"
-                      value={item.description}
-                    />
-                  )}
-                </DoodleCard>
-              ))}
-            </div>
+                </List.Item>
+              )}
+            />
           )}
         </Card>
       </div>
@@ -607,8 +756,8 @@ export default function DailyPurchasementPage() {
       {/* 収入追加・編集モーダル */}
       <IncomeModal
         open={isIncomeModalOpen}
-        isEditMode={isIncomeEditMode}
-        editingRecord={editingIncome}
+        isAdd={!isIncomeEditMode}
+        record={editingIncome}
         initialDate={selectedDate}
         onCancel={handleIncomeCancel}
         onSuccess={handleIncomeSuccess}
