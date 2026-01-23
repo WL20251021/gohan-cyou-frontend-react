@@ -375,7 +375,7 @@ export default function HomePage() {
               background: '#fff',
               transform: 'rotate(1deg)',
             }}
-            onClick={() => navigate('/budget/summary/daily')}
+            onClick={() => navigate('/budget/summary')}
           >
             今日の家計を記入しよう
           </Button>
@@ -473,7 +473,7 @@ export default function HomePage() {
                 size="large"
                 block
                 icon={<CalendarOutlined />}
-                onClick={() => navigate('/budget/summary/daily')}
+                onClick={() => navigate('/budget/summary')}
                 style={{
                   border: 'var(--border-doodle)',
                   height: '50px',

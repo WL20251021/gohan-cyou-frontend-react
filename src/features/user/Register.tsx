@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Form, Input, Button, Card, Typography, Select } from 'antd'
+import { Form, Input, Button, Card, Typography } from 'antd'
 import notification from '@/components/DoodleNotification'
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons'
 import { register } from './api'
@@ -19,20 +19,7 @@ export default function Register() {
       .then((values) => {
         return register(values)
       })
-      .then((res) => {
-        // if (res?.data?.access_token) {
-        //   // トークンを保存
-        //   window.document.cookie = `jwt=${res.data.access_token}; path=/; max-age=${res.data.max_age}`
-        //   notification.success({
-        //     title: '登録成功',
-        //     description: 'ログインページにリダイレクトします',
-        //     placement: 'bottomRight',
-        //   })
-        //   // ダッシュボードにリダイレクト
-        //   navigate('/')
-        // } else {
-        //   throw new Error('トークンが取得できませんでした')
-        // }
+      .then(() => {
         notification.success({
           title: '登録成功',
           description: 'ログインページにリダイレクトします',
@@ -60,7 +47,6 @@ export default function Register() {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        background: '#f0f2f5',
       }}
     >
       <Card style={{ width: 400 }}>
@@ -144,7 +130,10 @@ export default function Register() {
             </Button>
           </Form.Item>
           <div style={{ textAlign: 'center' }}>
-            <a onClick={() => navigate('/login')}>既にアカウントをお持ちですか？ログイン</a>
+            <a onClick={() => navigate('/login')}>
+              既にアカウントをお持ちですか？
+              <span style={{ textDecoration: 'underline' }}>ログイン</span>
+            </a>
           </div>
         </Form>
       </Card>
