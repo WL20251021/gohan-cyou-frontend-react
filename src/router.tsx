@@ -18,8 +18,6 @@ import Inventory from './features/budget/inventory'
 import BudgetSummary from './features/budget/summary'
 import DailyBudget from './features/budget/daily'
 import Today from './features/budget/summary/today'
-import Weekly from './features/budget/summary/weekly'
-import Monthly from './features/budget/summary/monthly'
 
 const router = createBrowserRouter([
   {
@@ -95,18 +93,6 @@ const router = createBrowserRouter([
                 path: ':range',
                 Component: Today,
               },
-              // {
-              //   path: 'today',
-              //   Component: Today,
-              // },
-              // {
-              //   path: 'weekly',
-              //   Component: Weekly,
-              // },
-              // {
-              //   path: 'monthly',
-              //   Component: Monthly,
-              // },
             ],
           },
         ],
