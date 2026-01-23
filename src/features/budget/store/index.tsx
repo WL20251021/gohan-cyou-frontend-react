@@ -277,21 +277,8 @@ export default function Store() {
               value={record.city || '-'}
             />
             <DoodleCardRow
-              label={JPNames.url}
-              value={
-                record.url ? (
-                  <a
-                    href={record.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    リンク
-                  </a>
-                ) : (
-                  '-'
-                )
-              }
+              label={JPNames.address}
+              value={record.address || '-'}
             />
           </DoodleCard>
         )}

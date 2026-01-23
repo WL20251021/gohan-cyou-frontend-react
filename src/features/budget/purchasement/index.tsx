@@ -673,7 +673,7 @@ export default function Purchasement() {
           <DoodleCard
             key={record.id}
             id={record.id}
-            title={record.purchaseDate ? dayjs(record.purchaseDate).format('YYYY-MM-DD') : '-'}
+            title={record.goods?.goodsName || '-'}
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
             onClick={() => showDetail(record)}
@@ -687,8 +687,8 @@ export default function Purchasement() {
             }}
           >
             <DoodleCardRow
-              label={JPNames.goods}
-              value={record.goods?.goodsName || '-'}
+              label={JPNames.purchaseDate}
+              value={record.purchaseDate ? dayjs(record.purchaseDate).format('YYYY-MM-DD') : '-'}
             />
             <DoodleCardRow
               label={JPNames.store}
@@ -698,15 +698,15 @@ export default function Purchasement() {
               label={JPNames.quantity}
               value={`${record.quantity} ${record.quantityUnit}`}
             />
-            <DoodleCardRow
+            {/* <DoodleCardRow
               label={JPNames.unitPrice}
               value={`${record.unitPrice} 円`}
-            />
+            /> */}
             <DoodleCardRow
               label={JPNames.totalPrice}
               value={`${record.totalPrice} 円`}
             />
-            <DoodleCardRow
+            {/* <DoodleCardRow
               label={JPNames.paymentMethod}
               value={record.paymentMethod || '-'}
             />
@@ -725,7 +725,7 @@ export default function Purchasement() {
                   ? DISCOUNT_TYPE_NAMES[record.discountType as keyof typeof DISCOUNT_TYPE_NAMES]
                   : '-'
               }
-            />
+            /> */}
           </DoodleCard>
         )}
       />

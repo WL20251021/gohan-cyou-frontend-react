@@ -232,7 +232,7 @@ export default function Brand() {
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    リンク
+                    {record.website}
                   </a>
                 ) : (
                   '-'

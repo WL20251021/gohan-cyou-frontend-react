@@ -246,8 +246,30 @@ export default function SummaryPage() {
           padding: '32px 48px',
         }}
       >
-        {selectedDate.format('YYYY-MM-DD') == dayjs().format('YYYY-MM-DD') ? '今日' : '一日'}の収支
-        ({selectedDate.format('YYYY年MM月DD日')})
+        {pageType === 'today' ? (
+          <>
+            {selectedDate.format('YYYY-MM-DD') == dayjs().format('YYYY-MM-DD') ? '今日' : '一日'}
+            の収支 ({selectedDate.format('YYYY年MM月DD日')})
+          </>
+        ) : pageType === 'weekly' ? (
+          <>
+            {selectedDate.startOf('week').format('YYYY-MM-DD') ==
+            dayjs().startOf('week').format('YYYY-MM-DD')
+              ? '今週'
+              : '週'}{' '}
+            の収支 ({selectedDate.startOf('week').format('YYYY年MM月DD日')} 〜{' '}
+            {selectedDate.endOf('week').format('YYYY年MM月DD日')})
+          </>
+        ) : (
+          <>
+            {selectedDate.startOf('month').format('YYYY-MM-DD') ==
+            dayjs().startOf('month').format('YYYY-MM-DD')
+              ? '今月'
+              : '月'}{' '}
+            の収支 ({selectedDate.startOf('month').format('YYYY年MM月DD日')} 〜{' '}
+            {selectedDate.endOf('month').format('YYYY年MM月DD日')})
+          </>
+        )}
       </h1>
 
       <div style={{ padding: '0 60px 50px', flex: 1, overflowY: 'scroll' }}>
