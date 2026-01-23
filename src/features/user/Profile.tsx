@@ -152,7 +152,7 @@ export default function Profile() {
               </Descriptions.Item>
             </Descriptions>
           </>
-        ) : null}
+        )}
       </Card>
 
       {/* ユーザー情報編集モーダル */}
