@@ -1,17 +1,6 @@
 import { useState, useEffect } from 'react'
-import {
-  Card,
-  DatePicker,
-  Button,
-  Space,
-  Statistic,
-  message,
-  Row,
-  Col,
-  Tag,
-  List,
-  Popconfirm,
-} from 'antd'
+import { Card, DatePicker, Button, Space, Statistic, message, Row, Col, Tag, List } from 'antd'
+import DoodlePopconfirm from '@/components/DoodlePopconfirm'
 import {
   BookOutlined,
   DollarOutlined,
@@ -485,7 +474,7 @@ export default function DailyPurchasementPage() {
                     >
                       編集
                     </Button>,
-                    <Popconfirm
+                    <DoodlePopconfirm
                       title="削除確認"
                       description={`「${item.goods?.goodsName || '不明'}」の購入記録を削除しますか？`}
                       onConfirm={() => handleDelete(item)}
@@ -500,7 +489,7 @@ export default function DailyPurchasementPage() {
                       >
                         削除
                       </Button>
-                    </Popconfirm>,
+                    </DoodlePopconfirm>,
                   ]}
                 >
                   <List.Item.Meta
@@ -593,7 +582,7 @@ export default function DailyPurchasementPage() {
                     >
                       編集
                     </Button>,
-                    <Popconfirm
+                    <DoodlePopconfirm
                       title="削除確認"
                       description={`「${JPIncomeCategory[item.category as keyof typeof JPIncomeCategory] || '不明'}」の収入記録を削除しますか？`}
                       onConfirm={() => handleDeleteIncome(item)}
@@ -608,7 +597,7 @@ export default function DailyPurchasementPage() {
                       >
                         削除
                       </Button>
-                    </Popconfirm>,
+                    </DoodlePopconfirm>,
                   ]}
                 >
                   <List.Item.Meta
@@ -684,7 +673,7 @@ export default function DailyPurchasementPage() {
                     >
                       編集
                     </Button>,
-                    <Popconfirm
+                    <DoodlePopconfirm
                       title="削除確認"
                       description={`「${item.purchasement?.goods?.goodsName || '不明'}」の使用記録を削除しますか？`}
                       onConfirm={() => handleDeleteConsumption(item)}
@@ -699,7 +688,7 @@ export default function DailyPurchasementPage() {
                       >
                         削除
                       </Button>
-                    </Popconfirm>,
+                    </DoodlePopconfirm>,
                   ]}
                 >
                   <List.Item.Meta

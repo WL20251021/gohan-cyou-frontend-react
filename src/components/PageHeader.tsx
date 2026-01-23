@@ -1,4 +1,5 @@
-import { Button, Flex, Popconfirm } from 'antd'
+import { Button, Flex } from 'antd'
+import DoodlePopconfirm from './DoodlePopconfirm'
 import { PlusOutlined } from '@ant-design/icons'
 import { useLocation } from 'react-router'
 
@@ -65,7 +66,7 @@ export default function PageHeader({
             </Button>
           )}
           {onDelete && (
-            <Popconfirm
+            <DoodlePopconfirm
               title="削除確認"
               description="本当に削除しますか？"
               onConfirm={onDelete}
@@ -81,7 +82,7 @@ export default function PageHeader({
               >
                 削除
               </Button>
-            </Popconfirm>
+            </DoodlePopconfirm>
           )}
         </Flex>
       ) : (

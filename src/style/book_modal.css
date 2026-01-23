@@ -33,6 +33,153 @@
   /* No border radius on pages to ensure they flush with the container clip */
 }
 
+/* Doodle Popconfirm styles */
+.doodle-popconfirm-trigger {
+  display: inline-block;
+}
+
+.doodle-popconfirm-portal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.doodle-popconfirm-panel {
+  min-width: 220px;
+  max-width: 360px;
+  background: var(--color-paper-white);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-doodle);
+  box-shadow: var(--shadow-doodle);
+  padding: 12px;
+  font-family: var(--font-doodle);
+}
+
+.doodle-popconfirm-title {
+  font-weight: 800;
+  font-family: var(--font-display);
+  margin-bottom: 6px;
+}
+
+.doodle-popconfirm-desc {
+  color: var(--color-text-secondary);
+  margin-bottom: 10px;
+}
+
+.doodle-popconfirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.doodle-popconfirm-panel .ant-btn {
+  border: 2px solid var(--color-ink-black);
+  border-radius: var(--radius-doodle-sm);
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.08);
+}
+
+/* Doodle Notification styles */
+.doodle-notice {
+  position: relative;
+  transition:
+    transform 0.12s ease,
+    opacity 0.12s ease;
+  /* Doodle border style */
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-doodle);
+  box-shadow: var(--shadow-doodle);
+  background: var(--color-paper-white);
+  padding: 10px 12px;
+  font-family: var(--font-doodle);
+}
+.doodle-notice::before {
+  /* Slight offset sketchy outline */
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  right: -6px;
+  bottom: -6px;
+  border-radius: var(--radius-doodle);
+  border: 2px dashed rgba(0, 0, 0, 0.06);
+  transform: rotate(-1.5deg);
+  pointer-events: none;
+  filter: blur(0.2px);
+}
+
+/* Enter/Exit animations for notifications */
+.doodle-notice {
+  opacity: 0;
+}
+
+/* Slide-in/out from right for right-placed containers */
+.doodle-notice-placement-topRight,
+.doodle-notice-placement-bottomRight {
+  transform: translateX(12px) scale(0.995);
+}
+.doodle-notice-placement-topRight.doodle-notice-enter,
+.doodle-notice-placement-bottomRight.doodle-notice-enter {
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    opacity 180ms ease-in;
+}
+.doodle-notice-placement-topRight.doodle-notice-exit,
+.doodle-notice-placement-bottomRight.doodle-notice-exit {
+  transform: translateX(12px) scale(0.98);
+  opacity: 0;
+  transition:
+    transform 160ms ease-in,
+    opacity 140ms ease-in;
+}
+
+/* Slide-in/out from left for left-placed containers */
+.doodle-notice-placement-topLeft,
+.doodle-notice-placement-bottomLeft {
+  transform: translateX(-12px) scale(0.995);
+}
+.doodle-notice-placement-topLeft.doodle-notice-enter,
+.doodle-notice-placement-bottomLeft.doodle-notice-enter {
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    opacity 180ms ease-in;
+}
+.doodle-notice-placement-topLeft.doodle-notice-exit,
+.doodle-notice-placement-bottomLeft.doodle-notice-exit {
+  transform: translateX(-12px) scale(0.98);
+  opacity: 0;
+  transition:
+    transform 160ms ease-in,
+    opacity 140ms ease-in;
+}
+
+/* Fallback: vertical motion if placement class missing */
+.doodle-notice:not([class*='placement-']) {
+  transform: translateY(6px) scale(0.995);
+}
+.doodle-notice:not([class*='placement-']).doodle-notice-enter {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.doodle-notice:not([class*='placement-']).doodle-notice-exit {
+  transform: translateY(6px) scale(0.98);
+  opacity: 0;
+}
+
+/* Progress bar */
+.doodle-notice-progress-wrap {
+  width: 100%;
+  overflow: hidden;
+}
+.doodle-notice-progress {
+  width: 100%;
+  height: 100%;
+  background: var(--color-primary);
+}
+
 .book-page-front {
   /* Match the standard line pattern */
   background-image: linear-gradient(var(--color-line-blue) 1px, transparent 1px);

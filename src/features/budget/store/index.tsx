@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Select, notification, message } from 'antd'
+import { Form, Input, Select, message } from 'antd'
+import notification from '../../../components/DoodleNotification'
 import BookModal from '../../../components/BookModal'
 import BookDetailModal from '../../../components/BookDetailModal'
 import PageHeader from '../../../components/PageHeader'

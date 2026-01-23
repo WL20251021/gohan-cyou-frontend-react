@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
-import { message, notification, Modal } from 'antd'
+import { message, Modal } from 'antd'
+import notification from '../components/DoodleNotification'
 import { useBook } from '../context/BookContext'
 
 export interface BookPageOptions<T> {

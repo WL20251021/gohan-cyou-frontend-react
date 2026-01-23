@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Form, InputNumber, Select, message, DatePicker, Input, notification } from 'antd'
+import { Form, InputNumber, Select, message, DatePicker, Input } from 'antd'
+import notification from '../../../components/DoodleNotification'
 import BookModal from '../../../components/BookModal'
 import dayjs, { Dayjs } from 'dayjs'
 import { IncomeColumn, JPNames, JPIncomeCategory } from './columns'

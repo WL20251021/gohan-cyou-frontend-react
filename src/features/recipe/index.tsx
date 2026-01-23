@@ -5,7 +5,6 @@ import {
   Input,
   InputNumber,
   Space,
-  notification,
   Select,
   Divider,
   Card,
@@ -14,6 +13,7 @@ import {
   Rate,
   message,
 } from 'antd'
+import notification from '../../components/DoodleNotification'
 import BookModal from '../../components/BookModal'
 import BookDetailModal from '../../components/BookDetailModal'
 import PageHeader from '../../components/PageHeader'

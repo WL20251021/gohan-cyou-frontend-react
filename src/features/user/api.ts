@@ -22,7 +22,7 @@ export function register(data: Partial<UserColumn> & { password: string }) {
 // ユーザー一覧取得
 export function getUsers() {
   return request({
-    url: 'user/',
+    url: '/users',
     method: 'get',
   })
 }
@@ -30,7 +30,7 @@ export function getUsers() {
 // ユーザー情報取得
 export function getUser(id: number) {
   return request({
-    url: `/user/${id}`,
+    url: `/users/${id}`,
     method: 'get',
   })
 }
@@ -38,7 +38,7 @@ export function getUser(id: number) {
 // ユーザー情報更新
 export function updateUser(id: number, data: Partial<UserColumn>) {
   return request({
-    url: `/user/${id}`,
+    url: `/users/${id}`,
     method: 'put',
     data,
   })
@@ -47,7 +47,7 @@ export function updateUser(id: number, data: Partial<UserColumn>) {
 // ユーザー削除
 export function deleteUser(ids: number[]) {
   return request({
-    url: `/user/`,
+    url: `/users`,
     method: 'delete',
     data: ids,
   })
@@ -56,7 +56,7 @@ export function deleteUser(ids: number[]) {
 // パスワード変更
 export function updatePassword(userId: number, data: { password: string }) {
   return request({
-    url: `/user/password`,
+    url: `/users/password`,
     method: 'put',
     data: { id: userId, newPassword: data.password },
   })

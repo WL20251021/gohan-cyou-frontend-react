@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Card, Descriptions, Avatar, Button, Form, Input, notification, Switch } from 'antd'
+import { Card, Descriptions, Avatar, Button, Form, Input, Switch } from 'antd'
+import notification from '../../components/DoodleNotification'
 import BookModal from '../../components/BookModal'
 import { UserOutlined, EditOutlined } from '@ant-design/icons'
 import { getUser, updateUser, updatePassword } from './api'
@@ -134,10 +135,7 @@ export default function Profile() {
               <Descriptions.Item label={JPNames.role}>
                 {JPUserRoles[user.role as keyof typeof JPUserRoles]}
               </Descriptions.Item>
-              <Descriptions.Item label={JPNames.firstName}>
-                {user.firstName || '-'}
-              </Descriptions.Item>
-              <Descriptions.Item label={JPNames.lastName}>{user.lastName || '-'}</Descriptions.Item>
+              <Descriptions.Item label={JPNames.nickname}>{user.nickname || '-'}</Descriptions.Item>
               <Descriptions.Item label={JPNames.isActive}>
                 {user.isActive ? '有効' : '無効'}
               </Descriptions.Item>
@@ -177,14 +175,8 @@ export default function Profile() {
             <Input />
           </Form.Item>
           <Form.Item
-            name="firstName"
-            label={JPNames.firstName}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="lastName"
-            label={JPNames.lastName}
+            name="nickname"
+            label={JPNames.nickname}
           >
             <Input />
           </Form.Item>
