@@ -3,7 +3,7 @@ import { Card, Statistic, Row, Col, List, Spin, message, Tag, DatePicker } from 
 import { ShoppingCartOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons'
 import dayjs, { Dayjs } from 'dayjs'
 import { PurchasementColumn } from '../purchasement/columns'
-import { IncomeColumn, JPIncomeCategory, type IncomeCategoryType } from '../income/columns'
+import { IncomeColumn, JPIncomeCategory } from '../income/columns'
 import { ConsumptionColumn } from '../consumption/columns'
 import {
   getTotalIncomeBetween,
@@ -101,127 +101,6 @@ export default function SummaryPage() {
   useEffect(() => {
     fetchSummary(selectedDate)
   }, [selectedDate])
-
-  // 収入テーブルのカラム
-  const incomeColumns = [
-    {
-      title: '日付',
-      dataIndex: 'incomeDate',
-      key: 'incomeDate',
-      render: (date: string | null) => (date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-'),
-      width: 150,
-    },
-    {
-      title: 'カテゴリ',
-      dataIndex: 'category',
-      key: 'category',
-      render: (category: IncomeCategoryType) =>
-        JPIncomeCategory[category as keyof typeof JPIncomeCategory] || '-',
-      width: 120,
-    },
-    {
-      title: '金額',
-      dataIndex: 'amount',
-      key: 'amount',
-      render: (amount: number) => `${amount.toLocaleString()} 円`,
-      width: 120,
-    },
-    {
-      title: 'メモ',
-      dataIndex: 'description',
-      key: 'description',
-      render: (description: string | null) => description || '-',
-    },
-  ]
-
-  // 支出テーブルのカラム
-  const expenseColumns = [
-    {
-      title: '購入日',
-      dataIndex: 'purchaseDate',
-      key: 'purchaseDate',
-      render: (date: string | null) => (date ? dayjs(date).format('YYYY-MM-DD') : '-'),
-      width: 120,
-    },
-    {
-      title: '商品',
-      dataIndex: 'goods',
-      key: 'goods',
-      render: (goods: any) => goods?.goodsName || '-',
-    },
-    {
-      title: '店舗',
-      dataIndex: 'store',
-      key: 'store',
-      render: (store: any) => store?.name || '-',
-    },
-    {
-      title: '数量',
-      dataIndex: 'quantity',
-      key: 'quantity',
-      render: (quantity: number, record: PurchasementColumn) =>
-        `${quantity} ${record.quantityUnit}`,
-      width: 100,
-    },
-    {
-      title: '単価',
-      dataIndex: 'unitPrice',
-      key: 'unitPrice',
-      render: (price: number, record: PurchasementColumn) => `${price} ${record.priceUnit}`,
-      width: 100,
-    },
-    {
-      title: '合計金額',
-      dataIndex: 'totalPrice',
-      key: 'totalPrice',
-      render: (price: number, record: PurchasementColumn) =>
-        `${price.toLocaleString()} ${record.priceUnit}`,
-      width: 120,
-    },
-    {
-      title: '支払い方法',
-      dataIndex: 'paymentMethod',
-      key: 'paymentMethod',
-      render: (method: string | null) => method || '-',
-      width: 140,
-    },
-  ]
-
-  // 使用記録テーブルのカラム
-  const consumptionColumns = [
-    {
-      title: '使用日',
-      dataIndex: 'consumptionDate',
-      key: 'consumptionDate',
-      render: (date: string | null) => (date ? dayjs(date).format('YYYY-MM-DD') : '-'),
-      width: 120,
-    },
-    {
-      title: '商品',
-      dataIndex: 'purchasement',
-      key: 'goods',
-      render: (purchasement: any) => purchasement?.goods?.goodsName || '-',
-    },
-    {
-      title: '店舗',
-      dataIndex: 'purchasement',
-      key: 'store',
-      render: (purchasement: any) => purchasement?.store?.name || '-',
-    },
-    {
-      title: '使用数量',
-      dataIndex: 'quantity',
-      key: 'quantity',
-      render: (quantity: number, record: ConsumptionColumn) => `${quantity} ${record.quantityUnit}`,
-      width: 120,
-    },
-    {
-      title: 'メモ',
-      dataIndex: 'note',
-      key: 'note',
-      render: (note: string | null) => note || '-',
-    },
-  ]
 
   // 日付選択ハンドラー
   const handleDateChange = (date: Dayjs | null) => {
