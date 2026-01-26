@@ -23,6 +23,10 @@ import { BrandAddModal } from '../brand/index'
 import { type FileType } from '@/utils/file'
 import { useBookPage } from '@/hooks/useBookPage'
 
+import { PAGE_NAMES } from '@/layout'
+const currentPath = window.location.pathname
+const PAGE_NAME = PAGE_NAMES[currentPath] || '商品'
+
 // 商品追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function GoodsAddModal({
   open,
@@ -133,7 +137,7 @@ export function GoodsAddModal({
       .then((res) => {
         form.resetFields()
         setFileList([])
-        message.success(isEditMode ? '商品を更新しました' : '商品を追加しました')
+        message.success(`${PAGE_NAME}を${isEditMode ? '更新' : '追加'}しました`)
         setConfirmLoading(false)
 
         // 追加した商品（最後の商品）を返す
@@ -155,7 +159,7 @@ export function GoodsAddModal({
         } else {
           console.error(error)
           notification.error({
-            title: isEditMode ? '商品更新失敗' : '商品追加失敗',
+            title: `${PAGE_NAME}${isEditMode ? '更新' : '追加'}失敗`,
             description: error.message,
             placement: 'bottomRight',
             showProgress: true,
@@ -249,9 +253,7 @@ export function GoodsAddModal({
   return (
     <BookModal
       manualFlip={true}
-      title={isEditMode ? '商品を編集' : '商品を追加'}
-      // width="80%"
-      // maskClosable={false}
+      title={`${PAGE_NAME}を${isEditMode ? '編集' : '追加'}`}
       open={open}
       confirmLoading={confirmLoading}
       onOk={handleSaveGoods}
@@ -277,7 +279,7 @@ export function GoodsAddModal({
         <Form.Item
           label={JPNames.goodsName}
           name="goodsName"
-          rules={[{ required: true, message: '商品名を入力してください!' }]}
+          rules={[{ required: true, message: `${PAGE_NAME}名を入力してください!` }]}
         >
           <Input allowClear />
         </Form.Item>
@@ -423,7 +425,7 @@ export default function Goods() {
   } = useBookPage<GoodsColumn>({
     fetchList: getGoods,
     deleteItem: deleteGoods,
-    itemName: '商品',
+    itemName: `${PAGE_NAME}管理`,
   })
 
   // Additional state for Goods
@@ -477,7 +479,7 @@ export default function Goods() {
   return (
     <div className="book-page-container">
       <PageHeader
-        title="商品一覧"
+        title={`${PAGE_NAME}一覧`}
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}

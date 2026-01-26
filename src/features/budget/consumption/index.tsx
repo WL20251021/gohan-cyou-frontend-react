@@ -12,6 +12,10 @@ import { getPurchasements } from '../purchasement/api'
 import { getAllInventory } from '../inventory/api'
 import { useBookPage } from '@/hooks/useBookPage'
 
+import { PAGE_NAMES } from '@/layout'
+const currentPath = window.location.pathname
+const PAGE_NAME = PAGE_NAMES[currentPath] || '消費'
+
 export default function Consumption() {
   const {
     data,
@@ -37,7 +41,7 @@ export default function Consumption() {
   } = useBookPage<ConsumptionColumn>({
     fetchList: getConsumption,
     deleteItem: deleteConsumption,
-    itemName: '消費記録',
+    itemName: `${PAGE_NAME}管理`,
   })
 
   // 拡張データ取得用
@@ -92,7 +96,7 @@ export default function Consumption() {
   return (
     <div className="book-page-container">
       <PageHeader
-        title="消費記録管理"
+        title={`${PAGE_NAME}記録一覧`}
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
@@ -109,7 +113,7 @@ export default function Consumption() {
             <Col span={6}>
               <Card>
                 <Statistic
-                  title="総消費記録数"
+                  title={`総${PAGE_NAME}記録数`}
                   value={statistics.totalConsumptions}
                 />
               </Card>
@@ -117,7 +121,7 @@ export default function Consumption() {
             <Col span={6}>
               <Card>
                 <Statistic
-                  title="総使用数量"
+                  title={`総${PAGE_NAME}数量`}
                   value={statistics.totalQuantity}
                   precision={2}
                 />
@@ -126,7 +130,7 @@ export default function Consumption() {
             <Col span={6}>
               <Card>
                 <Statistic
-                  title="今月の消費記録"
+                  title={`今月の${PAGE_NAME}記録`}
                   value={statistics.thisMonthConsumptions}
                 />
               </Card>
@@ -134,7 +138,7 @@ export default function Consumption() {
             <Col span={6}>
               <Card>
                 <Statistic
-                  title="今月の使用数量"
+                  title={`今月の${PAGE_NAME}数量`}
                   value={statistics.thisMonthQuantity}
                   precision={2}
                 />
@@ -161,7 +165,9 @@ export default function Consumption() {
                       {index + 1}位
                     </Tag>
                     <span style={{ flex: 1, marginLeft: 8 }}>{item.goods.goodsName}</span>
-                    <span style={{ fontWeight: 'bold' }}>使用量: {item.quantity.toFixed(2)}</span>
+                    <span style={{ fontWeight: 'bold' }}>
+                      {PAGE_NAME}量: {item.quantity.toFixed(2)}
+                    </span>
                   </div>
                 </Col>
               ))}
@@ -224,7 +230,7 @@ export default function Consumption() {
       <BookDetailModal
         open={isDetailOpen}
         title={detailRecord?.purchasement?.goods?.goodsName || '詳細'}
-        subtitle="消費記録詳細"
+        subtitle={`${PAGE_NAME}記録詳細`}
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

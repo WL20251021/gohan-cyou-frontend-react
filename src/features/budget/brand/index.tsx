@@ -11,6 +11,10 @@ import { getBrands, addBrand, updateBrand, deleteBrands } from './api'
 
 import { useBookPage } from '@/hooks/useBookPage'
 
+import { PAGE_NAMES } from '@/layout'
+const currentPath = window.location.pathname
+const PAGE_NAME = PAGE_NAMES[currentPath] || 'ブランド'
+
 // ブランド追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function BrandAddModal({
   open,
@@ -58,7 +62,7 @@ export function BrandAddModal({
       })
       .then((res) => {
         form.resetFields()
-        message.success(isEditMode ? 'ブランドを更新しました' : 'ブランドを追加しました')
+        message.success(`${PAGE_NAME}を${isEditMode ? '更新' : '追加'}しました`)
         setConfirmLoading(false)
 
         // 追加/更新したブランドを返す
@@ -80,7 +84,7 @@ export function BrandAddModal({
         } else {
           console.error(error)
           notification.error({
-            title: isEditMode ? 'ブランド更新失敗' : 'ブランド追加失敗',
+            title: `${PAGE_NAME}${isEditMode ? '更新' : '追加'}失敗`,
             description: error.message,
             placement: 'bottomRight',
             showProgress: true,
@@ -93,9 +97,7 @@ export function BrandAddModal({
   return (
     <BookModal
       manualFlip={true}
-      title={isEditMode ? 'ブランドを編集' : 'ブランドを追加'}
-      // width="80%"
-      // maskClosable={false}
+      title={`${PAGE_NAME}を${isEditMode ? '編集' : '追加'}`}
       open={open}
       confirmLoading={confirmLoading}
       onOk={handleSaveBrand}
@@ -122,9 +124,9 @@ export function BrandAddModal({
         <Form.Item
           label={JPNames.brandName}
           name="brandName"
-          rules={[{ required: true, message: 'ブランド名を入力してください!' }]}
+          rules={[{ required: true, message: `${PAGE_NAME}名を入力してください!` }]}
         >
-          <Input placeholder="ブランド名を入力" />
+          <Input placeholder={`${PAGE_NAME}名を入力`} />
         </Form.Item>
         <Form.Item
           label={JPNames.description}
@@ -184,13 +186,13 @@ export default function Brand() {
   } = useBookPage<BrandColumn>({
     fetchList: getBrands,
     deleteItem: deleteBrands,
-    itemName: 'ブランド',
+    itemName: `${PAGE_NAME}管理`,
   })
 
   return (
     <div className="book-page-container">
       <PageHeader
-        title="ブランド一覧"
+        title={`${PAGE_NAME}一覧`}
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
@@ -259,7 +261,7 @@ export default function Brand() {
         manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.brandName}
-        subtitle="ブランド詳細"
+        subtitle={`${PAGE_NAME}詳細`}
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

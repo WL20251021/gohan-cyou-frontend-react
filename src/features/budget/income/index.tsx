@@ -9,6 +9,10 @@ import { IncomeColumn, JPNames, JPIncomeCategory } from './columns'
 import { getIncomes, deleteIncome, getIncomeSummary } from './api'
 import { useBookPage } from '@/hooks/useBookPage'
 
+import { PAGE_NAMES } from '@/layout'
+const currentPath = window.location.pathname
+const PAGE_NAME = PAGE_NAMES[currentPath] || '収入'
+
 export default function Income() {
   const {
     data,
@@ -34,7 +38,7 @@ export default function Income() {
   } = useBookPage<IncomeColumn>({
     fetchList: getIncomes,
     deleteItem: deleteIncome,
-    itemName: '収入',
+    itemName: `${PAGE_NAME}管理`,
   })
 
   // 合計金額取得
@@ -64,14 +68,14 @@ export default function Income() {
   return (
     <div className="book-page-container">
       <PageHeader
-        title="収入管理"
+        title={`${PAGE_NAME}記録一覧`}
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
         data={data}
       />
 
-      {/* 合計収入カード (Design Updated) */}
+      {/* 合計収入カード*/}
       <div
         style={{
           margin: '10px 48px',
@@ -81,8 +85,12 @@ export default function Income() {
           backgroundColor: 'var(--color-primary-lightest)',
         }}
       >
-        <p>今月の収入：{incomeSummary.thisMonth} 円</p>
-        <p>本年度の収入：{incomeSummary.thisYear} 円</p>
+        <p>
+          今月の{PAGE_NAME}：{incomeSummary.thisMonth} 円
+        </p>
+        <p>
+          本年度の{PAGE_NAME}：{incomeSummary.thisYear} 円
+        </p>
       </div>
 
       <PaginatedGrid
@@ -136,7 +144,7 @@ export default function Income() {
         manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.incomeDate ? dayjs(detailRecord.incomeDate).format('YYYY-MM-DD') : '-'}
-        subtitle="収入詳細"
+        subtitle={`${PAGE_NAME}詳細`}
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

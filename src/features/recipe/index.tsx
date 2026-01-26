@@ -26,6 +26,10 @@ import type { RecipeIngredient } from './ingredient/columns'
 import type { instructions } from './instructions/columns'
 import { getGoods } from '../budget/goods/api'
 
+import { PAGE_NAMES } from '@/layout'
+const currentPath = window.location.pathname
+const PAGE_NAME = PAGE_NAMES[currentPath] || 'レシピ'
+
 const { TextArea } = Input
 
 // レシピ追加・編集モーダルコンポーネント
@@ -186,7 +190,7 @@ function RecipeModal({
         }
       })
       .then(() => {
-        message.success(isEditMode ? 'レシピを更新しました' : 'レシピを追加しました')
+        message.success(`${PAGE_NAME}を${isEditMode ? '更新' : '追加'}しました`)
         form.resetFields()
         setIngredients([])
         setInstructions([])
@@ -199,7 +203,7 @@ function RecipeModal({
         } else {
           console.error(error)
           notification.error({
-            title: isEditMode ? 'レシピ更新失敗' : 'レシピ追加失敗',
+            title: `${PAGE_NAME}${isEditMode ? '更新' : '追加'}失敗`,
             description: error.response?.data?.message || error.message,
             placement: 'bottomRight',
           })
@@ -213,7 +217,7 @@ function RecipeModal({
   return (
     <BookModal
       manualFlip={true}
-      title={isEditMode ? 'レシピ編集' : '新規レシピ'}
+      title={`${PAGE_NAME}を${isEditMode ? '編集' : '追加'}`}
       open={open}
       onOk={handleSave}
       onCancel={onCancel}
@@ -236,7 +240,7 @@ function RecipeModal({
         <Form.Item
           name="recipeName"
           label={JPNames.recipeName}
-          rules={[{ required: true, message: 'レシピ名を入力してください' }]}
+          rules={[{ required: true, message: `${PAGE_NAME}名を入力してください` }]}
         >
           <Input placeholder="例：カレーライス" />
         </Form.Item>
@@ -246,7 +250,7 @@ function RecipeModal({
         >
           <TextArea
             rows={2}
-            placeholder="レシピの簡単な説明"
+            placeholder={`${PAGE_NAME}の簡単な説明`}
           />
         </Form.Item>
 
@@ -452,13 +456,13 @@ export default function Recipe() {
   } = useBookPage<RecipeColumn>({
     fetchList: getRecipes,
     deleteItem: deleteRecipe,
-    itemName: 'レシピ',
+    itemName: `${PAGE_NAME}管理`,
   })
 
   return (
     <div>
       <PageHeader
-        title="レシピ一覧"
+        title={`${PAGE_NAME}一覧`}
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
@@ -520,7 +524,7 @@ export default function Recipe() {
         manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.recipeName}
-        subtitle="レシピ詳細"
+        subtitle={`${PAGE_NAME}詳細`}
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

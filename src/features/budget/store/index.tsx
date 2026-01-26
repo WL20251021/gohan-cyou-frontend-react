@@ -13,11 +13,14 @@ import {
   JPStoreTypes,
   STORES,
   type StoreType,
-  type CountryType,
   COUNTRIES,
 } from './columns'
 import { getStores, addStore, updateStore, deleteStores } from './api'
 import { useBookPage } from '@/hooks/useBookPage'
+
+import { PAGE_NAMES } from '@/layout'
+const currentPath = window.location.pathname
+const PAGE_NAME = PAGE_NAMES[currentPath] || '店舗'
 
 // 店舗追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function StoreAddModal({
@@ -72,7 +75,7 @@ export function StoreAddModal({
       })
       .then((res) => {
         form.resetFields()
-        message.success(isEditMode ? '店舗を更新しました' : '店舗を追加しました')
+        message.success(`${PAGE_NAME}を${isEditMode ? '更新' : '追加'}しました`)
         setConfirmLoading(false)
 
         // 追加/更新した店舗を返す
@@ -94,7 +97,7 @@ export function StoreAddModal({
         } else {
           console.error(error)
           notification.error({
-            title: isEditMode ? '店舗更新失敗' : '店舗追加失敗',
+            title: `${PAGE_NAME}${isEditMode ? '更新' : '追加'}失敗`,
             description: error.message,
             placement: 'bottomRight',
             showProgress: true,
@@ -107,9 +110,7 @@ export function StoreAddModal({
   return (
     <BookModal
       manualFlip={true}
-      title={isEditMode ? '店舗を編集' : '店舗を追加'}
-      // width="80%" // Removed as BookModal handles width via layout
-      // maskClosable={false}
+      title={`${PAGE_NAME}を${isEditMode ? '編集' : '追加'}`}
       open={open}
       confirmLoading={confirmLoading}
       onOk={handleSaveStore}
@@ -136,9 +137,9 @@ export function StoreAddModal({
         <Form.Item
           label={JPNames.storeName}
           name="storeName"
-          rules={[{ required: true, message: '店舗名を入力してください!' }]}
+          rules={[{ required: true, message: `${PAGE_NAME}名を入力してください!` }]}
         >
-          <Input placeholder="店舗名を入力" />
+          <Input placeholder={`${PAGE_NAME}名を入力`} />
         </Form.Item>
         <Form.Item
           label={JPNames.storeType}
@@ -225,13 +226,13 @@ export default function Store() {
   } = useBookPage<StoreColumn>({
     fetchList: getStores,
     deleteItem: deleteStores,
-    itemName: '店舗',
+    itemName: `${PAGE_NAME}管理`,
   })
 
   return (
     <div className="book-page-container">
       <PageHeader
-        title="店舗一覧"
+        title={`${PAGE_NAME}一覧`}
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
@@ -296,7 +297,7 @@ export default function Store() {
         manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.storeName}
-        subtitle="店舗詳細"
+        subtitle={`${PAGE_NAME}詳細`}
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

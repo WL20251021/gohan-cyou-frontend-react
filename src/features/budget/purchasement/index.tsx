@@ -36,6 +36,10 @@ import { getStores } from '../store/api'
 import { GoodsAddModal } from '../goods/index'
 import { StoreAddModal } from '../store/index'
 
+import { PAGE_NAMES } from '@/layout'
+const currentPath = window.location.pathname
+const PAGE_NAME = PAGE_NAMES[currentPath] || '支出'
+
 // 支出記録追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function PurchasementModal({
   open,
@@ -137,7 +141,7 @@ export function PurchasementModal({
       })
       .then(() => {
         form.resetFields()
-        message.success(isEditMode ? '支出記録を更新しました' : '支出記録を追加しました')
+        message.success(`${PAGE_NAME}記録を${isEditMode ? '更新' : '追加'}しました`)
         setConfirmLoading(false)
         if (onSuccess) {
           onSuccess()
@@ -151,7 +155,7 @@ export function PurchasementModal({
         } else {
           console.error(error)
           notification.error({
-            title: isEditMode ? '支出記録更新失敗' : '支出記録追加失敗',
+            title: `${PAGE_NAME}記録${isEditMode ? '更新' : '追加'}失敗`,
             description: error.message,
             placement: 'bottomRight',
             showProgress: true,
@@ -254,7 +258,7 @@ export function PurchasementModal({
   return (
     <>
       <BookModal
-        title={isEditMode ? '支出記録を編集' : '支出記録を追加'}
+        title={`${PAGE_NAME}記録を${isEditMode ? '編集' : '追加'}`}
         open={open}
         confirmLoading={confirmLoading}
         onOk={handleSave}
@@ -651,7 +655,7 @@ export default function Purchasement() {
   } = useBookPage<PurchasementColumn>({
     fetchList: getPurchasements,
     deleteItem: deletePurchasement,
-    itemName: '支出記録',
+    itemName: PAGE_NAME + '管理',
   })
 
   // テーブルデータとカラム定義 (Removed manual state)
@@ -659,7 +663,7 @@ export default function Purchasement() {
   return (
     <div className="book-page-container">
       <PageHeader
-        title="支出記録一覧"
+        title={PAGE_NAME + '記録一覧'}
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
@@ -745,9 +749,9 @@ export default function Purchasement() {
         title={
           detailRecord?.purchaseDate
             ? dayjs(detailRecord.purchaseDate).format('YYYY-MM-DD')
-            : '支出記録'
+            : `${PAGE_NAME}記録`
         }
-        subtitle="支出記録詳細"
+        subtitle={`${PAGE_NAME}記録詳細`}
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

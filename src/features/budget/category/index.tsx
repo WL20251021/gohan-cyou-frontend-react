@@ -11,6 +11,10 @@ import { CategoryColumn, JPNames } from './columns'
 import { getCategories, addCategory, updateCategory, deleteCategory } from './api'
 import { useBookPage } from '@/hooks/useBookPage'
 
+import { PAGE_NAMES } from '@/layout'
+const currentPath = window.location.pathname
+const PAGE_NAME = PAGE_NAMES[currentPath] || 'カテゴリー'
+
 // カテゴリモーダルコンポーネント（追加・編集両方に対応、他のコンポーネントから使用可能）
 export function CategoryModal({
   open,
@@ -59,10 +63,10 @@ export function CategoryModal({
 
       if (mode === 'add') {
         await addCategory({ ...values, color: colorHex })
-        message.success('カテゴリーを追加しました')
+        message.success(`${PAGE_NAME}を追加しました`)
       } else {
         await updateCategory(values.id, { ...values, color: colorHex })
-        message.success('カテゴリーを更新しました')
+        message.success(`${PAGE_NAME}を更新しました`)
       }
 
       const res = await getCategories()
@@ -82,7 +86,7 @@ export function CategoryModal({
     } catch (error: any) {
       console.error(error)
       notification.error({
-        title: mode === 'add' ? 'カテゴリー追加失敗' : 'カテゴリー更新失敗',
+        title: `${PAGE_NAME}${mode === 'add' ? '追加' : '更新'}失敗`,
         description: error.message,
         placement: 'bottomRight',
         showProgress: true,
@@ -96,9 +100,7 @@ export function CategoryModal({
   return (
     <BookModal
       manualFlip={true}
-      title={mode === 'add' ? 'カテゴリーを追加' : 'カテゴリーを編集'}
-      // width="80%"
-      // maskClosable={false}
+      title={`${PAGE_NAME}を${mode === 'add' ? '追加' : '編集'}`}
       open={open}
       confirmLoading={confirmLoading}
       onOk={handleSaveCategory}
@@ -125,7 +127,7 @@ export function CategoryModal({
         <Form.Item
           label={JPNames.categoryName}
           name="categoryName"
-          rules={[{ required: true, message: '日本語名を入力してください!' }]}
+          rules={[{ required: true, message: `${PAGE_NAME}名を入力してください!` }]}
         >
           <Input allowClear />
         </Form.Item>
@@ -191,13 +193,13 @@ export default function Category() {
   } = useBookPage<CategoryColumn>({
     fetchList: getCategories,
     deleteItem: deleteCategory,
-    itemName: 'カテゴリー',
+    itemName: `${PAGE_NAME}管理`,
   })
 
   return (
     <div className="book-page-container">
       <PageHeader
-        title="カテゴリー一覧"
+        title={`${PAGE_NAME}一覧`}
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}

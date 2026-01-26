@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Space, Tag, Statistic, Row, Col, Select, Button, Input } from 'antd'
-import { ReloadOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
+import { useState, useEffect, useCallback } from 'react'
+import { Card, Space, Tag, Statistic, Row, Col, Select } from 'antd'
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { getAllInventory, getInStockItems, getInventorySummary, getOutOfStockItems } from './api'
 import PageHeader from '@/components/PageHeader'
 import PaginatedGrid from '@/components/PaginatedGrid'
@@ -10,7 +10,6 @@ import { useBookPage } from '@/hooks/useBookPage'
 import {
   type InventoryColumn,
   type InventoryStats,
-  type GoodsInventory,
   formatDate,
   STOCK_STATUS,
   STOCK_STATUS_NAMES,
@@ -20,14 +19,15 @@ import {
 import { JPNames as JPPurchasement } from '../purchasement/columns'
 import { JPNames as JPGoods } from '../goods/columns'
 
-const { Search } = Input
+import { PAGE_NAMES } from '@/layout'
+const currentPath = window.location.pathname
+const PAGE_NAME = PAGE_NAMES[currentPath] || '在庫'
 
 /**
  * 在庫管理コンポーネント
  */
 export default function Inventory() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [searchText, setSearchText] = useState('')
 
   // Custom fetch function that handles status filtering
   const fetchInventoryWithFilter = useCallback(async () => {
@@ -48,8 +48,6 @@ export default function Inventory() {
   const {
     data,
     selectedRows,
-    toggleSelection,
-    handleSuccess,
     isDetailOpen,
     detailRecord,
     showDetail,
@@ -61,7 +59,7 @@ export default function Inventory() {
   } = useBookPage<InventoryColumn>({
     fetchList: fetchInventoryWithFilter,
     deleteItem: async () => {}, // No delete action
-    itemName: '在庫',
+    itemName: `${PAGE_NAME}管理`,
   })
 
   // Summary State
@@ -76,20 +74,10 @@ export default function Inventory() {
       .catch(console.error)
   }, [])
 
-  // Filter logic for Search Text (Client side)
-  const filteredData = useMemo(() => {
-    if (!searchText) return data
-    const lower = searchText.toLowerCase()
-    return data.filter((item) => {
-      const goodsName = item.goods?.goodsName?.toLowerCase() || ''
-      return goodsName.includes(lower)
-    })
-  }, [data, searchText])
-
   return (
     <div className="book-page-container">
       <PageHeader
-        title="在庫管理"
+        title={`${PAGE_NAME}一覧`}
         data={data as any[]}
       />
 
@@ -102,7 +90,7 @@ export default function Inventory() {
           <Col span={12}>
             <Card>
               <Statistic
-                title="在庫アイテム総数"
+                title={`${PAGE_NAME}アイテム総数`}
                 value={summary?.inStockCount || 0}
                 suffix="品目"
               />
@@ -111,7 +99,7 @@ export default function Inventory() {
           <Col span={12}>
             <Card>
               <Statistic
-                title="在庫切れアイテム"
+                title={`${PAGE_NAME}切れアイテム`}
                 value={summary?.outOfStockCount || 0}
                 suffix="品目"
                 valueStyle={{ color: '#cf1322' }}
@@ -121,7 +109,7 @@ export default function Inventory() {
           </Col>
         </Row>
 
-        {/* フィルターと検索 */}
+        {/* フィルター */}
         <Space
           size="middle"
           style={{ width: '100%' }}
@@ -142,24 +130,11 @@ export default function Inventory() {
               },
             ]}
           />
-          {/* <Search
-              placeholder="商品名で検索"
-              allowClear
-              style={{ width: 300 }}
-              onSearch={setSearchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            /> */}
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={() => handleSuccess()}
-          >
-            更新
-          </Button>
         </Space>
 
         {/* 在庫データグリッド */}
         <PaginatedGrid
-          data={filteredData as InventoryColumn[]}
+          data={data as InventoryColumn[]}
           renderItem={(record: InventoryColumn) => {
             const status = record.remainingQuantity
               ? STOCK_STATUS.IN_STOCK
@@ -206,7 +181,6 @@ export default function Inventory() {
                           {name}
                         </Tag>
                       ) : (
-                        // fallback
                         '-'
                       )
                     }
@@ -227,7 +201,7 @@ export default function Inventory() {
         manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.goods?.goodsName || '詳細'}
-        subtitle="在庫詳細"
+        subtitle={`${PAGE_NAME}詳細`}
         onClose={closeDetail}
         hasNext={hasNext}
         hasPrev={hasPrev}
@@ -280,7 +254,6 @@ export default function Inventory() {
                     }
                   </Tag>
                 ) : (
-                  // fallback
                   '-'
                 )
               }

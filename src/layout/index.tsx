@@ -17,6 +17,23 @@ import {
 import { useState, useEffect } from 'react'
 import { BookProvider, useBook } from '@/context/BookContext'
 
+export const PAGE_NAMES: { [key: string]: string } = {
+  '/': 'ホーム',
+  '/budget/summary': '家計記入',
+  '/budget/summary/today': '今日の集計',
+  '/budget/summary/weekly': '今週の集計',
+  '/budget/summary/monthly': '今月の集計',
+  '/budget/purchasement': '支出',
+  '/budget/consumption': '消費',
+  '/budget/inventory': '在庫',
+  '/budget/income': '収入',
+  '/budget/goods': '商品',
+  '/budget/store': '店舗',
+  '/budget/category': 'カテゴリ',
+  '/budget/brand': 'ブランド',
+  '/recipe': 'レシピ',
+}
+
 function LayoutInner() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -67,7 +84,7 @@ function LayoutInner() {
     {
       key: '/',
       icon: <BookOutlined />,
-      label: 'ホーム',
+      label: PAGE_NAMES['/'],
     },
     {
       key: 'budgetBook',
@@ -77,22 +94,22 @@ function LayoutInner() {
         {
           key: '/budget/summary',
           icon: <ShoppingOutlined />,
-          label: '家計記入',
+          label: PAGE_NAMES['/budget/summary'],
         },
         {
           key: '/budget/summary/today',
           icon: <ShoppingOutlined />,
-          label: '今日の集計',
+          label: PAGE_NAMES['/budget/summary/today'],
         },
         {
           key: '/budget/summary/weekly',
           icon: <ShoppingOutlined />,
-          label: '今週の集計',
+          label: PAGE_NAMES['/budget/summary/weekly'],
         },
         {
           key: '/budget/summary/monthly',
           icon: <ShoppingOutlined />,
-          label: '今月の集計',
+          label: PAGE_NAMES['/budget/summary/monthly'],
         },
       ],
     },
@@ -104,42 +121,42 @@ function LayoutInner() {
         {
           key: '/budget/purchasement',
           icon: <ShoppingCartOutlined />,
-          label: '支出管理',
+          label: PAGE_NAMES['/budget/purchasement'] + '管理',
         },
         {
           key: '/budget/consumption',
           icon: <ShoppingOutlined />,
-          label: '消費管理',
+          label: PAGE_NAMES['/budget/consumption'] + '管理',
         },
         {
           key: '/budget/inventory',
           icon: <ShoppingOutlined />,
-          label: '在庫管理',
+          label: PAGE_NAMES['/budget/inventory'] + '管理',
         },
         {
           key: '/budget/income',
           icon: <RiseOutlined />,
-          label: '収入管理',
+          label: PAGE_NAMES['/budget/income'] + '管理',
         },
         {
           key: '/budget/goods',
           icon: <AppstoreOutlined />,
-          label: '商品管理',
+          label: PAGE_NAMES['/budget/goods'] + '管理',
         },
         {
           key: '/budget/store',
           icon: <ShopOutlined />,
-          label: '店舗管理',
+          label: PAGE_NAMES['/budget/store'] + '管理',
         },
         {
           key: '/budget/category',
           icon: <AppstoreOutlined />,
-          label: 'カテゴリ管理',
+          label: PAGE_NAMES['/budget/category'] + '管理',
         },
         {
           key: '/budget/brand',
           icon: <TagOutlined />,
-          label: 'ブランド管理',
+          label: PAGE_NAMES['/budget/brand'] + '管理',
         },
       ],
     },
@@ -151,7 +168,7 @@ function LayoutInner() {
         {
           key: '/recipe',
           icon: <BookOutlined />,
-          label: 'レシピ管理',
+          label: PAGE_NAMES['/recipe'] + '管理',
         },
       ],
     },
