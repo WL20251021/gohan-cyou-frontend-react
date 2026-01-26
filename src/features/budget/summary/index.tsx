@@ -100,7 +100,7 @@ export default function SummaryPage() {
 
   useEffect(() => {
     fetchSummary(selectedDate)
-  }, [selectedDate])
+  }, [selectedDate, pageType])
 
   // 日付選択ハンドラー
   const handleDateChange = (date: Dayjs | null) => {
