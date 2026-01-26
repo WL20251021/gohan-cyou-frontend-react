@@ -24,7 +24,7 @@ import { RecipeColumn, JPNames } from './columns'
 import { getRecipes, addRecipe, updateRecipe, deleteRecipe } from './api'
 import type { RecipeIngredient } from './ingredient/columns'
 import type { instructions } from './instructions/columns'
-import { getGoods } from '../budget/goods/api'
+import { getGoods } from '@/features/budget/goods/api'
 
 import { PAGE_NAMES } from '@/layout'
 const currentPath = window.location.pathname
