@@ -3,14 +3,13 @@ import '@/style/reset.css'
 import '@/style/book.css'
 import '@/style/book_modal.css'
 import { Outlet, useNavigate, useLocation } from 'react-router'
-import { Menu, Avatar, Dropdown, Flex } from 'antd'
+import { Menu, Avatar } from 'antd'
 import {
   ShoppingOutlined,
   ShopOutlined,
   AppstoreOutlined,
   ShoppingCartOutlined,
   UserOutlined,
-  LogoutOutlined,
   BookOutlined,
   RiseOutlined,
   TagOutlined,
@@ -110,7 +109,7 @@ function LayoutInner() {
         {
           key: '/budget/consumption',
           icon: <ShoppingOutlined />,
-          label: '使用記録',
+          label: '消費管理',
         },
         {
           key: '/budget/inventory',
@@ -125,22 +124,22 @@ function LayoutInner() {
         {
           key: '/budget/goods',
           icon: <AppstoreOutlined />,
-          label: '商品',
+          label: '商品管理',
         },
         {
           key: '/budget/store',
           icon: <ShopOutlined />,
-          label: '店舗',
+          label: '店舗管理',
         },
         {
           key: '/budget/category',
           icon: <AppstoreOutlined />,
-          label: 'カテゴリ',
+          label: 'カテゴリ管理',
         },
         {
           key: '/budget/brand',
           icon: <TagOutlined />,
-          label: 'ブランド',
+          label: 'ブランド管理',
         },
       ],
     },

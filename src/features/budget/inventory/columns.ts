@@ -70,7 +70,7 @@ export function formatDate(date: Date | null): string {
  * 日本語表示用の定義
  */
 export const JPNames = {
-  purchasementId: '購入記録ID',
+  purchasementId: '支出記録ID',
   goodsId: '商品ID',
   remainingQuantity: '利用可能数',
   quantityUnit: '単位',

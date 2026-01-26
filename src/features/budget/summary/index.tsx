@@ -74,7 +74,7 @@ export default function SummaryPage() {
       const totalExpense = todayExpenses.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
       setExpenseDetails(todayExpenses)
 
-      // 使用記録データ取得
+      // 消費記録データ取得
       const consumptionResponse = await getTotalConsumptionBetween(dateParams)
       const todayConsumptions: ConsumptionColumn[] = consumptionResponse.data || []
       const totalConsumption = todayConsumptions.reduce(
@@ -374,19 +374,19 @@ export default function SummaryPage() {
             />
           </Card>
 
-          {/* 使用記録詳細 */}
+          {/* 消費記録詳細 */}
           <Card
             title={
               <span>
                 <ShoppingCartOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-                使用記録詳細
+                消費記録詳細
               </span>
             }
           >
             <List
               itemLayout="horizontal"
               dataSource={consumptionDetails}
-              locale={{ emptyText: '使用記録データはありません' }}
+              locale={{ emptyText: '消費記録データはありません' }}
               renderItem={(item) => (
                 <List.Item>
                   <List.Item.Meta

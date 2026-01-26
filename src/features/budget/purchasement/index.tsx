@@ -36,7 +36,7 @@ import { getStores } from '../store/api'
 import { GoodsAddModal } from '../goods/index'
 import { StoreAddModal } from '../store/index'
 
-// 購入記録追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
+// 支出記録追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function PurchasementModal({
   open,
   isEditMode = false,
@@ -117,7 +117,7 @@ export function PurchasementModal({
       })
   }
 
-  // 購入記録を保存
+  // 支出記録を保存
   function handleSave() {
     setConfirmLoading(true)
     form
@@ -137,7 +137,7 @@ export function PurchasementModal({
       })
       .then(() => {
         form.resetFields()
-        message.success(isEditMode ? '購入記録を更新しました' : '購入記録を追加しました')
+        message.success(isEditMode ? '支出記録を更新しました' : '支出記録を追加しました')
         setConfirmLoading(false)
         if (onSuccess) {
           onSuccess()
@@ -151,7 +151,7 @@ export function PurchasementModal({
         } else {
           console.error(error)
           notification.error({
-            title: isEditMode ? '購入記録更新失敗' : '購入記録追加失敗',
+            title: isEditMode ? '支出記録更新失敗' : '支出記録追加失敗',
             description: error.message,
             placement: 'bottomRight',
             showProgress: true,
@@ -254,7 +254,7 @@ export function PurchasementModal({
   return (
     <>
       <BookModal
-        title={isEditMode ? '購入記録を編集' : '購入記録を追加'}
+        title={isEditMode ? '支出記録を編集' : '支出記録を追加'}
         open={open}
         confirmLoading={confirmLoading}
         onOk={handleSave}
@@ -651,7 +651,7 @@ export default function Purchasement() {
   } = useBookPage<PurchasementColumn>({
     fetchList: getPurchasements,
     deleteItem: deletePurchasement,
-    itemName: '購入記録',
+    itemName: '支出記録',
   })
 
   // テーブルデータとカラム定義 (Removed manual state)
@@ -659,7 +659,7 @@ export default function Purchasement() {
   return (
     <div className="book-page-container">
       <PageHeader
-        title="購入記録一覧"
+        title="支出記録一覧"
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
@@ -730,7 +730,7 @@ export default function Purchasement() {
         )}
       />
 
-      {/* 購入記録追加・編集モーダル */}
+      {/* 支出記録追加・編集モーダル */}
       <PurchasementModal
         open={isModalOpen}
         isEditMode={!isAdd}
@@ -745,9 +745,9 @@ export default function Purchasement() {
         title={
           detailRecord?.purchaseDate
             ? dayjs(detailRecord.purchaseDate).format('YYYY-MM-DD')
-            : '購入記録'
+            : '支出記録'
         }
-        subtitle="購入記録詳細"
+        subtitle="支出記録詳細"
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

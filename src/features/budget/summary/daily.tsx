@@ -42,7 +42,7 @@ export default function DailyPurchasementPage() {
   const [isIncomeEditMode, setIsIncomeEditMode] = useState(false)
   const [editingIncome, setEditingIncome] = useState<IncomeColumn | null>(null)
 
-  // 使用記録関連の状態
+  // 消費記録関連の状態
   const [totalConsumption, setTotalConsumption] = useState(0)
   const [dailyConsumptions, setDailyConsumptions] = useState<ConsumptionColumn[]>([])
   const [isConsumptionModalOpen, setIsConsumptionModalOpen] = useState(false)
@@ -61,7 +61,7 @@ export default function DailyPurchasementPage() {
     fetchDailyConsumptions(selectedDate)
   }, [selectedDate])
 
-  // 指定日の購入記録を取得
+  // 指定日の支出記録を取得
   const fetchDailyPurchases = async (date: Dayjs) => {
     setLoading(true)
     try {
@@ -78,7 +78,7 @@ export default function DailyPurchasementPage() {
       setTotalAmount(total)
     } catch (error) {
       message.error('データの取得に失敗しました')
-      console.error('購入記録取得失敗:', error)
+      console.error('支出記録取得失敗:', error)
     } finally {
       setLoading(false)
     }
@@ -109,7 +109,7 @@ export default function DailyPurchasementPage() {
     }
   }
 
-  // 使用記録を取得
+  // 消費記録を取得
   const fetchDailyConsumptions = async (date: Dayjs) => {
     try {
       const response = await getTotalConsumptionBetween({
@@ -126,8 +126,8 @@ export default function DailyPurchasementPage() {
       )
       setTotalConsumption(total)
     } catch (error) {
-      message.error('使用記録の取得に失敗しました')
-      console.error('使用記録取得失敗:', error)
+      message.error('消費記録の取得に失敗しました')
+      console.error('消費記録取得失敗:', error)
       setDailyConsumptions([])
     }
   }
@@ -170,7 +170,7 @@ export default function DailyPurchasementPage() {
     setEditingRecord(null)
   }
 
-  // 購入記録保存成功時
+  // 支出記録保存成功時
   const handleSaveSuccess = () => {
     fetchDailyPurchases(selectedDate)
     handleCancel()
@@ -215,39 +215,39 @@ export default function DailyPurchasementPage() {
     }
   }
 
-  /* 使用記録 */
-  // 使用記録追加モーダルを開く
+  /* 消費記録 */
+  // 消費記録追加モーダルを開く
   const handleAddConsumption = () => {
     setIsConsumptionEditMode(false)
     setEditingConsumption(null)
     setIsConsumptionModalOpen(true)
   }
 
-  // 使用記録編集モーダルを開く
+  // 消費記録編集モーダルを開く
   const handleEditConsumption = (record: ConsumptionColumn) => {
     setIsConsumptionEditMode(true)
     setEditingConsumption(record)
     setIsConsumptionModalOpen(true)
   }
 
-  // 使用記録モーダルをキャンセル
+  // 消費記録モーダルをキャンセル
   const handleConsumptionCancel = () => {
     setIsConsumptionModalOpen(false)
     setEditingConsumption(null)
   }
 
-  // 使用記録保存成功時
+  // 消費記録保存成功時
   const handleConsumptionSuccess = () => {
     setIsConsumptionModalOpen(false)
     setEditingConsumption(null)
     fetchDailyConsumptions(selectedDate)
   }
 
-  // 使用記録削除
+  // 消費記録削除
   const handleDeleteConsumption = async (record: ConsumptionColumn) => {
     try {
       await deleteConsumption([record.id])
-      message.success('使用記録を削除しました')
+      message.success('消費記録を削除しました')
       fetchDailyConsumptions(selectedDate)
     } catch (error) {
       message.error('削除に失敗しました')
@@ -255,11 +255,11 @@ export default function DailyPurchasementPage() {
     }
   }
 
-  // 購入記録を削除
+  // 支出記録を削除
   const handleDelete = async (record: PurchasementColumn) => {
     try {
       await deletePurchasement([record.id])
-      message.success('購入記録を削除しました')
+      message.success('支出記録を削除しました')
       fetchDailyPurchases(selectedDate)
     } catch (error) {
       message.error('削除に失敗しました')
@@ -333,7 +333,7 @@ export default function DailyPurchasementPage() {
                 icon={<BookOutlined />}
                 onClick={handleAddConsumption}
               >
-                使用記録を追加
+                消費記録を追加
               </Button>
             </Space>
           </Col>
@@ -393,7 +393,7 @@ export default function DailyPurchasementPage() {
           >
             <Card style={{ background: 'linear-gradient(135deg, #AA60C8 0%, #D69ADE 100%)' }}>
               <Statistic
-                title={<span style={{ color: 'white', fontSize: '16px' }}>使用記録</span>}
+                title={<span style={{ color: 'white', fontSize: '16px' }}>消費記録</span>}
                 value={dailyConsumptions.length}
                 precision={0}
                 valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
@@ -458,7 +458,7 @@ export default function DailyPurchasementPage() {
           {dailyPurchases.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>
               <FallOutlined style={{ fontSize: '32px', marginBottom: '8 px' }} />
-              <p>この日の購入記録はまだありません</p>
+              <p>この日の支出記録はまだありません</p>
             </div>
           ) : (
             <List
@@ -476,7 +476,7 @@ export default function DailyPurchasementPage() {
                     </Button>,
                     <DoodlePopconfirm
                       title="削除確認"
-                      description={`「${item.goods?.goodsName || '不明'}」の購入記録を削除しますか？`}
+                      description={`「${item.goods?.goodsName || '不明'}」の支出記録を削除しますか？`}
                       onConfirm={() => handleDelete(item)}
                       okText="削除"
                       cancelText="キャンセル"
@@ -639,9 +639,9 @@ export default function DailyPurchasementPage() {
           )}
         </Card>
 
-        {/* 使用記録リスト */}
+        {/* 消費記録リスト */}
         <Card
-          title="使用記録一覧"
+          title="消費記録一覧"
           extra={
             <Button
               type="default"
@@ -650,14 +650,14 @@ export default function DailyPurchasementPage() {
               icon={<BookOutlined />}
               onClick={handleAddConsumption}
             >
-              使用記録を追加
+              消費記録を追加
             </Button>
           }
         >
           {dailyConsumptions.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>
               <BookOutlined style={{ fontSize: '32px', marginBottom: '8px' }} />
-              <p>この日の使用記録はまだありません</p>
+              <p>この日の消費記録はまだありません</p>
             </div>
           ) : (
             <List
@@ -675,7 +675,7 @@ export default function DailyPurchasementPage() {
                     </Button>,
                     <DoodlePopconfirm
                       title="削除確認"
-                      description={`「${item.purchasement?.goods?.goodsName || '不明'}」の使用記録を削除しますか？`}
+                      description={`「${item.purchasement?.goods?.goodsName || '不明'}」の消費記録を削除しますか？`}
                       onConfirm={() => handleDeleteConsumption(item)}
                       okText="削除"
                       cancelText="キャンセル"
@@ -738,7 +738,7 @@ export default function DailyPurchasementPage() {
         </Card>
       </div>
 
-      {/* 購入記録追加・編集モーダル */}
+      {/* 支出記録追加・編集モーダル */}
       <PurchasementModal
         open={isModalOpen}
         isEditMode={isEditMode}
@@ -758,7 +758,7 @@ export default function DailyPurchasementPage() {
         onSuccess={handleIncomeSuccess}
       />
 
-      {/* 使用記録追加・編集モーダル */}
+      {/* 消費記録追加・編集モーダル */}
       <ConsumptionModal
         open={isConsumptionModalOpen}
         isEditMode={isConsumptionEditMode}

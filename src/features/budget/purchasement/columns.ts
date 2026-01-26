@@ -91,7 +91,7 @@ export const JPNames = {
   updatedAt: '更新日',
 }
 
-// 購入記録データのカラム定義
+// 支出記録データのカラム定義
 export class PurchasementColumn {
   id: number = 0
   goodsId: number | null = null

@@ -16,8 +16,8 @@ type QuantityUnit = (typeof QUANTITY_UNITS)[keyof typeof QUANTITY_UNITS]
 // 日本語表示用の定義
 export const JPNames = {
   id: 'ID',
-  purchasement: '購入記録',
-  purchasementId: '購入記録ID',
+  purchasement: '支出記録',
+  purchasementId: '支出記録ID',
   quantity: '数量',
   quantityUnit: '数量単位',
   consumptionDate: '使用日',
@@ -26,7 +26,7 @@ export const JPNames = {
   updatedAt: '更新日',
 }
 
-// 使用記録データのカラム定義
+// 消費記録データのカラム定義
 export class ConsumptionColumn {
   id: number = 0
   consumptionDate: Date | null = null

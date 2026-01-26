@@ -37,7 +37,7 @@ export default function Consumption() {
   } = useBookPage<ConsumptionColumn>({
     fetchList: getConsumption,
     deleteItem: deleteConsumption,
-    itemName: '使用記録',
+    itemName: '消費記録',
   })
 
   // 拡張データ取得用
@@ -54,7 +54,7 @@ export default function Consumption() {
     checkInventoryStatus()
   }, [data]) // data changes on fetchSuccess
 
-  // 購入記録データ取得
+  // 支出記録データ取得
   function fetchPurchasements() {
     getPurchasements()
       .then((res) => {
@@ -92,7 +92,7 @@ export default function Consumption() {
   return (
     <div className="book-page-container">
       <PageHeader
-        title="使用記録管理"
+        title="消費記録管理"
         onAdd={() => showModal(true)}
         onDelete={() => handleDelete(selectedRows.map((r) => r.id))}
         deleteDisabled={selectedRows.length === 0}
@@ -109,7 +109,7 @@ export default function Consumption() {
             <Col span={6}>
               <Card>
                 <Statistic
-                  title="総使用記録数"
+                  title="総消費記録数"
                   value={statistics.totalConsumptions}
                 />
               </Card>
@@ -126,7 +126,7 @@ export default function Consumption() {
             <Col span={6}>
               <Card>
                 <Statistic
-                  title="今月の使用記録"
+                  title="今月の消費記録"
                   value={statistics.thisMonthConsumptions}
                 />
               </Card>
@@ -224,7 +224,7 @@ export default function Consumption() {
       <BookDetailModal
         open={isDetailOpen}
         title={detailRecord?.purchasement?.goods?.goodsName || '詳細'}
-        subtitle="使用記録詳細"
+        subtitle="消費記録詳細"
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

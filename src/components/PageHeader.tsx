@@ -20,7 +20,7 @@ const PATH_TO_TITLE: Record<string, string> = {
   '/budget/income': '収入管理',
   '/recipe': 'レシピ管理',
   '/budget/inventory': '在庫管理',
-  '/budget/consumption': '使用記録',
+  '/budget/consumption': '消費記録',
 }
 
 /**

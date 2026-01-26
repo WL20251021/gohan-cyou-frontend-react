@@ -84,7 +84,7 @@ export function ConsumptionModal({
     }
   }
 
-  // 購入記録選択時のハンドラー
+  // 支出記録選択時のハンドラー
   const handlePurchasementChange = (purchasementId: number) => {
     const inventory = availablePurchasements.find((p) => p.id === purchasementId)
     if (inventory) {
@@ -98,7 +98,7 @@ export function ConsumptionModal({
     }
   }
 
-  // 使用記録追加・編集の確定ハンドラー
+  // 消費記録追加・編集の確定ハンドラー
   const handleConfirm = async () => {
     try {
       setConfirmLoading(true)
@@ -113,10 +113,10 @@ export function ConsumptionModal({
 
       if (isEditMode && editingRecord) {
         await updateConsumption(editingRecord.id, data as any)
-        message.success('使用記録を更新しました')
+        message.success('消費記録を更新しました')
       } else {
         await addConsumption(data as any)
-        message.success('使用記録を追加しました')
+        message.success('消費記録を追加しました')
       }
 
       form.resetFields()
@@ -144,7 +144,7 @@ export function ConsumptionModal({
 
   return (
     <BookModal
-      title={isEditMode ? '使用記録を編集' : '使用記録を追加'}
+      title={isEditMode ? '消費記録を編集' : '消費記録を追加'}
       // width="80%"
       // maskClosable={false}
       open={open}
@@ -186,11 +186,11 @@ export function ConsumptionModal({
         <Form.Item
           label={JPNames.purchasement}
           name="purchasementId"
-          rules={[{ required: true, message: '購入記録を選択してください!' }]}
+          rules={[{ required: true, message: '支出記録を選択してください!' }]}
         >
           <Select
             allowClear
-            placeholder="購入記録を選択（在庫あり）"
+            placeholder="支出記録を選択（在庫あり）"
             showSearch
             optionFilterProp="label"
             onChange={handlePurchasementChange}
@@ -248,7 +248,7 @@ export function ConsumptionModal({
               style={{ width: '70%' }}
               addonAfter={selectedInventory ? selectedInventory.quantityUnit : QUANTITY_UNITS.Piece}
               placeholder={
-                maxQuantity > 0 ? `最大: ${maxQuantity.toFixed(2)}` : '購入記録を選択してください'
+                maxQuantity > 0 ? `最大: ${maxQuantity.toFixed(2)}` : '支出記録を選択してください'
               }
             />
           </Form.Item>
