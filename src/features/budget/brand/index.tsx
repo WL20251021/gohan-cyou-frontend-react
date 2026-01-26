@@ -215,8 +215,7 @@ export default function Brand() {
               e.stopPropagation()
               showModal(false, record)
             }}
-            onDelete={(e) => {
-              e.stopPropagation()
+            onDelete={() => {
               handleDeleteAction(record)
             }}
           >

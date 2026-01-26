@@ -685,8 +685,7 @@ export default function Purchasement() {
               e.stopPropagation()
               showModal(false, record)
             }}
-            onDelete={(e) => {
-              e.stopPropagation()
+            onDelete={() => {
               handleDeleteAction(record)
             }}
           >

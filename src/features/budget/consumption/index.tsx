@@ -191,8 +191,7 @@ export default function Consumption() {
                 e.stopPropagation()
                 showModal(false, record)
               }}
-              onDelete={(e) => {
-                e.stopPropagation()
+              onDelete={() => {
                 handleDeleteAction(record)
               }}
             >

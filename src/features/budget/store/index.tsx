@@ -254,8 +254,7 @@ export default function Store() {
               e.stopPropagation()
               showModal(false, record)
             }}
-            onDelete={(e) => {
-              e.stopPropagation()
+            onDelete={() => {
               handleDeleteAction(record)
             }}
           >

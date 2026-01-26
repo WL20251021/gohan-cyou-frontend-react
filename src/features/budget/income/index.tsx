@@ -109,8 +109,7 @@ export default function Income() {
               e.stopPropagation()
               showModal(false, record)
             }}
-            onDelete={(e) => {
-              e.stopPropagation()
+            onDelete={() => {
               handleDeleteAction(record)
             }}
           >

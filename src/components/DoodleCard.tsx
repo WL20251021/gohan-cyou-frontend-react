@@ -88,9 +88,7 @@ export default function DoodleCard({
             <DoodlePopconfirm
               title="削除確認"
               description="本当に削除しますか？"
-              onConfirm={(e) => {
-                if (onDelete) onDelete(e as any)
-              }}
+              onConfirm={(e) => onDelete(e as any)}
               okText="削除"
               cancelText="キャンセル"
               okButtonProps={{ danger: true }}
