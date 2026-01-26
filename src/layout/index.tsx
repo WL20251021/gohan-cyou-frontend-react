@@ -103,14 +103,14 @@ function LayoutInner() {
       label: '家計管理',
       children: [
         {
-          key: '/budget/consumption',
-          icon: <ShoppingOutlined />,
-          label: '使用記録',
-        },
-        {
           key: '/budget/purchasement',
           icon: <ShoppingCartOutlined />,
           label: '支出管理',
+        },
+        {
+          key: '/budget/consumption',
+          icon: <ShoppingOutlined />,
+          label: '使用記録',
         },
         {
           key: '/budget/inventory',
