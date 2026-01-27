@@ -1,5 +1,5 @@
-import type { instructions } from './instructions/columns'
-import type { RecipeIngredient } from './ingredient/columns'
+import type { instructions } from '../instructions/columns'
+import type { RecipeIngredient } from '../ingredient/columns'
 
 export class RecipeColumn {
   id: number = 0

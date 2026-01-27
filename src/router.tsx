@@ -11,7 +11,7 @@ import Brand from './features/budget/brand'
 import Login from './features/user/Login'
 import Register from './features/user/Register'
 import Profile from './features/user/Profile'
-import Recipe from './features/recipe'
+import Recipe from './features/recipe/recipe'
 import Income from './features/budget/income'
 import Inventory from './features/budget/inventory'
 // budgetBook
@@ -40,7 +40,12 @@ const router = createBrowserRouter([
       },
       {
         path: '/recipe',
-        Component: Recipe,
+        children: [
+          {
+            index: true,
+            Component: Recipe,
+          },
+        ],
       },
       {
         path: '/budget',
