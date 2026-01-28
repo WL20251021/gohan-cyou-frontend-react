@@ -4,6 +4,7 @@ import notification from '@/components/DoodleNotification'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import { login } from './api'
 import { useNavigate } from 'react-router'
+import { SETTINGS } from '@/settings/settings'
 
 const { Title } = Typography
 
@@ -103,7 +104,7 @@ export default function Login() {
           transform: 'rotate(-3deg)',
         }}
       >
-        食費ナビ
+        {SETTINGS.name}
       </div>
 
       <Card

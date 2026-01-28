@@ -16,6 +16,7 @@ import {
 } from '@ant-design/icons'
 import { useState, useEffect } from 'react'
 import { BookProvider, useBook } from '@/context/BookContext'
+import { SETTINGS } from '@/settings/settings'
 
 export const PAGE_NAMES: { [key: string]: string } = {
   '/': 'ホーム',
@@ -32,6 +33,7 @@ export const PAGE_NAMES: { [key: string]: string } = {
   '/budget/category': 'カテゴリ',
   '/budget/brand': 'ブランド',
   '/recipe': 'レシピ',
+  '/recipe/cook': '調理',
 }
 
 function LayoutInner() {
@@ -170,6 +172,11 @@ function LayoutInner() {
           icon: <BookOutlined />,
           label: PAGE_NAMES['/recipe'] + '管理',
         },
+        {
+          key: '/recipe/cook',
+          icon: <BookOutlined />,
+          label: PAGE_NAMES['/recipe/cook'] + '管理',
+        },
       ],
     },
   ]
@@ -203,7 +210,7 @@ function LayoutInner() {
             {/* <div className="book-thickness"></div> */}
             <div className="book-cover">
               <div className="book-cover-title-box">
-                <h1 className="book-cover-title-text">食費ナビ</h1>
+                <h1 className="book-cover-title-text">{SETTINGS.name}</h1>
               </div>
               <div className="book-cover-subtitle">PI11B911-06 オウリナ</div>
             </div>
@@ -230,7 +237,7 @@ function LayoutInner() {
             onClick={() => navigate('/')}
             style={{ cursor: 'pointer' }}
           >
-            <div className="book-logo-text">食費ナビ</div>
+            <div className="book-logo-text">{SETTINGS.name}</div>
           </div>
 
           {/* Menu */}
