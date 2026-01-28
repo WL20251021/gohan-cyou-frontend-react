@@ -381,7 +381,6 @@ export function GoodsAddModal({
         open={isCategoryModalOpen}
         onCancel={handleCategoryCancel}
         onSuccess={handleCategorySuccess}
-        zIndex={100}
       />
 
       {/* ブランド追加モーダル */}
@@ -389,7 +388,6 @@ export function GoodsAddModal({
         open={isBrandModalOpen}
         onCancel={handleBrandCancel}
         onSuccess={handleBrandSuccess}
-        zIndex={100}
       />
     </BookModal>
   )

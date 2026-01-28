@@ -38,21 +38,48 @@ interface RecipeModalProps {
   isEditMode?: boolean
   editingRecord?: RecipeColumn | null
   onCancel: () => void
-  onSuccess?: () => void
+  onSuccess?: (newRecipe?: RecipeColumn) => void
+  zIndex?: number
 }
 
-function RecipeModal({
+export function RecipeModal({
   open,
   isEditMode = false,
   editingRecord = null,
   onCancel,
   onSuccess,
+  zIndex,
 }: RecipeModalProps) {
   const [form] = Form.useForm<RecipeColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([])
   const [instructions, setInstructions] = useState<instructions[]>([])
   const [goodsList, setGoodsList] = useState<any[]>([])
+  const [isGoodsModalOpen, setIsGoodsModalOpen] = useState<boolean[]>([])
+
+  // 商品追加モーダルを開く
+  const handleAddGoods = (index: number) => {
+    const newIsGoodsModalOpen = [...isGoodsModalOpen]
+    newIsGoodsModalOpen[index] = true
+    setIsGoodsModalOpen(newIsGoodsModalOpen)
+  }
+
+  // 商品追加モーダルをキャンセル
+  const handleGoodsCancel = (index: number) => {
+    const open = [...isGoodsModalOpen]
+    open[index] = false
+    setIsGoodsModalOpen(open)
+  }
+
+  // 商品追加成功時
+  const handleGoodsSuccess = (index: number, newGoods: any) => {
+    // 商品リストを再取得
+    fetchGoods()
+    // 追加した商品を選択状態にする
+    const ings = [...ingredients]
+    ings[index].goodsId = newGoods.id
+    setIngredients(ings)
+  }
 
   useEffect(() => {
     if (open) {
@@ -189,12 +216,20 @@ function RecipeModal({
           return addRecipe(data).then((res) => res.data.id)
         }
       })
-      .then(() => {
+      .then((res) => {
         message.success(`${PAGE_NAME}を${isEditMode ? '更新' : '追加'}しました`)
         form.resetFields()
         setIngredients([])
         setInstructions([])
-        onSuccess?.()
+        // 追加したレシピ（最後のレシピ）を返す
+        if (onSuccess) {
+          if (isEditMode) {
+            onSuccess()
+          } else if (res?.data?.length > 0) {
+            const newRecipe = res.data[res.data.length - 1]
+            onSuccess(newRecipe)
+          }
+        }
         onCancel()
       })
       .catch((error) => {
@@ -222,10 +257,9 @@ function RecipeModal({
       onOk={handleSave}
       onCancel={onCancel}
       confirmLoading={confirmLoading}
-      // width={700}
       okText="保存"
       cancelText="キャンセル"
-      // maskClosable={false}
+      zIndex={zIndex}
     >
       <Form
         form={form}
@@ -266,20 +300,33 @@ function RecipeModal({
               style={{ marginBottom: 8 }}
             >
               <Col span={10}>
-                <Select
-                  placeholder="商品を選択"
-                  value={ingredient.goodsId || undefined}
-                  onChange={(value) => updateIngredient(index, 'goodsId', value)}
-                  style={{ width: '100%' }}
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  options={goodsList.map((goods) => ({
-                    label: goods.goodsName,
-                    value: goods.id,
-                  }))}
+                <Space.Compact style={{ width: '100%' }}>
+                  <Select
+                    placeholder="商品を選択"
+                    value={ingredient.goodsId || undefined}
+                    onChange={(value) => updateIngredient(index, 'goodsId', value)}
+                    style={{ width: '100%' }}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
+                    options={goodsList.map((goods) => ({
+                      label: goods.goodsName,
+                      value: goods.id,
+                    }))}
+                  />
+                  <Button
+                    type="primary"
+                    onClick={() => handleAddGoods(index)}
+                    icon={<PlusOutlined />}
+                  ></Button>
+                </Space.Compact>
+
+                <GoodsAddModal
+                  open={isGoodsModalOpen[index]}
+                  onCancel={() => handleGoodsCancel(index)}
+                  onSuccess={(item) => handleGoodsSuccess(index, item)}
                 />
               </Col>
               <Col span={4}>
@@ -427,6 +474,7 @@ function RecipeModal({
 }
 
 import { useBookPage } from '@/hooks/useBookPage'
+import { GoodsAddModal } from '@/features/budget/goods'
 
 // (Keep RecipeModal definition and interfaces as is...)
 
@@ -561,6 +609,45 @@ export default function Recipe() {
                 />
               }
             />
+            {detailRecord.ingredients &&
+              detailRecord.ingredients.length > 0 &&
+              detailRecord.ingredients.map((ri: RecipeIngredient) => (
+                <DoodleCardRow
+                  label={JPNames.ingredients}
+                  html={
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {ri.goods?.imageName && (
+                        <img
+                          src={ri.goods.imageName}
+                          alt={ri.goods.goodsName}
+                          style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }}
+                        />
+                      )}
+                      <span style={{ marginLeft: 8 }}>
+                        {ri.goods?.goodsName || '不明な商品'}: {ri.quantity}
+                        {ri.unit} {ri.description && `(${ri.description})`}
+                      </span>
+                    </div>
+                  }
+                  truncate={true}
+                />
+              ))}
+            {detailRecord.instructions &&
+              detailRecord.instructions.length > 0 &&
+              detailRecord.instructions.map((ri) => (
+                <DoodleCardRow
+                  label={JPNames.instructions}
+                  labelPosition="top"
+                  value={`ステップ ${ri.stepNumber}: ${ri.description}`}
+                  truncate={true}
+                />
+              ))}
           </div>
         )}
       </BookDetailModal>

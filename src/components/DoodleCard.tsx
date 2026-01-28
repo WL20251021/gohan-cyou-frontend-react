@@ -18,15 +18,18 @@ export function DoodleCardRow({
   label,
   value,
   truncate = false,
+  html,
 }: {
   label: ReactNode
-  value: ReactNode
+  value?: ReactNode
   truncate?: boolean
+  html?: ReactNode
+  labelPosition?: 'top' | 'left'
 }) {
   return (
     <div className="doodle-card-row">
       <span className="doodle-card-label">{label}:</span>
-      {truncate ? <span className="truncate">{value}</span> : <span>{value}</span>}
+      {html ? html : truncate ? <span className="truncate">{value}</span> : <span>{value}</span>}
     </div>
   )
 }
