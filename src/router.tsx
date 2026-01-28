@@ -1,7 +1,7 @@
-import { createBrowserRouter, replace } from 'react-router'
+import { createBrowserRouter } from 'react-router'
 import Layout from './layout'
 import Home from './features/home'
-// budget
+// 家計簿関連管理ページ
 import Store from './features/budget/store'
 import Category from './features/budget/category'
 import Goods from './features/budget/goods'
@@ -13,8 +13,10 @@ import Register from './features/user/Register'
 import Profile from './features/user/Profile'
 import Recipe from './features/recipe/recipe'
 import Income from './features/budget/income'
+// レシピ
 import Inventory from './features/budget/inventory'
-// budgetBook
+import Cook from './features/recipe/cook'
+// 家計簿集計
 import BudgetSummary from './features/budget/summary'
 import DailyBudget from './features/budget/summary/daily'
 
@@ -44,6 +46,10 @@ const router = createBrowserRouter([
           {
             index: true,
             Component: Recipe,
+          },
+          {
+            path: 'cook',
+            Component: Cook,
           },
         ],
       },
