@@ -739,3 +739,14 @@ div.ant-select-dropdown,
   font-family: var(--font-doodle) !important;
   color: var(--color-ink-black);
 }
+
+/* --- Ant Design Message (Global `message`) Doodle Override --- */
+/* Make AntD's message toasts match doodle style used across the app. */
+.ant-message-notice-content {
+  border: var(--border-width) solid var(--border-color) !important;
+  border-radius: var(--radius-doodle) !important;
+  box-shadow: var(--shadow-doodle) !important;
+  background: var(--color-paper-white) !important;
+  font-family: var(--font-doodle) !important;
+  padding: 8px 12px !important;
+}
