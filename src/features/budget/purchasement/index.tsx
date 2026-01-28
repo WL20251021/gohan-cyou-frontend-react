@@ -440,7 +440,6 @@ export function PurchasementModal({
                   wrapperCol={{ span: 24 }}
                 >
                   <Radio.Group
-                    optionType="button"
                     buttonStyle="solid"
                     onChange={() => calculateTotalPrice()}
                   >
@@ -470,9 +469,6 @@ export function PurchasementModal({
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>税率：{taxRateDisplay}%</Col>
-          </Row>
-          <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="taxAmount"
@@ -483,11 +479,11 @@ export function PurchasementModal({
                 <InputNumber
                   min={0}
                   step={1}
-                  precision={2}
+                  precision={0}
                   style={{ width: '100%' }}
                   placeholder="自動計算されます"
                   addonAfter="円"
-                  disabled={true}
+                  readOnly={true}
                 />
               </Form.Item>
             </Col>
@@ -576,8 +572,7 @@ export function PurchasementModal({
                   style={{ width: '100%' }}
                   placeholder="自動計算されます"
                   addonAfter="円"
-                  onChange={() => calculateTotalPrice()}
-                  disabled={true}
+                  readOnly={true}
                 />
               </Form.Item>
             </Col>
