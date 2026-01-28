@@ -9,10 +9,6 @@ import { IncomeColumn, JPNames, JPIncomeCategory } from './columns'
 import { getIncomes, deleteIncome, getIncomeSummary } from './api'
 import { useBookPage } from '@/hooks/useBookPage'
 
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || '収入'
-
 export default function Income() {
   const {
     data,
@@ -35,10 +31,10 @@ export default function Income() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<IncomeColumn>({
     fetchList: getIncomes,
     deleteItem: deleteIncome,
-    itemName: `${PAGE_NAME}管理`,
   })
 
   // 合計金額取得
@@ -137,6 +133,7 @@ export default function Income() {
         record={editingRecord as IncomeColumn}
         onCancel={handleCancel}
         onSuccess={handleModalSuccess}
+        PAGE_NAME={PAGE_NAME}
       />
 
       <BookDetailModal

@@ -1,7 +1,10 @@
 import { useState, useCallback, useEffect } from 'react'
+import { useLocation } from 'react-router'
 import { message, Modal } from 'antd'
 import notification from '@/components/DoodleNotification'
 import { useBook } from '@/context/BookContext'
+
+import { PAGE_NAMES } from '@/layout'
 
 export interface BookPageOptions<T> {
   fetchList: () => Promise<{ data: T[] }>
@@ -11,7 +14,11 @@ export interface BookPageOptions<T> {
 }
 
 export function useBookPage<T extends { id: any }>(options: BookPageOptions<T>) {
-  const { fetchList, deleteItem, itemName = '項目', manualFetch = false } = options
+  // ページの名前を取得
+  const location = useLocation()
+  const PAGE_NAME: string = PAGE_NAMES[location.pathname] || '項目'
+
+  const { fetchList, deleteItem, itemName = PAGE_NAME || '項目', manualFetch = false } = options
   const { setFlip } = useBook()
 
   const [data, setData] = useState<T[]>([])
@@ -135,7 +142,12 @@ export function useBookPage<T extends { id: any }>(options: BookPageOptions<T>) 
     setLoading(true)
     deleteItem(ids)
       .then(() => {
-        message.success(`${itemName}${displayText}を削除しました`)
+        // message.success()
+        message.open({
+          type: 'success',
+          content: `${itemName}${displayText}を削除しました`,
+          duration: 10,
+        })
         return fetchList()
       })
       .then((res) => {
@@ -176,6 +188,7 @@ export function useBookPage<T extends { id: any }>(options: BookPageOptions<T>) 
   }
 
   return {
+    PAGE_NAME,
     data,
     loading,
     selectedRows,

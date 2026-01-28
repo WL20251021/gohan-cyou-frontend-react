@@ -11,10 +11,6 @@ import { CategoryColumn, JPNames } from './columns'
 import { getCategories, addCategory, updateCategory, deleteCategory } from './api'
 import { useBookPage } from '@/hooks/useBookPage'
 
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || 'カテゴリー'
-
 // カテゴリモーダルコンポーネント（追加・編集両方に対応、他のコンポーネントから使用可能）
 export function CategoryModal({
   open,
@@ -23,6 +19,7 @@ export function CategoryModal({
   onCancel,
   onSuccess,
   zIndex,
+  PAGE_NAME = 'カテゴリー',
 }: {
   open: boolean
   mode?: 'add' | 'edit'
@@ -30,6 +27,7 @@ export function CategoryModal({
   onCancel: () => void
   onSuccess?: (category: CategoryColumn) => void
   zIndex?: number
+  PAGE_NAME?: string
 }) {
   const [form] = Form.useForm<CategoryColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -190,10 +188,10 @@ export default function Category() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<CategoryColumn>({
     fetchList: getCategories,
     deleteItem: deleteCategory,
-    itemName: `${PAGE_NAME}管理`,
   })
 
   return (
@@ -260,13 +258,14 @@ export default function Category() {
         initialData={editingRecord as CategoryColumn | undefined}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
+        PAGE_NAME={PAGE_NAME}
       />
 
       <BookDetailModal
         manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.categoryName}
-        subtitle="Category Details"
+        subtitle={`${PAGE_NAME}詳細`}
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

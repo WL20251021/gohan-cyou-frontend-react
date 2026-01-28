@@ -26,10 +26,6 @@ import type { RecipeIngredient } from '../ingredient/columns'
 import type { instructions } from '../instructions/columns'
 import { getGoods } from '@/features/budget/goods/api'
 
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || 'レシピ'
-
 const { TextArea } = Input
 
 // レシピ追加・編集モーダルコンポーネント
@@ -40,6 +36,7 @@ interface RecipeModalProps {
   onCancel: () => void
   onSuccess?: (newRecipe?: RecipeColumn) => void
   zIndex?: number
+  PAGE_NAME?: string
 }
 
 export function RecipeModal({
@@ -49,6 +46,7 @@ export function RecipeModal({
   onCancel,
   onSuccess,
   zIndex,
+  PAGE_NAME = 'レシピ',
 }: RecipeModalProps) {
   const [form] = Form.useForm<RecipeColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -501,10 +499,10 @@ export default function Recipe() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<RecipeColumn>({
     fetchList: getRecipes,
     deleteItem: deleteRecipe,
-    itemName: `${PAGE_NAME}管理`,
   })
 
   return (
@@ -565,6 +563,7 @@ export default function Recipe() {
         editingRecord={editingRecord as RecipeColumn | null}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
+        PAGE_NAME={PAGE_NAME}
       />
 
       <BookDetailModal

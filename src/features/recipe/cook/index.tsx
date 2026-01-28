@@ -26,10 +26,6 @@ import type { CookIngredient } from './cookIngredientColumns'
 import { getRecipes as getRecipeList } from '../recipe/api'
 import { getGoods } from '@/features/budget/goods/api'
 
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || '料理記録'
-
 const { TextArea } = Input
 
 // 料理記録追加・編集モーダルコンポーネント
@@ -39,6 +35,7 @@ interface CookModalProps {
   editingRecord?: CookColumn | null
   onCancel: () => void
   onSuccess?: () => void
+  PAGE_NAME?: string
 }
 
 function CookModal({
@@ -47,6 +44,7 @@ function CookModal({
   editingRecord = null,
   onCancel,
   onSuccess,
+  PAGE_NAME = '調理',
 }: CookModalProps) {
   const [form] = Form.useForm<CookColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -463,10 +461,10 @@ export default function Cook() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<CookColumn>({
     fetchList: getRecipes,
     deleteItem: deleteRecipe,
-    itemName: `${PAGE_NAME}管理`,
   })
 
   return (
@@ -523,6 +521,7 @@ export default function Cook() {
         editingRecord={editingRecord as CookColumn | null}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
+        PAGE_NAME={PAGE_NAME}
       />
 
       <BookDetailModal

@@ -19,10 +19,6 @@ import {
 import { JPNames as JPPurchasement } from '../purchasement/columns'
 import { JPNames as JPGoods } from '../goods/columns'
 
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || '在庫'
-
 /**
  * 在庫管理コンポーネント
  */
@@ -56,10 +52,10 @@ export default function Inventory() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<InventoryColumn>({
     fetchList: fetchInventoryWithFilter,
     deleteItem: async () => {}, // No delete action
-    itemName: `${PAGE_NAME}管理`,
   })
 
   // Summary State

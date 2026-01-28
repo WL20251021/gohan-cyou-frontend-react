@@ -38,10 +38,10 @@ export default function Consumption() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<ConsumptionColumn>({
     fetchList: getConsumption,
     deleteItem: deleteConsumption,
-    itemName: `${PAGE_NAME}管理`,
   })
 
   // 拡張データ取得用
@@ -224,6 +224,7 @@ export default function Consumption() {
         editingRecord={editingRecord}
         onCancel={handleCancel}
         onSuccess={handleModalSuccess}
+        PAGE_NAME={PAGE_NAME}
       />
 
       <BookDetailModal

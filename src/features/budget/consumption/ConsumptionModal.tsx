@@ -13,6 +13,7 @@ interface ConsumptionModalProps {
   initialDate?: Dayjs
   onCancel: () => void
   onSuccess: () => void
+  PAGE_NAME?: string
 }
 
 export function ConsumptionModal({
@@ -22,6 +23,7 @@ export function ConsumptionModal({
   initialDate,
   onCancel,
   onSuccess,
+  PAGE_NAME = '消費',
 }: ConsumptionModalProps) {
   const [form] = Form.useForm<ConsumptionColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -113,10 +115,10 @@ export function ConsumptionModal({
 
       if (isEditMode && editingRecord) {
         await updateConsumption(editingRecord.id, data as any)
-        message.success('消費記録を更新しました')
+        message.success(`${PAGE_NAME}を更新しました`)
       } else {
         await addConsumption(data as any)
-        message.success('消費記録を追加しました')
+        message.success(`${PAGE_NAME}を追加しました`)
       }
 
       form.resetFields()
@@ -144,7 +146,7 @@ export function ConsumptionModal({
 
   return (
     <BookModal
-      title={isEditMode ? '消費記録を編集' : '消費記録を追加'}
+      title={isEditMode ? `${PAGE_NAME}を編集` : `${PAGE_NAME}を追加`}
       // width="80%"
       // maskClosable={false}
       open={open}

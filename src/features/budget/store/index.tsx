@@ -18,10 +18,6 @@ import {
 import { getStores, addStore, updateStore, deleteStores } from './api'
 import { useBookPage } from '@/hooks/useBookPage'
 
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || '店舗'
-
 // 店舗追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function StoreAddModal({
   open,
@@ -29,12 +25,14 @@ export function StoreAddModal({
   editingRecord = null,
   onCancel,
   onSuccess,
+  PAGE_NAME = '店舗',
 }: {
   open: boolean
   isEditMode?: boolean
   editingRecord?: StoreColumn | null
   onCancel: () => void
   onSuccess?: (newStore?: StoreColumn) => void
+  PAGE_NAME?: string
 }) {
   const [form] = Form.useForm<StoreColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -223,10 +221,10 @@ export default function Store() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<StoreColumn>({
     fetchList: getStores,
     deleteItem: deleteStores,
-    itemName: `${PAGE_NAME}管理`,
   })
 
   return (
@@ -290,6 +288,7 @@ export default function Store() {
         editingRecord={editingRecord as StoreColumn | null}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
+        PAGE_NAME={PAGE_NAME}
       />
 
       <BookDetailModal

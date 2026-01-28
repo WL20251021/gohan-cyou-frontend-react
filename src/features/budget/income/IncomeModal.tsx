@@ -13,6 +13,7 @@ interface IncomeModalProps {
   record?: IncomeColumn | null
   onCancel: () => void
   onSuccess: () => void
+  PAGE_NAME?: string
 }
 
 export default function IncomeModal({
@@ -22,6 +23,7 @@ export default function IncomeModal({
   record,
   onCancel,
   onSuccess,
+  PAGE_NAME = '収入',
 }: IncomeModalProps) {
   const [form] = Form.useForm<IncomeColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -67,7 +69,7 @@ export default function IncomeModal({
       .then(() => {
         setConfirmLoading(false)
         form.resetFields()
-        message.success('収入を追加しました')
+        message.success(`${PAGE_NAME}を追加しました`)
         onSuccess()
       })
       .catch((error) => {
@@ -78,7 +80,7 @@ export default function IncomeModal({
           // Validation failed, do nothing (antd handles UI)
         } else {
           notification.error({
-            title: '収入追加失敗',
+            title: `${PAGE_NAME}追加失敗`,
             description: error.message || '不明なエラーが発生しました',
             placement: 'bottomRight',
           })
@@ -103,7 +105,7 @@ export default function IncomeModal({
       .then(() => {
         setConfirmLoading(false)
         form.resetFields()
-        message.success('収入を更新しました')
+        message.success(`${PAGE_NAME}を更新しました`)
         onSuccess()
       })
       .catch((error) => {
@@ -113,7 +115,7 @@ export default function IncomeModal({
           // Validation failed
         } else {
           notification.error({
-            title: '収入更新失敗',
+            title: `${PAGE_NAME}更新失敗`,
             description: error.message || '不明なエラーが発生しました',
             placement: 'bottomRight',
           })
@@ -128,7 +130,7 @@ export default function IncomeModal({
 
   return (
     <BookModal
-      title={isAdd ? '新規収入' : '収入編集'}
+      title={isAdd ? `新規${PAGE_NAME}` : `${PAGE_NAME}編集`}
       open={open}
       confirmLoading={confirmLoading}
       onOk={handleConfirm}
@@ -158,7 +160,7 @@ export default function IncomeModal({
         <Form.Item
           label={JPNames.incomeDate}
           name="incomeDate"
-          rules={[{ required: true, message: '収入日を選択してください!' }]}
+          rules={[{ required: true, message: ` ${PAGE_NAME}日を選択してください!` }]}
         >
           <DatePicker
             style={{ width: '100%' }}

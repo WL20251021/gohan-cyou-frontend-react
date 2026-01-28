@@ -11,10 +11,6 @@ import { getBrands, addBrand, updateBrand, deleteBrands } from './api'
 
 import { useBookPage } from '@/hooks/useBookPage'
 
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || 'ブランド'
-
 // ブランド追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function BrandAddModal({
   open,
@@ -23,6 +19,7 @@ export function BrandAddModal({
   onCancel,
   onSuccess,
   zIndex,
+  PAGE_NAME = 'ブランド',
 }: {
   open: boolean
   isEditMode?: boolean
@@ -30,6 +27,7 @@ export function BrandAddModal({
   onCancel: () => void
   onSuccess?: (newBrand?: BrandColumn) => void
   zIndex?: number
+  PAGE_NAME?: string
 }) {
   const [form] = Form.useForm<BrandColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -183,10 +181,10 @@ export default function Brand() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<BrandColumn>({
     fetchList: getBrands,
     deleteItem: deleteBrands,
-    itemName: `${PAGE_NAME}管理`,
   })
 
   return (
@@ -254,6 +252,7 @@ export default function Brand() {
         editingRecord={editingRecord as BrandColumn | null}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
+        PAGE_NAME={PAGE_NAME}
       />
 
       <BookDetailModal

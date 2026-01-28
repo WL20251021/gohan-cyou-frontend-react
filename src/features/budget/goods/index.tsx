@@ -23,10 +23,6 @@ import { BrandAddModal } from '../brand/index'
 import { type FileType } from '@/utils/file'
 import { useBookPage } from '@/hooks/useBookPage'
 
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || '商品'
-
 // 商品追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function GoodsAddModal({
   open,
@@ -34,12 +30,14 @@ export function GoodsAddModal({
   editingRecord = null,
   onCancel,
   onSuccess,
+  PAGE_NAME = '商品',
 }: {
   open: boolean
   isEditMode?: boolean
   editingRecord?: GoodsColumn | null
   onCancel: () => void
   onSuccess?: (newGoods?: GoodsColumn) => void
+  PAGE_NAME?: string
 }) {
   const [form] = Form.useForm<GoodsColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -420,10 +418,10 @@ export default function Goods() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<GoodsColumn>({
     fetchList: getGoods,
     deleteItem: deleteGoods,
-    itemName: `${PAGE_NAME}管理`,
   })
 
   // Additional state for Goods
@@ -539,13 +537,14 @@ export default function Goods() {
         editingRecord={editingRecord as GoodsColumn | null}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
+        PAGE_NAME={PAGE_NAME}
       />
 
       <BookDetailModal
         manualFlip={true}
         open={isDetailOpen}
         title={detailRecord?.goodsName}
-        subtitle="Goods Details"
+        subtitle={`${PAGE_NAME}詳細`}
         id={detailRecord?.id}
         onClose={closeDetail}
         onEdit={handleDetailEdit}

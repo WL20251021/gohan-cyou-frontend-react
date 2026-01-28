@@ -36,10 +36,6 @@ import { getStores } from '../store/api'
 import { GoodsAddModal } from '../goods/index'
 import { StoreAddModal } from '../store/index'
 
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || '支出'
-
 // 支出記録追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function PurchasementModal({
   open,
@@ -48,6 +44,7 @@ export function PurchasementModal({
   initialDate,
   onCancel,
   onSuccess,
+  PAGE_NAME = '支出',
 }: {
   open: boolean
   isEditMode?: boolean
@@ -55,6 +52,7 @@ export function PurchasementModal({
   initialDate?: any
   onCancel: () => void
   onSuccess?: () => void
+  PAGE_NAME?: string
 }) {
   const [form] = Form.useForm<PurchasementColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -652,10 +650,10 @@ export default function Purchasement() {
     prevDetail,
     hasNext,
     hasPrev,
+    PAGE_NAME,
   } = useBookPage<PurchasementColumn>({
     fetchList: getPurchasements,
     deleteItem: deletePurchasement,
-    itemName: PAGE_NAME + '管理',
   })
 
   // テーブルデータとカラム定義 (Removed manual state)
@@ -740,6 +738,7 @@ export default function Purchasement() {
         editingRecord={editingRecord as PurchasementColumn | null}
         onCancel={handleCancel}
         onSuccess={handleSuccess}
+        PAGE_NAME={PAGE_NAME}
       />
 
       <BookDetailModal
