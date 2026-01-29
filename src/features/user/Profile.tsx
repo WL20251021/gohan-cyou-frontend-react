@@ -146,7 +146,10 @@ export default function Profile() {
     passwordForm
       .validateFields()
       .then((values) => {
-        return updatePassword(user.id, { password: values.newPassword })
+        return updatePassword(user.id, {
+          oldPassword: values.oldPassword,
+          newPassword: values.newPassword,
+        })
       })
       .then((res) => {
         notification.success({
@@ -404,7 +407,21 @@ export default function Profile() {
         <Form
           form={passwordForm}
           layout="vertical"
+          style={{
+            margin: '48px auto',
+            maxWidth: 600,
+          }}
         >
+          <Form.Item
+            name="oldPassword"
+            label="現在のパスワード"
+            rules={[
+              { required: true, message: '現在のパスワードを入力してください' },
+              { min: 6, message: 'パスワードは6文字以上である必要があります' },
+            ]}
+          >
+            <Input.Password />
+          </Form.Item>
           <Form.Item
             name="newPassword"
             label="新しいパスワード"

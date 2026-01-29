@@ -63,11 +63,11 @@ export function deleteUser(ids: number[]) {
 }
 
 // パスワード変更
-export function updatePassword(userId: number, data: { password: string }) {
+export function updatePassword(userId: number, data: { oldPassword: string; newPassword: string }) {
   return request({
-    url: `/users/password`,
+    url: `/users/${userId}/password`,
     method: 'put',
-    data: { id: userId, newPassword: data.password },
+    data: { oldPassword: data.oldPassword, newPassword: data.newPassword },
   })
 }
 
