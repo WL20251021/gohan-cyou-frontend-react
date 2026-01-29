@@ -32,7 +32,7 @@ export const JPNames = {
   jpRole: 'ロール',
   nickname: 'ニックネーム',
   avatar: 'アバター',
-  active: '有効',
+  active: '有効状態',
   createdAt: '作成日時',
   updatedAt: '更新日時',
 }

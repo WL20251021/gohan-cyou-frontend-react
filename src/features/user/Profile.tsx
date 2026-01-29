@@ -1,10 +1,23 @@
 import { useState, useEffect } from 'react'
-import { Card, Descriptions, Avatar, Button, Form, Input, Switch } from 'antd'
+import {
+  Card,
+  Descriptions,
+  Avatar,
+  Button,
+  Form,
+  Input,
+  Switch,
+  Row,
+  Col,
+  Flex,
+  Radio,
+} from 'antd'
 import notification from '@/components/DoodleNotification'
 import BookModal from '@/components/BookModal'
 import { UserOutlined, EditOutlined } from '@ant-design/icons'
 import { getUser, updateUser, updatePassword } from './api'
 import { UserColumn, JPNames, JPUserRoles } from './columns'
+import PageHeader from '@/components/PageHeader'
 
 export default function Profile() {
   const [user, setUser] = useState<UserColumn | null>(null)
@@ -110,50 +123,132 @@ export default function Profile() {
       })
   }
 
+  const infos = Object.entries(JPNames)
+    .filter(([key]) => !['avatar', 'id', 'createdAt', 'updatedAt', 'jpRole'].includes(key))
+    .map(([key, label]) => {
+      let value: React.ReactNode | string = ''
+      switch (key) {
+        case 'role':
+          value = user ? JPUserRoles[user.role] : '-'
+          break
+        case 'active':
+          value = user ? (
+            user.active ? (
+              <>
+                <Radio
+                  checked
+                  disabled
+                />
+                有効
+              </>
+            ) : (
+              <>
+                <Radio disabled />
+                無効
+              </>
+            )
+          ) : (
+            '-'
+          )
+          break
+        default:
+          value = user ? (user as any)[key] || '-' : '-'
+      }
+
+      return {
+        label,
+        value,
+      }
+    })
+
   return (
-    <div style={{ padding: 24 }}>
-      <Card
-        title="ユーザー情報"
-        loading={loading}
-        extra={
-          <>
-            <Button
-              icon={<EditOutlined />}
-              onClick={handleEdit}
-              style={{ marginRight: 8 }}
-            >
-              編集
-            </Button>
-            <Button onClick={() => setIsPasswordModalOpen(true)}>パスワード変更</Button>
-          </>
-        }
+    <div>
+      <PageHeader title="ユーザー情報" />
+      <Row
+        style={{
+          position: 'relative',
+          top: -40,
+          right: 50,
+          zIndex: 100,
+          display: 'flex',
+          justifyContent: 'end',
+          height: 0,
+        }}
+        justify="start"
       >
+        <Button
+          icon={<EditOutlined />}
+          onClick={handleEdit}
+          style={{ marginRight: 8 }}
+        >
+          編集
+        </Button>
+        <Button onClick={() => setIsPasswordModalOpen(true)}>パスワード変更</Button>
+      </Row>
+
+      {/* ユーザー情報表示 */}
+      <div style={{ margin: 48, position: 'relative' }}>
+        <Flex
+          justify="center"
+          align="center"
+          gap={16}
+        >
+          <div
+            style={{
+              fontSize: 130,
+              opacity: 0.05,
+              position: 'absolute',
+              top: -10,
+              color: 'var(--color-ink-black)',
+            }}
+          >
+            {user?.nickname || user?.username}
+          </div>
+          <Avatar
+            size={100}
+            icon={<UserOutlined />}
+            src={user?.avatar}
+            style={{
+              backgroundColor: 'var(--color-candy-pink)',
+              border: '2px solid var(--color-ink-black)',
+              color: '#fff',
+              flexShrink: 0,
+            }}
+          />
+        </Flex>
+
         {user && (
-          <>
-            <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <Avatar
-                size={100}
-                icon={<UserOutlined />}
-                src={user.avatar}
-              />
-            </div>
-            <Descriptions
-              bordered
-              column={1}
-            >
-              <Descriptions.Item label={JPNames.username}>{user.username}</Descriptions.Item>
-              <Descriptions.Item label={JPNames.email}>{user.email}</Descriptions.Item>
-              <Descriptions.Item label={JPNames.role}>
-                {JPUserRoles[user.role as keyof typeof JPUserRoles]}
-              </Descriptions.Item>
-              <Descriptions.Item label={JPNames.nickname}>{user.nickname || '-'}</Descriptions.Item>
-              <Descriptions.Item label={JPNames.active}>
-                {user.active ? '有効' : '無効'}
-              </Descriptions.Item>
-            </Descriptions>
-          </>
+          <div
+            style={{
+              width: '400px',
+              margin: '32px auto',
+              lineHeight: 2.5,
+            }}
+          >
+            {infos.map((info) => (
+              <Row
+                gutter={24}
+                align="middle"
+              >
+                <Col
+                  span={12}
+                  style={{ color: 'var(--color-ink-black)' }}
+                >
+                  {info.label}
+                </Col>
+                <Col
+                  span={12}
+                  style={{
+                    fontSize: 'larger',
+                  }}
+                >
+                  {info.value}
+                </Col>
+              </Row>
+            ))}
+          </div>
         )}
-      </Card>
+      </div>
 
       {/* ユーザー情報編集モーダル */}
       <BookModal
