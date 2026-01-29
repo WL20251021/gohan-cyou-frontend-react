@@ -1,72 +1,113 @@
 import { useState, useEffect } from 'react'
+import { useUser } from '@/context/UserContext'
 import {
-  Card,
-  Descriptions,
   Avatar,
   Button,
   Form,
   Input,
-  Switch,
   Row,
   Col,
   Flex,
   Radio,
+  Upload,
+  message,
+  Space,
+  Image,
 } from 'antd'
 import notification from '@/components/DoodleNotification'
 import BookModal from '@/components/BookModal'
 import { UserOutlined, EditOutlined } from '@ant-design/icons'
-import { getUser, updateUser, updatePassword } from './api'
-import { UserColumn, JPNames, JPUserRoles } from './columns'
+import { updateUser, updatePassword } from './api'
+import { JPNames, JPUserRoles } from './columns'
 import PageHeader from '@/components/PageHeader'
+import { type FileType } from '@/utils/file'
+import type { UploadFile } from 'antd'
+import { uploadAvatar } from './api'
+import ImgCrop from 'antd-img-crop'
 
 export default function Profile() {
-  const [user, setUser] = useState<UserColumn | null>(null)
+  const { user, setUser, refreshUser } = useUser()
   const [loading, setLoading] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
   const [form] = Form.useForm()
   const [passwordForm] = Form.useForm()
 
-  // ユーザー情報の取得（保存された user_id を利用）
+  const [fileList, setFileList] = useState<any[]>([])
+  const [previewImage, setPreviewImage] = useState('')
+  const [previewOpen, setPreviewOpen] = useState(false)
+
+  // 画像URL生成
+  function genImageUrl(imageName: string) {
+    return `http://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/images/${imageName}`
+  }
+
+  // ファイルアップロードの設定
+  const uploadProps = {
+    fileList,
+    action: '',
+    pastable: true,
+    listType: 'picture-circle' as const,
+    accept: 'image/*',
+    beforeUpload: (file: FileType) => {
+      const isLt1M = file.size / 1024 / 1024 < 1
+      if (!isLt1M) {
+        message.error('1MB以下の画像をアップロードしてください')
+        setFileList([])
+        return Upload.LIST_IGNORE
+      }
+      return true
+    },
+    onPreview: async (file: UploadFile) => {
+      setPreviewImage(genImageUrl(file.response.fileName as string))
+      setPreviewOpen(true)
+    },
+    onChange({ fileList: newFileList }: { fileList: UploadFile[] }) {
+      setFileList(newFileList)
+    },
+    customRequest: (options: any) => {
+      return uploadAvatar(options.file)
+        .then((res) => {
+          options.onSuccess && options.onSuccess(res.data)
+        })
+        .catch(() => {
+          options.onError && options.onError(new Error('アップロード失敗'))
+        })
+    },
+    onRemove: (file: UploadFile) => {
+      setFileList((prevList) => prevList.filter((item) => item.uid !== file.uid))
+    },
+    maxCount: 1,
+  }
+
+  // ユーザー情報は UserContext 経由で提供される
   useEffect(() => {
-    fetchUserData()
-  }, [])
-
-  const fetchUserData = () => {
+    // ensure loading state while refreshing user
     setLoading(true)
-    const stored = localStorage.getItem('user_id')
-    const userId = stored ? Number(stored) : null
-
-    if (!userId) {
-      setLoading(false)
-      notification.error({
-        title: 'ユーザー情報取得失敗',
-        description: 'ログイン情報が見つかりません。再ログインしてください。',
-        placement: 'bottomRight',
-      })
-      return
-    }
-
-    getUser(userId)
-      .then((res) => {
-        setUser(res?.data)
-      })
+    refreshUser()
       .catch((error) => {
         console.error(error)
-        notification.error({
-          title: 'ユーザー情報取得失敗',
-          description: error.response?.data?.message || error.message,
-          placement: 'bottomRight',
-        })
       })
-      .finally(() => {
-        setLoading(false)
-      })
-  }
+      .finally(() => setLoading(false))
+  }, [])
 
   const handleEdit = () => {
     if (user) {
       form.setFieldsValue(user)
+
+      if (user.avatar) {
+        setFileList([
+          {
+            uid: `user_avatar_${user.id}`,
+            name: `user_avatar_${user.id}`,
+            status: 'done',
+            url: genImageUrl(user.avatar),
+            response: { fileName: user.avatar },
+          },
+        ])
+      } else {
+        setFileList([])
+      }
       setIsEditModalOpen(true)
     }
   }
@@ -77,15 +118,17 @@ export default function Profile() {
     form
       .validateFields()
       .then((values) => {
+        values.avatar = fileList[0]?.response?.fileName || null
         return updateUser(user.id, values)
       })
-      .then((res) => {
+      .then(() => {
         notification.success({
           title: 'ユーザー情報更新成功',
           placement: 'bottomRight',
         })
         setIsEditModalOpen(false)
-        fetchUserData()
+        // refresh global user after successful update
+        refreshUser()
       })
       .catch((error) => {
         console.error(error)
@@ -129,7 +172,7 @@ export default function Profile() {
       let value: React.ReactNode | string = ''
       switch (key) {
         case 'role':
-          value = user ? JPUserRoles[user.role] : '-'
+          value = user ? JPUserRoles[user.role as keyof typeof JPUserRoles] : '-'
           break
         case 'active':
           value = user ? (
@@ -207,7 +250,7 @@ export default function Profile() {
           <Avatar
             size={100}
             icon={<UserOutlined />}
-            src={user?.avatar}
+            src={user?.avatar ? genImageUrl(user.avatar) : undefined}
             style={{
               backgroundColor: 'var(--color-candy-pink)',
               border: '2px solid var(--color-ink-black)',
@@ -262,13 +305,61 @@ export default function Profile() {
         <Form
           form={form}
           layout="vertical"
+          style={{
+            margin: '48px auto',
+            maxWidth: 600,
+          }}
         >
+          <Form.Item
+            label={JPNames.avatar}
+            name="avatar"
+            rules={[]}
+            style={{ height: 150 }}
+          >
+            <Space direction="vertical">
+              <ImgCrop
+                rotationSlider
+                modalTitle="画像を編集"
+                modalCancel="キャンセル"
+                modalOk="完了"
+                fillColor="#000"
+              >
+                <Upload {...uploadProps}>
+                  {fileList.length >= 1 ? null : (
+                    <button
+                      style={{ border: 0, background: 'none' }}
+                      type="button"
+                    >
+                      <i
+                        className="i-material-symbols:add"
+                        style={{ fontSize: 32 }}
+                      ></i>
+                      <div style={{ marginTop: 8 }}>Upload</div>
+                    </button>
+                  )}
+                </Upload>
+              </ImgCrop>
+              {previewImage && (
+                <Image
+                  styles={{ root: { display: 'none' } }}
+                  preview={{
+                    open: previewOpen,
+                    onOpenChange: (visible) => setPreviewOpen(visible),
+                    afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                  }}
+                  src={previewImage}
+                  alt={JPNames.avatar}
+                />
+              )}
+            </Space>
+          </Form.Item>
+
           <Form.Item
             name="username"
             label={JPNames.username}
             rules={[{ required: true, message: 'ユーザー名を入力してください' }]}
           >
-            <Input />
+            <Input disabled />
           </Form.Item>
           <Form.Item
             name="email"
@@ -287,17 +378,13 @@ export default function Profile() {
             <Input />
           </Form.Item>
           <Form.Item
-            name="avatar"
-            label={JPNames.avatar}
-          >
-            <Input placeholder="アバター画像のURL" />
-          </Form.Item>
-          <Form.Item
             name="active"
             label={JPNames.active}
-            valuePropName="checked"
           >
-            <Switch />
+            <Radio.Group>
+              <Radio value={true}>有効</Radio>
+              <Radio value={false}>無効</Radio>
+            </Radio.Group>
           </Form.Item>
         </Form>
       </BookModal>

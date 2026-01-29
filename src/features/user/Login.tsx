@@ -43,13 +43,6 @@ export default function Login() {
                 username = username ?? payload.username ?? payload.name
               }
             }
-
-            if (userId) {
-              localStorage.setItem('user_id', String(userId))
-            }
-            if (username) {
-              localStorage.setItem('user_name', String(username))
-            }
           } catch (e) {
             // 上書きは行わない。デコードに失敗しても処理は続行
             console.warn('トークンからユーザー情報を抽出できませんでした', e)

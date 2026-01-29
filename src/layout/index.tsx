@@ -16,7 +16,14 @@ import {
 } from '@ant-design/icons'
 import { useState, useEffect } from 'react'
 import { BookProvider, useBook } from '@/context/BookContext'
+import { UserProvider, useUser } from '@/context/UserContext'
 import { SETTINGS } from '@/settings/settings'
+import { getMe } from '@/features/user/api'
+
+// 画像URL生成
+function genImageUrl(imageName: string) {
+  return `http://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/images/${imageName}`
+}
 
 export const PAGE_NAMES: { [key: string]: string } = {
   '/': 'ホーム',
@@ -41,7 +48,9 @@ function LayoutInner() {
   const location = useLocation()
   const [selectedKey, setSelectedKey] = useState('')
   const { isPageFlipped } = useBook()
-  const [username, setUsername] = useState('User')
+  const { user } = useUser()
+  const nickname = user?.nickname || 'User'
+  const avatarUrl = user?.avatar ? genImageUrl(user.avatar) : null
 
   // Intro Animation State
   const [splashVisible, setSplashVisible] = useState(true)
@@ -67,20 +76,7 @@ function LayoutInner() {
     }
   }, [location.pathname])
 
-  // ログイン後に localStorage に保存されたユーザー名を表示
-  useEffect(() => {
-    const name = localStorage.getItem('user_name')
-    setUsername(name || 'User')
-
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'user_name' || e.key === 'user_id') {
-        setUsername(localStorage.getItem('user_name') || 'User')
-      }
-    }
-
-    window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
-  }, [])
+  // user is provided by UserProvider
 
   const menuItems = [
     {
@@ -207,7 +203,6 @@ function LayoutInner() {
             onClick={handleOpenBook}
           >
             <div className="book-spine"></div>
-            {/* <div className="book-thickness"></div> */}
             <div className="book-cover">
               <div className="book-cover-title-box">
                 <h1 className="book-cover-title-text">{SETTINGS.name}</h1>
@@ -260,6 +255,7 @@ function LayoutInner() {
             >
               <Avatar
                 icon={<UserOutlined />}
+                src={avatarUrl}
                 style={{
                   backgroundColor: 'var(--color-candy-pink)',
                   border: '2px solid var(--color-ink-black)',
@@ -277,7 +273,7 @@ function LayoutInner() {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {username}
+                {nickname}
               </span>
             </div>
             <div
@@ -321,7 +317,9 @@ function LayoutInner() {
 export default function Layout() {
   return (
     <BookProvider>
-      <LayoutInner />
+      <UserProvider>
+        <LayoutInner />
+      </UserProvider>
     </BookProvider>
   )
 }

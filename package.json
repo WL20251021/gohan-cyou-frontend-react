@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.1.16",
     "@unocss/reset": "^66.5.5",
     "antd": "^6.0.0",
+    "antd-img-crop": "^4.27.0",
     "axios": "^1.13.2",
     "dayjs": "^1.11.19",
     "react": "^19.2.2",
