@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import {
   Button,
   Form,
@@ -24,7 +24,7 @@ import { CookColumn, JPNames } from './columns'
 import { getRecipes, addRecipe, updateRecipe, deleteRecipe } from './api'
 import type { CookIngredient } from './cookIngredientColumns'
 import { getRecipes as getRecipeList } from '../recipe/api'
-import { getGoods } from '@/features/budget/goods/api'
+import { getInStockItems } from '@/features/budget/inventory/api'
 
 const { TextArea } = Input
 
@@ -49,7 +49,8 @@ function CookModal({
   const [form] = Form.useForm<CookColumn>()
   const [confirmLoading, setConfirmLoading] = useState(false)
   const [useIngredients, setUseIngredients] = useState<CookIngredient[]>([])
-  const [goodsList, setGoodsList] = useState<any[]>([])
+  // サーバーから取得した全在庫リスト（マスター）
+  const [allInventoryList, setAllInventoryList] = useState<any[]>([])
   const [recipeList, setRecipeList] = useState<any[]>([])
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false)
   const [recipeId, setRecipeId] = useState<number | null>(null)
@@ -69,13 +70,13 @@ function CookModal({
     // レシピリストを再取得
     fetchRecipes()
     // 追加したレシピを選択状態にする
-    // setRecipeId(newRecipe.id)
     form.setFieldValue('recipeId', newRecipe.id)
+    fetchRecipes()
   }
 
   useEffect(() => {
     if (open) {
-      fetchGoods()
+      fetchInventory()
       fetchRecipes()
       if (isEditMode && editingRecord) {
         form.setFieldsValue({
@@ -89,7 +90,7 @@ function CookModal({
         })
         setUseIngredients(
           (editingRecord.useIngredients.map((v) => {
-            v.goodsId = v.goods?.id || v.goodsId
+            v.inventoryId = v.inventory?.id || v.inventoryId
             return v
           }) || []) as CookIngredient[]
         )
@@ -107,10 +108,10 @@ function CookModal({
     form.setFieldValue('totalTime', prep + cook)
   }
 
-  function fetchGoods() {
-    getGoods()
+  function fetchInventory() {
+    getInStockItems()
       .then((res) => {
-        setGoodsList(res?.data || [])
+        setAllInventoryList(res?.data || [])
       })
       .catch((error) => {
         console.error(error)
@@ -131,7 +132,7 @@ function CookModal({
     setUseIngredients([
       ...useIngredients,
       {
-        goodsId: null as unknown as number,
+        inventoryId: null as unknown as number,
         quantity: 1,
         unit: '個',
         description: '',
@@ -143,12 +144,67 @@ function CookModal({
     setUseIngredients(useIngredients.filter((_, i) => i !== index))
   }
 
+  // 指定行に対して他行で選択済みの在庫を除外した選択肢を返す
+  // また、ラベルと disabled フラグに残量を反映する
+  function getAvailableInventoryOptions(rowIndex: number) {
+    return allInventoryList.map((inventory) => {
+      const remaining = inventory.remainingQuantity.toFixed(2) as unknown as number
+      return {
+        label: `${inventory.goods.goodsName}(${remaining}${inventory.quantityUnit})`,
+        value: inventory.id,
+        // 選択した在庫を他行で再選択できないようにする
+        disabled:
+          useIngredients.filter((ing, i) => i !== rowIndex && ing.inventoryId === inventory.id)
+            .length > 0,
+      }
+    })
+  }
+
+  // ヘルパー: 指定行の選択に基づく最大入力可能数量を計算する
+  function getAvailableQuantityFor(
+    ingredients: CookIngredient[],
+    rowIndex: number
+  ): number | undefined {
+    const invId = ingredients[rowIndex]?.inventoryId
+    if (!invId) return undefined
+    const inv = allInventoryList.find((i) => i.id === invId)
+    const usedByOthers = ingredients
+      .map((ing, i) =>
+        i !== rowIndex && ing.inventoryId === invId ? Number(ing.quantity) || 0 : 0
+      )
+      .reduce((a, b) => a + b, 0)
+    const available = (inv?.remainingQuantity || 0) - usedByOthers
+    return Math.max(0, available)
+  }
+
   function updateIngredient(index: number, field: keyof CookIngredient, value: any) {
     const newIngredients = [...useIngredients]
-    newIngredients[index] = {
-      ...newIngredients[index],
-      [field]: value,
+    if (!newIngredients[index]) {
+      newIngredients[index] = {
+        inventoryId: null as unknown as number,
+        quantity: 1,
+        unit: '個',
+        description: '',
+      } as CookIngredient
     }
+
+    if (field === 'inventoryId') {
+      // 在庫変更時は新しい在庫に合わせて数量をクランプ
+      newIngredients[index] = {
+        ...newIngredients[index],
+        inventoryId: value,
+      }
+      const avail = getAvailableQuantityFor(newIngredients, index)
+      if (avail !== undefined && (Number(newIngredients[index].quantity) || 0) > avail) {
+        newIngredients[index].quantity = avail
+      }
+    } else {
+      newIngredients[index] = {
+        ...newIngredients[index],
+        [field]: value,
+      }
+    }
+
     setUseIngredients(newIngredients)
   }
 
@@ -164,7 +220,7 @@ function CookModal({
         data.useIngredients = useIngredients.map((ing) => {
           const ingData: any = {}
           if (ing.id) ingData.id = ing.id
-          ingData.goodsId = ing.goodsId
+          ingData.inventoryId = ing.inventoryId
           ingData.quantity = ing.quantity
           ingData.unit = ing.unit
           ingData.description = ing.description
@@ -219,6 +275,7 @@ function CookModal({
         form={form}
         layout="vertical"
       >
+        {/* ID */}
         <Form.Item
           name="id"
           hidden
@@ -306,41 +363,39 @@ function CookModal({
               key={index}
               gutter={8}
               style={{ marginBottom: 8 }}
+              align="middle"
             >
               <Col span={10}>
                 <Select
                   placeholder="在庫を選択"
-                  value={ingredient.goodsId || undefined}
-                  onChange={(value) => updateIngredient(index, 'goodsId', value)}
+                  value={ingredient.inventoryId || undefined}
+                  onChange={(value) => updateIngredient(index, 'inventoryId', value)}
                   style={{ width: '100%' }}
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
-                  options={goodsList.map((goods) => ({
-                    label: goods.goodsName,
-                    value: goods.id,
-                  }))}
+                  options={getAvailableInventoryOptions(index)}
+                  allowClear
                 />
               </Col>
-              <Col span={4}>
+              <Col
+                span={4}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
                 <InputNumber
                   placeholder="数量"
                   value={ingredient.quantity}
-                  onChange={(value) => updateIngredient(index, 'quantity', value || 1)}
-                  style={{ width: '100%' }}
+                  onChange={(value) => updateIngredient(index, 'quantity', value || 0)}
                   min={0}
+                  max={getAvailableQuantityFor(useIngredients, index)}
+                  step={0.1}
+                  precision={2}
                 />
+                <span style={{ marginLeft: 10 }}>{ingredient.unit || '個'}</span>
               </Col>
-              <Col span={4}>
-                <Input
-                  placeholder="単位"
-                  value={ingredient.unit}
-                  onChange={(e) => updateIngredient(index, 'unit', e.target.value || '個')}
-                />
-              </Col>
-              <Col span={4}>
+              <Col span={8}>
                 <Input
                   placeholder="メモ"
                   value={ingredient.description || ''}
@@ -569,7 +624,7 @@ export default function Cook() {
                   <div>
                     {detailRecord.useIngredients.map((ing, idx) => (
                       <div key={idx}>
-                        {ing.goods?.goodsName || '不明'} - {ing.quantity}
+                        {ing.inventory?.goods?.goodsName || '不明'} - {ing.quantity}
                         {ing.unit}
                         {ing.description && ` (${ing.description})`}
                       </div>
