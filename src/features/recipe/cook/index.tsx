@@ -535,6 +535,7 @@ export default function Cook() {
       <PaginatedGrid
         className="book-page-content"
         data={data as CookColumn[]}
+        onAdd={() => showModal(true)}
         renderItem={(record: CookColumn) => (
           <DoodleCard
             key={record.id}
