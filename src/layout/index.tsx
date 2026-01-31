@@ -232,7 +232,27 @@ function LayoutInner() {
             onClick={() => navigate('/')}
             style={{ cursor: 'pointer' }}
           >
-            <div className="book-logo-text">{SETTINGS.name}</div>
+            <div
+              className="book-logo-text"
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              {/* <div style={{ marginRight: 20, position: 'relative' }}>
+                <img
+                  src="/static/logo.png"
+                  alt="Logo"
+                  width={80}
+                  height={80}
+                  style={{
+                    position: 'absolute',
+                    maxWidth: 'none',
+                    right: -10,
+                    bottom: -20,
+                    transform: 'rotate(-9deg)',
+                  }}
+                />
+              </div> */}
+              {SETTINGS.name}
+            </div>
           </div>
 
           {/* Menu */}

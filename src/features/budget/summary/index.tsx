@@ -1,7 +1,28 @@
 import { useState, useEffect } from 'react'
 import { Card, Statistic, Row, Col, List, Spin, message, Tag, DatePicker } from 'antd'
-import { ShoppingCartOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons'
+import {
+  ShoppingCartOutlined,
+  RiseOutlined,
+  FallOutlined,
+  LineChartOutlined,
+  PieChartOutlined,
+} from '@ant-design/icons'
 import dayjs, { Dayjs } from 'dayjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  TimeScale,
+} from 'chart.js'
+import { Line, Pie, Bar } from 'react-chartjs-2'
+import 'chartjs-adapter-dayjs-4/dist/chartjs-adapter-dayjs-4.esm'
 import { PurchasementColumn } from '../purchasement/columns'
 import { IncomeColumn, JPIncomeCategory } from '../income/columns'
 import { ConsumptionColumn } from '../consumption/columns'
@@ -11,6 +32,29 @@ import {
   getTotalPurchasementBetween,
 } from './api'
 import { useParams } from 'react-router'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  TimeScale
+)
+
+// チャートで使うフォントをルートのCSS変数 --font-doodle から取得（実行時）
+const CHART_FONT_FAMILY =
+  typeof window !== 'undefined'
+    ? (
+        getComputedStyle(document.documentElement).getPropertyValue('--font-doodle') ||
+        'Arial, sans-serif'
+      ).trim()
+    : 'Arial, sans-serif'
+ChartJS.defaults.font.family = CHART_FONT_FAMILY
 
 interface Summary {
   totalIncome: number
@@ -54,6 +98,15 @@ export default function SummaryPage() {
   const [expenseDetails, setExpenseDetails] = useState<PurchasementColumn[]>([])
   const [consumptionDetails, setConsumptionDetails] = useState<ConsumptionColumn[]>([])
 
+  // チャート用トレンドデータ（週・月のみ）
+  const [trendData, setTrendData] = useState<{
+    dates: string[]
+    purchases: number[]
+    incomes: number[]
+    consumptions: number[]
+    balance: number[]
+  }>({ dates: [], purchases: [], incomes: [], consumptions: [], balance: [] })
+
   // 今日の収支を取得
   const fetchSummary = async (selectedDate: Dayjs) => {
     setLoading(true)
@@ -90,12 +143,87 @@ export default function SummaryPage() {
         totalConsumption,
         balance: totalIncome - totalExpense,
       })
+
+      // 週・月の場合はトレンドデータも生成
+      if (pageType === 'weekly' || pageType === 'monthly') {
+        generateTrendData(todayIncomes, todayExpenses, todayConsumptions, selectedDate, pageType)
+      }
     } catch (error) {
       message.error('データの取得に失敗しました')
       console.error('Failed to fetch today summary:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  // トレンドデータを生成
+  const generateTrendData = (
+    incomes: IncomeColumn[],
+    expenses: PurchasementColumn[],
+    consumptions: ConsumptionColumn[],
+    baseDate: Dayjs,
+    type: string
+  ) => {
+    const range = getTypeDateRange(type, baseDate)
+    const startDate = range.dateFrom
+    const endDate = range.dateTo
+    const days = endDate.diff(startDate, 'day') + 1
+
+    // 日付ごとに集計
+    const dateMap = new Map<string, { purchase: number; income: number; consumption: number }>()
+
+    for (let i = 0; i < days; i++) {
+      const date = startDate.add(i, 'day').format('YYYY-MM-DD')
+      dateMap.set(date, { purchase: 0, income: 0, consumption: 0 })
+    }
+
+    expenses.forEach((p) => {
+      const date = dayjs(p.purchaseDate).format('YYYY-MM-DD')
+      if (dateMap.has(date)) {
+        const current = dateMap.get(date)!
+        current.purchase += p.totalPrice || 0
+      }
+    })
+
+    incomes.forEach((i) => {
+      const date = dayjs(i.incomeDate).format('YYYY-MM-DD')
+      if (dateMap.has(date)) {
+        const current = dateMap.get(date)!
+        current.income += i.amount || 0
+      }
+    })
+
+    consumptions.forEach((c) => {
+      const date = dayjs(c.consumptionDate).format('YYYY-MM-DD')
+      if (dateMap.has(date)) {
+        const current = dateMap.get(date)!
+        current.consumption += c.quantity * (c.purchasement?.totalPrice || 0)
+      }
+    })
+
+    const dates: string[] = []
+    const purchaseAmounts: number[] = []
+    const incomeAmounts: number[] = []
+    const consumptionAmounts: number[] = []
+    const balances: number[] = []
+
+    Array.from(dateMap.entries())
+      .sort()
+      .forEach(([date, data]) => {
+        dates.push(date)
+        purchaseAmounts.push(data.purchase)
+        incomeAmounts.push(data.income)
+        consumptionAmounts.push(data.consumption)
+        balances.push(data.income - data.purchase)
+      })
+
+    setTrendData({
+      dates,
+      purchases: purchaseAmounts,
+      incomes: incomeAmounts,
+      consumptions: consumptionAmounts,
+      balance: balances,
+    })
   }
 
   useEffect(() => {
@@ -107,6 +235,143 @@ export default function SummaryPage() {
     if (date) {
       setSelectedDate(date)
     }
+  }
+
+  // トレンドチャート設定
+  const trendChartData: any = {
+    labels: trendData.dates,
+    datasets: [
+      {
+        type: 'bar' as const,
+        label: '支出',
+        data: trendData.purchases,
+        backgroundColor: 'rgba(253, 121, 121, 0.4)',
+        borderColor: 'rgb(253, 121, 121)',
+        borderWidth: 1,
+      },
+      {
+        type: 'bar' as const,
+        label: '収入',
+        data: trendData.incomes,
+        backgroundColor: 'rgba(90, 178, 255, 0.4)',
+        borderColor: 'rgb(90, 178, 255)',
+        borderWidth: 1,
+      },
+      {
+        type: 'bar' as const,
+        label: '消費記録',
+        data: trendData.consumptions,
+        backgroundColor: 'rgba(170, 96, 200, 0.4)',
+        borderColor: 'rgb(170, 96, 200)',
+        borderWidth: 1,
+      },
+      {
+        type: 'line' as const,
+        label: '収支',
+        data: trendData.balance,
+        borderColor: 'rgb(82, 196, 26)',
+        backgroundColor: 'rgba(82, 196, 26, 0.1)',
+        tension: 0.3,
+        yAxisID: 'y',
+      },
+    ],
+  }
+
+  const trendChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: { font: { family: CHART_FONT_FAMILY } },
+      },
+      title: {
+        display: false,
+        font: { family: CHART_FONT_FAMILY },
+      },
+    },
+    scales: {
+      x: {
+        type: 'time' as const,
+        time: {
+          unit: 'day' as const,
+          displayFormats: {
+            day: 'DD',
+          },
+        },
+        ticks: { font: { family: CHART_FONT_FAMILY } },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { font: { family: CHART_FONT_FAMILY } },
+      },
+    },
+  }
+
+  // カテゴリ別グラフで共通に使うカラーパレット
+  const CATEGORY_COLORS = [
+    'rgba(255, 99, 132, 0.4)',
+    'rgba(54, 162, 235, 0.4)',
+    'rgba(255, 206, 86, 0.4)',
+    'rgba(75, 192, 192, 0.4)',
+    'rgba(153, 102, 255, 0.4)',
+    'rgba(255, 159, 64, 0.4)',
+    'rgba(170, 96, 200, 0.4)',
+    'rgba(217, 154, 222, 0.4)',
+    'rgba(201, 129, 236, 0.4)',
+    'rgba(155, 81, 224, 0.4)',
+    'rgba(123, 63, 228, 0.4)',
+    'rgba(98, 54, 255, 0.4)',
+  ]
+
+  // カテゴリ別支出円グラフ
+  const categoryPurchaseData = () => {
+    const categoryMap = new Map<string, number>()
+    expenseDetails.forEach((p) => {
+      const category = p.goods?.category?.categoryName || '未分類'
+      categoryMap.set(category, (categoryMap.get(category) || 0) + (p.totalPrice || 0))
+    })
+
+    return {
+      labels: Array.from(categoryMap.keys()),
+      datasets: [
+        {
+          data: Array.from(categoryMap.values()),
+          backgroundColor: CATEGORY_COLORS.slice(0, Array.from(categoryMap.keys()).length),
+        },
+      ],
+    }
+  }
+
+  // カテゴリ別消費円グラフ
+  const categoryConsumptionData = () => {
+    const categoryMap = new Map<string, number>()
+    consumptionDetails.forEach((c) => {
+      const category = c.purchasement?.goods?.category?.categoryName || '未分類'
+      const amount = c.quantity * (c.purchasement?.totalPrice || 0)
+      categoryMap.set(category, (categoryMap.get(category) || 0) + amount)
+    })
+
+    return {
+      labels: Array.from(categoryMap.keys()),
+      datasets: [
+        {
+          data: Array.from(categoryMap.values()),
+          backgroundColor: CATEGORY_COLORS.slice(0, Array.from(categoryMap.keys()).length),
+        },
+      ],
+    }
+  }
+
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right' as const,
+        labels: { font: { family: CHART_FONT_FAMILY } },
+      },
+    },
   }
 
   return (
@@ -188,7 +453,13 @@ export default function SummaryPage() {
               xs={24}
               sm={6}
             >
-              <Card style={{ background: 'linear-gradient(135deg, #5AB2FF 0%, #A0DEFF 100%)' }}>
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #5AB2FF 0%, #A0DEFF 100%)',
+                  padding: 16,
+                  borderRadius: 8,
+                }}
+              >
                 <Statistic
                   title={
                     <span style={{ color: 'white', fontSize: '16px' }}>
@@ -206,13 +477,19 @@ export default function SummaryPage() {
                 >
                   {incomeDetails.length}件
                 </div>
-              </Card>
+              </div>
             </Col>
             <Col
               xs={24}
               sm={6}
             >
-              <Card style={{ background: 'linear-gradient(135deg, #FD7979 0%, #FDACAC 100%)' }}>
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #FD7979 0%, #FDACAC 100%)',
+                  padding: 16,
+                  borderRadius: 8,
+                }}
+              >
                 <Statistic
                   title={
                     <span style={{ color: 'white', fontSize: '16px' }}>
@@ -230,13 +507,19 @@ export default function SummaryPage() {
                 >
                   {expenseDetails.length}件
                 </div>
-              </Card>
+              </div>
             </Col>
             <Col
               xs={24}
               sm={6}
             >
-              <Card style={{ background: 'linear-gradient(135deg, #AA60C8 0%, #D69ADE 100%)' }}>
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #AA60C8 0%, #D69ADE 100%)',
+                  padding: 16,
+                  borderRadius: 8,
+                }}
+              >
                 <Statistic
                   title={<span style={{ color: 'white', fontSize: '16px' }}>消費</span>}
                   value={summary.totalConsumption}
@@ -249,14 +532,16 @@ export default function SummaryPage() {
                 >
                   {consumptionDetails.length}件
                 </div>
-              </Card>
+              </div>
             </Col>
             <Col
               xs={24}
               sm={6}
             >
-              <Card
+              <div
                 style={{
+                  padding: 16,
+                  borderRadius: 8,
                   background:
                     summary.balance === 0
                       ? 'linear-gradient(135deg, #4c4c53 0%, #828584 100%)'
@@ -276,6 +561,103 @@ export default function SummaryPage() {
                   style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
                 >
                   {summary.balance >= 0 ? '黒字' : '赤字'}
+                </div>
+              </div>
+            </Col>
+          </Row>
+
+          {/* チャート表示（週・月のみ） */}
+          {(pageType === 'weekly' || pageType === 'monthly') && (
+            <>
+              {/* トレンドチャート */}
+              <Card
+                title={
+                  <span>
+                    <LineChartOutlined style={{ marginRight: '8px' }} />
+                    {pageType === 'weekly' ? '週' : `${selectedDate.format('MM')}月`}収支トレンド
+                  </span>
+                }
+                style={{ marginBottom: '16px' }}
+              >
+                <div style={{ height: '300px' }}>
+                  <Bar
+                    data={trendChartData}
+                    options={trendChartOptions}
+                  />
+                </div>
+              </Card>
+            </>
+          )}
+          {/* 円グラフ */}
+          <Row
+            gutter={16}
+            style={{ marginBottom: '16px' }}
+          >
+            <Col
+              xs={24}
+              md={12}
+            >
+              <Card
+                title={
+                  <span>
+                    <PieChartOutlined style={{ marginRight: '8px' }} />
+                    カテゴリ別支出
+                  </span>
+                }
+              >
+                <div style={{ height: '300px' }}>
+                  {expenseDetails.length > 0 ? (
+                    <Pie
+                      data={categoryPurchaseData()}
+                      options={pieChartOptions}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '100%',
+                        color: '#999',
+                      }}
+                    >
+                      データがありません
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </Col>
+            <Col
+              xs={24}
+              md={12}
+            >
+              <Card
+                title={
+                  <span>
+                    <PieChartOutlined style={{ marginRight: '8px' }} />
+                    カテゴリ別消費記録
+                  </span>
+                }
+              >
+                <div style={{ height: '300px' }}>
+                  {consumptionDetails.length > 0 ? (
+                    <Pie
+                      data={categoryConsumptionData()}
+                      options={pieChartOptions}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '100%',
+                        color: '#999',
+                      }}
+                    >
+                      データがありません
+                    </div>
+                  )}
                 </div>
               </Card>
             </Col>

@@ -16,8 +16,10 @@
     "antd-img-crop": "^4.27.0",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
+    "chartjs-adapter-dayjs-4": "^1.0.4",
     "dayjs": "^1.11.19",
     "react": "^19.2.2",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.2",
     "react-router": "^7.10.1"
   },
