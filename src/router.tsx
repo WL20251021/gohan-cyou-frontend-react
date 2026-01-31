@@ -19,6 +19,7 @@ import Cook from './features/recipe/cook'
 // 家計簿集計
 import BudgetSummary from './features/budget/summary'
 import DailyBudget from './features/budget/summary/daily'
+import CreateDataPage from './features/createData'
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
   {
     path: '/register',
     Component: Register,
+  },
+  {
+    path: '/create-data',
+    Component: CreateDataPage,
   },
   {
     Component: Layout,
