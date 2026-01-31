@@ -10,6 +10,8 @@ import {
   RightOutlined,
   DeleteOutlined,
   EditOutlined,
+  ShoppingCartOutlined,
+  PayCircleOutlined,
 } from '@ant-design/icons'
 import dayjs, { Dayjs } from 'dayjs'
 import { deletePurchasement } from '../purchasement/api'
@@ -330,7 +332,7 @@ export default function DailyPurchasementPage() {
                 type="default"
                 variant="filled"
                 color="purple"
-                icon={<BookOutlined />}
+                icon={<ShoppingCartOutlined />}
                 onClick={handleAddConsumption}
               >
                 消費記録を追加
@@ -351,12 +353,16 @@ export default function DailyPurchasementPage() {
           >
             <Card style={{ background: 'linear-gradient(135deg, #FD7979 0%, #FDACAC 100%)' }}>
               <Statistic
-                title={<span style={{ color: 'white', fontSize: '16px' }}>支出</span>}
+                title={
+                  <span style={{ color: 'white', fontSize: '16px' }}>
+                    <FallOutlined style={{ marginRight: '4px' }} />
+                    支出
+                  </span>
+                }
                 value={totalAmount}
                 precision={0}
                 suffix="円"
                 valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
-                prefix={<FallOutlined />}
               />
               <div
                 style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
@@ -372,12 +378,16 @@ export default function DailyPurchasementPage() {
           >
             <Card style={{ background: 'linear-gradient(135deg, #5AB2FF 0%, #A0DEFF 100%)' }}>
               <Statistic
-                title={<span style={{ color: 'white', fontSize: '16px' }}>収入</span>}
+                title={
+                  <span style={{ color: 'white', fontSize: '16px' }}>
+                    <RiseOutlined style={{ marginRight: '4px' }} />
+                    収入
+                  </span>
+                }
                 value={totalIncome}
                 precision={0}
                 suffix="円"
                 valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
-                prefix={<RiseOutlined />}
               />
               <div
                 style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
@@ -393,11 +403,16 @@ export default function DailyPurchasementPage() {
           >
             <Card style={{ background: 'linear-gradient(135deg, #AA60C8 0%, #D69ADE 100%)' }}>
               <Statistic
-                title={<span style={{ color: 'white', fontSize: '16px' }}>消費記録</span>}
-                value={dailyConsumptions.length}
+                title={
+                  <span style={{ color: 'white', fontSize: '16px' }}>
+                    <ShoppingCartOutlined style={{ marginRight: '4px' }} />
+                    消費記録
+                  </span>
+                }
+                value={totalAmount}
                 precision={0}
+                suffix="円"
                 valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
-                prefix={<BookOutlined />}
               />
               <div
                 style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
@@ -422,12 +437,16 @@ export default function DailyPurchasementPage() {
               }}
             >
               <Statistic
-                title={<span style={{ color: 'white', fontSize: '16px' }}>収支</span>}
+                title={
+                  <span style={{ color: 'white', fontSize: '16px' }}>
+                    <PayCircleOutlined style={{ marginRight: '4px' }} />
+                    収支
+                  </span>
+                }
                 value={totalIncome - totalAmount}
                 precision={0}
                 suffix="円"
                 valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
-                prefix={<DollarOutlined />}
               />
               <div
                 style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
@@ -647,7 +666,7 @@ export default function DailyPurchasementPage() {
               type="default"
               variant="filled"
               color="purple"
-              icon={<BookOutlined />}
+              icon={<ShoppingCartOutlined />}
               onClick={handleAddConsumption}
             >
               消費記録を追加
@@ -656,7 +675,7 @@ export default function DailyPurchasementPage() {
         >
           {dailyConsumptions.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>
-              <BookOutlined style={{ fontSize: '32px', marginBottom: '8px' }} />
+              <ShoppingCartOutlined style={{ fontSize: '32px', marginBottom: '8px' }} />
               <p>この日の消費記録はまだありません</p>
             </div>
           ) : (

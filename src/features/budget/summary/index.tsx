@@ -6,6 +6,7 @@ import {
   FallOutlined,
   LineChartOutlined,
   PieChartOutlined,
+  PayCircleOutlined,
 } from '@ant-design/icons'
 import dayjs, { Dayjs } from 'dayjs'
 import {
@@ -449,47 +450,12 @@ export default function SummaryPage() {
             gutter={[16, 16]}
             style={{ marginBottom: '24px' }}
           >
+            {/* 支出 */}
             <Col
               xs={24}
               sm={6}
             >
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, #5AB2FF 0%, #A0DEFF 100%)',
-                  padding: 16,
-                  borderRadius: 8,
-                }}
-              >
-                <Statistic
-                  title={
-                    <span style={{ color: 'white', fontSize: '16px' }}>
-                      <RiseOutlined style={{ marginRight: '4px' }} />
-                      収入
-                    </span>
-                  }
-                  value={summary.totalIncome}
-                  precision={0}
-                  suffix="円"
-                  valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
-                />
-                <div
-                  style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
-                >
-                  {incomeDetails.length}件
-                </div>
-              </div>
-            </Col>
-            <Col
-              xs={24}
-              sm={6}
-            >
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, #FD7979 0%, #FDACAC 100%)',
-                  padding: 16,
-                  borderRadius: 8,
-                }}
-              >
+              <Card style={{ background: 'linear-gradient(135deg, #FD7979 0%, #FDACAC 100%)' }}>
                 <Statistic
                   title={
                     <span style={{ color: 'white', fontSize: '16px' }}>
@@ -507,21 +473,46 @@ export default function SummaryPage() {
                 >
                   {expenseDetails.length}件
                 </div>
-              </div>
+              </Card>
             </Col>
+            {/* 収入 */}
             <Col
               xs={24}
               sm={6}
             >
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, #AA60C8 0%, #D69ADE 100%)',
-                  padding: 16,
-                  borderRadius: 8,
-                }}
-              >
+              <Card style={{ background: 'linear-gradient(135deg, #5AB2FF 0%, #A0DEFF 100%)' }}>
                 <Statistic
-                  title={<span style={{ color: 'white', fontSize: '16px' }}>消費</span>}
+                  title={
+                    <span style={{ color: 'white', fontSize: '16px' }}>
+                      <RiseOutlined style={{ marginRight: '4px' }} />
+                      収入
+                    </span>
+                  }
+                  value={summary.totalIncome}
+                  precision={0}
+                  suffix="円"
+                  valueStyle={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}
+                />
+                <div
+                  style={{ marginTop: '8px', color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px' }}
+                >
+                  {incomeDetails.length}件
+                </div>
+              </Card>
+            </Col>
+            {/* 消費 */}
+            <Col
+              xs={24}
+              sm={6}
+            >
+              <Card style={{ background: 'linear-gradient(135deg, #AA60C8 0%, #D69ADE 100%)' }}>
+                <Statistic
+                  title={
+                    <span style={{ color: 'white', fontSize: '16px' }}>
+                      <ShoppingCartOutlined style={{ marginRight: '4px' }} />
+                      消費
+                    </span>
+                  }
                   value={summary.totalConsumption}
                   precision={0}
                   suffix="円"
@@ -532,16 +523,15 @@ export default function SummaryPage() {
                 >
                   {consumptionDetails.length}件
                 </div>
-              </div>
+              </Card>
             </Col>
+            {/* 収支 */}
             <Col
               xs={24}
               sm={6}
             >
-              <div
+              <Card
                 style={{
-                  padding: 16,
-                  borderRadius: 8,
                   background:
                     summary.balance === 0
                       ? 'linear-gradient(135deg, #4c4c53 0%, #828584 100%)'
@@ -551,7 +541,12 @@ export default function SummaryPage() {
                 }}
               >
                 <Statistic
-                  title={<span style={{ color: 'white', fontSize: '16px' }}>収支</span>}
+                  title={
+                    <span style={{ color: 'white', fontSize: '16px' }}>
+                      <PayCircleOutlined style={{ marginRight: '4px' }} />
+                      収支
+                    </span>
+                  }
                   value={summary.balance}
                   precision={0}
                   suffix="円"
@@ -562,7 +557,7 @@ export default function SummaryPage() {
                 >
                   {summary.balance >= 0 ? '黒字' : '赤字'}
                 </div>
-              </div>
+              </Card>
             </Col>
           </Row>
 
