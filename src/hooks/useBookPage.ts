@@ -137,6 +137,7 @@ export function useBookPage<T extends { id: any }>(options: BookPageOptions<T>) 
   const handleDelete = (ids: any[]) => {
     if (ids.length === 0) return
 
+    // TODO: オプションを追加してメッセージをカスタマイズできるようにする
     const displayText = ids.length === 1 ? `ID: ${ids[0]}` : `${ids.length}件`
 
     setLoading(true)

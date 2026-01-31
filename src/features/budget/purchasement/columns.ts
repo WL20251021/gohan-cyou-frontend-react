@@ -18,7 +18,6 @@ export const TAX_CATEGORY_NAMES = {
 } as const
 
 // 数量単位の定義
-// TODO: ユーザーがカスタムで追加できるようにする（DBでどうする？View？時間順序？頻度順序？）
 export const QUANTITY_UNITS = {
   Piece: '個',
   Kilogram: 'kg',
