@@ -13,6 +13,12 @@ import {
   BookOutlined,
   RiseOutlined,
   TagOutlined,
+  AccountBookOutlined,
+  HomeOutlined,
+  GiftOutlined,
+  FallOutlined,
+  DatabaseOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons'
 import { useState, useEffect } from 'react'
 import { BookProvider, useBook } from '@/context/BookContext'
@@ -81,64 +87,64 @@ function LayoutInner() {
   const menuItems = [
     {
       key: '/',
-      icon: <BookOutlined />,
+      icon: <HomeOutlined />,
       label: PAGE_NAMES['/'],
     },
     {
       key: 'budgetBook',
-      icon: <ShoppingOutlined />,
+      icon: <AccountBookOutlined />,
       label: '家計簿',
       children: [
         {
           key: '/budget/summary',
-          icon: <ShoppingOutlined />,
+          icon: <AccountBookOutlined />,
           label: PAGE_NAMES['/budget/summary'],
         },
         {
           key: '/budget/summary/today',
-          icon: <ShoppingOutlined />,
+          icon: <CalendarOutlined />,
           label: PAGE_NAMES['/budget/summary/today'],
         },
         {
           key: '/budget/summary/weekly',
-          icon: <ShoppingOutlined />,
+          icon: <CalendarOutlined />,
           label: PAGE_NAMES['/budget/summary/weekly'],
         },
         {
           key: '/budget/summary/monthly',
-          icon: <ShoppingOutlined />,
+          icon: <CalendarOutlined />,
           label: PAGE_NAMES['/budget/summary/monthly'],
         },
       ],
     },
     {
       key: 'budgetManagement',
-      icon: <ShoppingOutlined />,
+      icon: <AccountBookOutlined />,
       label: '家計管理',
       children: [
-        {
-          key: '/budget/purchasement',
-          icon: <ShoppingCartOutlined />,
-          label: PAGE_NAMES['/budget/purchasement'] + '管理',
-        },
-        {
-          key: '/budget/consumption',
-          icon: <ShoppingOutlined />,
-          label: PAGE_NAMES['/budget/consumption'] + '管理',
-        },
-        {
-          key: '/budget/inventory',
-          icon: <ShoppingOutlined />,
-          label: PAGE_NAMES['/budget/inventory'] + '管理',
-        },
         {
           key: '/budget/income',
           icon: <RiseOutlined />,
           label: PAGE_NAMES['/budget/income'] + '管理',
         },
         {
+          key: '/budget/purchasement',
+          icon: <FallOutlined />,
+          label: PAGE_NAMES['/budget/purchasement'] + '管理',
+        },
+        {
+          key: '/budget/consumption',
+          icon: <ShoppingCartOutlined />,
+          label: PAGE_NAMES['/budget/consumption'] + '管理',
+        },
+        {
+          key: '/budget/inventory',
+          icon: <DatabaseOutlined />,
+          label: PAGE_NAMES['/budget/inventory'] + '管理',
+        },
+        {
           key: '/budget/goods',
-          icon: <AppstoreOutlined />,
+          icon: <GiftOutlined />,
           label: PAGE_NAMES['/budget/goods'] + '管理',
         },
         {

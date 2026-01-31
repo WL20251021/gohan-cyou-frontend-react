@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Card, Statistic, Row, Col, Spin, message, Tag, Button, Progress } from 'antd'
+import { Card, Row, Col, Spin, message, Button } from 'antd'
 import {
   RiseOutlined,
   FallOutlined,
   ShoppingCartOutlined,
   CalendarOutlined,
-  BookOutlined,
-  PieChartOutlined,
-  BarChartOutlined,
+  AccountBookOutlined,
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router'
 import dayjs from 'dayjs'
@@ -362,7 +360,7 @@ export default function HomePage() {
               transform: 'rotate(-2deg)',
             }}
           >
-            <BookOutlined style={{ marginRight: '12px', color: 'var(--color-sky-blue)' }} />
+            <AccountBookOutlined style={{ marginRight: '12px', color: 'var(--color-sky-blue)' }} />
             家計簿ダッシュボード
           </h1>
           <Button
@@ -473,7 +471,7 @@ export default function HomePage() {
               <Button
                 size="large"
                 block
-                icon={<CalendarOutlined />}
+                icon={<AccountBookOutlined />}
                 onClick={() => navigate('/budget/summary')}
                 style={{
                   border: 'var(--border-doodle)',
@@ -548,7 +546,7 @@ export default function HomePage() {
               <Button
                 size="large"
                 block
-                icon={<BookOutlined />}
+                icon={<ShoppingCartOutlined />}
                 onClick={() => navigate('/budget/consumption')}
                 style={{
                   border: 'var(--border-doodle)',
@@ -563,7 +561,7 @@ export default function HomePage() {
                   borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px',
                 }}
               >
-                使用管理
+                消費管理
               </Button>
             </Col>
           </Row>
