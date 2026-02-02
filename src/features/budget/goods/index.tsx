@@ -22,6 +22,7 @@ import { CategoryAddModal } from '../category/index'
 import { BrandAddModal } from '../brand/index'
 import { type FileType } from '@/utils/file'
 import { useBookPage } from '@/hooks/useBookPage'
+import { genImageUrl } from '@/utils/file'
 
 // 商品追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function GoodsAddModal({
@@ -391,11 +392,6 @@ export function GoodsAddModal({
   )
 }
 
-// 画像URL生成
-function genImageUrl(imageName: string) {
-  return `http://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/images/${imageName}`
-}
-
 export default function Goods() {
   const {
     data,
@@ -489,7 +485,27 @@ export default function Goods() {
           <DoodleCard
             key={record.id}
             id={record.id}
-            title={record.goodsName}
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {(record as any)?.imageName && (
+                  <div className="mb-2">
+                    <Image
+                      src={genImageUrl((record as any)?.imageName)}
+                      alt="商品画像"
+                      width={50}
+                      height={50}
+                      style={{
+                        objectFit: 'cover',
+                        borderRadius: 'var(--radius-doodle-sm)',
+                        boxShadow: '0px 4px 0px rgba(0,0,0,0.1)',
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                )}
+                {record.goodsName || '-'}
+              </div>
+            }
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
             onClick={() => showDetail(record)}
@@ -501,7 +517,7 @@ export default function Goods() {
               handleDeleteAction(record)
             }}
           >
-            {record.imageName && (
+            {/* {record.imageName && (
               <div className="mb-2">
                 <Image
                   src={genImageUrl(record.imageName)}
@@ -512,7 +528,7 @@ export default function Goods() {
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
-            )}
+            )} */}
             <DoodleCardRow
               label={JPNames.category}
               value={record.category?.categoryName || '-'}
@@ -555,14 +571,29 @@ export default function Goods() {
         rowJustify="start"
       >
         {detailRecord && (
-          <div className="flex flex-col gap-4">
+          <div
+            className="flex flex-col gap-4"
+            style={{
+              position: 'relative',
+            }}
+          >
             {detailRecord.imageName && (
-              <div className="mb-2">
-                <Image
-                  src={genImageUrl(detailRecord.imageName)}
-                  alt={JPNames.imageName}
-                  width={200}
-                  style={{ objectFit: 'contain', borderRadius: '8px', maxHeight: '300px' }}
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 20,
+                  transform: 'rotate(2deg)',
+                }}
+              >
+                <img
+                  src={genImageUrl(detailRecord.imageName || '')}
+                  alt="商品画像"
+                  width={250}
+                  style={{
+                    border: '2px solid var(--color-ink-black)',
+                    borderRadius: 'var(--radius-doodle-sm)',
+                    boxShadow: '4px 4px 0px rgba(0,0,0,0.1)',
+                  }}
                 />
               </div>
             )}

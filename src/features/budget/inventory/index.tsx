@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Card, Space, Tag, Statistic, Row, Col, Select } from 'antd'
+import { Card, Space, Tag, Statistic, Row, Col, Select, Image } from 'antd'
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { getAllInventory, getInStockItems, getInventorySummary, getOutOfStockItems } from './api'
 import PageHeader from '@/components/PageHeader'
@@ -18,6 +18,7 @@ import {
 } from './columns'
 import { JPNames as JPPurchasement } from '../purchasement/columns'
 import { JPNames as JPGoods } from '../goods/columns'
+import { genImageUrl } from '@/utils/file'
 
 /**
  * 在庫管理コンポーネント
@@ -149,7 +150,27 @@ export default function Inventory() {
               <DoodleCard
                 key={record.purchasement.id}
                 id={record.purchasement.id}
-                title={record.goods?.goodsName || '-'}
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {(record.goods as any)?.imageName && (
+                      <div className="mb-2">
+                        <Image
+                          src={genImageUrl((record.goods as any)?.imageName)}
+                          alt="商品画像"
+                          width={50}
+                          height={50}
+                          style={{
+                            objectFit: 'cover',
+                            borderRadius: 'var(--radius-doodle-sm)',
+                            boxShadow: '0px 4px 0px rgba(0,0,0,0.1)',
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    )}
+                    {record.goods?.goodsName || '-'}
+                  </div>
+                }
                 // inventory is read only
                 selected={!!selectedRows.find((r) => r.purchasement.id === record.purchasement.id)}
                 onClick={() => showDetail(record)}
@@ -206,7 +227,32 @@ export default function Inventory() {
         rowJustify="start"
       >
         {detailRecord && (
-          <div className="flex flex-col gap-4">
+          <div
+            className="flex flex-col gap-4"
+            style={{
+              position: 'relative',
+            }}
+          >
+            {(detailRecord.goods as any)?.imageName && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 20,
+                  transform: 'rotate(2deg)',
+                }}
+              >
+                <img
+                  src={genImageUrl((detailRecord.goods as any)?.imageName || '')}
+                  alt="商品画像"
+                  width={250}
+                  style={{
+                    border: '2px solid var(--color-ink-black)',
+                    borderRadius: 'var(--radius-doodle-sm)',
+                    boxShadow: '4px 4px 0px rgba(0,0,0,0.1)',
+                  }}
+                />
+              </div>
+            )}
             <DoodleCardRow
               label={JPGoods.goodsName}
               value={detailRecord.goods?.goodsName || '-'}

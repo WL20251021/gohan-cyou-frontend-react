@@ -11,6 +11,7 @@ import {
   Row,
   Col,
   Radio,
+  Image,
 } from 'antd'
 import notification from '@/components/DoodleNotification'
 import dayjs from 'dayjs'
@@ -35,6 +36,7 @@ import { getGoods } from '../goods/api'
 import { getStores } from '../store/api'
 import { GoodsAddModal } from '../goods/index'
 import { StoreAddModal } from '../store/index'
+import { genImageUrl } from '@/utils/file'
 
 // 支出記録追加・編集モーダルコンポーネント（他のコンポーネントから使用可能）
 export function PurchasementModal({
@@ -639,11 +641,6 @@ export function PurchasementModal({
 
 import { useBookPage } from '@/hooks/useBookPage'
 
-// 画像URL生成
-function genImageUrl(imageName: string) {
-  return `http://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/images/${imageName}`
-}
-
 export default function Purchasement() {
   const {
     data,
@@ -691,7 +688,27 @@ export default function Purchasement() {
           <DoodleCard
             key={record.id}
             id={record.id}
-            title={record.goods?.goodsName || '-'}
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {(record.goods as any)?.imageName && (
+                  <div className="mb-2">
+                    <Image
+                      src={genImageUrl((record.goods as any)?.imageName)}
+                      alt="商品画像"
+                      width={50}
+                      height={50}
+                      style={{
+                        objectFit: 'cover',
+                        borderRadius: 'var(--radius-doodle-sm)',
+                        boxShadow: '0px 4px 0px rgba(0,0,0,0.1)',
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                )}
+                {record.goods?.goodsName || '-'}
+              </div>
+            }
             selected={!!selectedRows.find((r) => r.id === record.id)}
             onToggleSelection={(e) => toggleSelection(record, e)}
             onClick={() => showDetail(record)}
@@ -715,34 +732,10 @@ export default function Purchasement() {
               label={JPNames.quantity}
               value={`${record.quantity} ${record.quantityUnit}`}
             />
-            {/* <DoodleCardRow
-              label={JPNames.unitPrice}
-              value={`${record.unitPrice} 円`}
-            /> */}
             <DoodleCardRow
               label={JPNames.totalPrice}
               value={`${record.totalPrice} 円`}
             />
-            {/* <DoodleCardRow
-              label={JPNames.paymentMethod}
-              value={record.paymentMethod || '-'}
-            />
-            <DoodleCardRow
-              label={JPNames.taxRate}
-              value={
-                record.taxRate
-                  ? TAX_CATEGORY_NAMES[record.taxRate as keyof typeof TAX_CATEGORY_NAMES]
-                  : '-'
-              }
-            />
-            <DoodleCardRow
-              label={JPNames.discountType}
-              value={
-                record.discountType
-                  ? DISCOUNT_TYPE_NAMES[record.discountType as keyof typeof DISCOUNT_TYPE_NAMES]
-                  : '-'
-              }
-            /> */}
           </DoodleCard>
         )}
       />
@@ -782,22 +775,26 @@ export default function Purchasement() {
               position: 'relative',
             }}
           >
-            <div
-              style={{
-                position: 'absolute',
-                right: 20,
-                border: '2px solid var(--color-ink-black)',
-                borderRadius: 'var(--radius-doodle-sm)',
-                boxShadow: '4px 4px 0px rgba(0,0,0,0.1)',
-                transform: 'rotate(2deg)',
-              }}
-            >
-              <img
-                src={genImageUrl((detailRecord.goods as any)?.imageName || '')}
-                alt="商品画像"
-                width={250}
-              />
-            </div>
+            {(detailRecord.goods as any)?.imageName && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 20,
+                  transform: 'rotate(2deg)',
+                }}
+              >
+                <img
+                  src={genImageUrl((detailRecord.goods as any)?.imageName || '')}
+                  alt="商品画像"
+                  width={250}
+                  style={{
+                    border: '2px solid var(--color-ink-black)',
+                    borderRadius: 'var(--radius-doodle-sm)',
+                    boxShadow: '4px 4px 0px rgba(0,0,0,0.1)',
+                  }}
+                />
+              </div>
+            )}
             <DoodleCardRow
               label={JPNames.purchaseDate}
               value={

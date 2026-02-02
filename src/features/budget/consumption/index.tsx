@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Card, Statistic, Row, Col, Alert, Tag, Select } from 'antd'
+import { useState, useEffect } from 'react'
+import { Card, Statistic, Row, Col, Image, Tag } from 'antd'
 import dayjs from 'dayjs'
 import { ConsumptionModal } from './ConsumptionModal'
 import BookDetailModal from '@/components/BookDetailModal'
@@ -11,10 +11,7 @@ import { getConsumption, deleteConsumption } from './api'
 import { getPurchasements } from '../purchasement/api'
 import { getAllInventory } from '../inventory/api'
 import { useBookPage } from '@/hooks/useBookPage'
-
-import { PAGE_NAMES } from '@/layout'
-const currentPath = window.location.pathname
-const PAGE_NAME = PAGE_NAMES[currentPath] || '消費'
+import { genImageUrl } from '@/utils/file'
 
 export default function Consumption() {
   const {
@@ -183,7 +180,27 @@ export default function Consumption() {
             <DoodleCard
               key={record.id}
               id={record.id}
-              title={record.purchasement?.goods?.goodsName || '商品不明'}
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {(record.purchasement?.goods as any)?.imageName && (
+                    <div className="mb-2">
+                      <Image
+                        src={genImageUrl((record.purchasement?.goods as any)?.imageName)}
+                        alt="商品画像"
+                        width={50}
+                        height={50}
+                        style={{
+                          objectFit: 'cover',
+                          borderRadius: 'var(--radius-doodle-sm)',
+                          boxShadow: '0px 4px 0px rgba(0,0,0,0.1)',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  )}
+                  {record.purchasement?.goods?.goodsName || '商品不明'}
+                </div>
+              }
               selected={!!selectedRows.find((r) => r.id === record.id)}
               onToggleSelection={(e) => toggleSelection(record, e)}
               onClick={() => showDetail(record)}
@@ -241,7 +258,32 @@ export default function Consumption() {
         rowJustify="start"
       >
         {detailRecord && (
-          <div className="flex flex-col gap-4">
+          <div
+            className="flex flex-col gap-4"
+            style={{
+              position: 'relative',
+            }}
+          >
+            {(detailRecord.purchasement?.goods as any)?.imageName && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 20,
+                  transform: 'rotate(2deg)',
+                }}
+              >
+                <img
+                  src={genImageUrl((detailRecord.purchasement?.goods as any)?.imageName || '')}
+                  alt="商品画像"
+                  width={250}
+                  style={{
+                    border: '2px solid var(--color-ink-black)',
+                    borderRadius: 'var(--radius-doodle-sm)',
+                    boxShadow: '4px 4px 0px rgba(0,0,0,0.1)',
+                  }}
+                />
+              </div>
+            )}
             <DoodleCardRow
               label={JPNames.id}
               value={detailRecord.id}
