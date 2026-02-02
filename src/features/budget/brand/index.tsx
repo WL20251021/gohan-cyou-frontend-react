@@ -230,8 +230,9 @@ export default function Brand() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
+                    style={{ color: 'var(--color-primary)' }}
                   >
-                    {record.website}
+                    {record.brandName}
                   </a>
                 ) : (
                   '-'
@@ -291,8 +292,9 @@ export default function Brand() {
                     href={detailRecord.website}
                     target="_blank"
                     rel="noopener noreferrer"
+                    style={{ color: 'var(--color-primary)' }}
                   >
-                    {detailRecord.website}
+                    {detailRecord.brandName}
                   </a>
                 ) : (
                   '-'
