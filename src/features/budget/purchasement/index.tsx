@@ -317,7 +317,10 @@ export function PurchasementModal({
               )}
             </Col>
           </Row>
-          <Form.Item label={JPNames.goods}>
+          <Form.Item
+            label={JPNames.goods}
+            required={true}
+          >
             <Space.Compact style={{ width: '100%' }}>
               <Form.Item
                 name="goodsId"
@@ -345,7 +348,10 @@ export function PurchasementModal({
               </Button>
             </Space.Compact>
           </Form.Item>
-          <Form.Item label={JPNames.store}>
+          <Form.Item
+            label={JPNames.store}
+            required={true}
+          >
             <Space.Compact style={{ width: '100%' }}>
               <Form.Item
                 name="storeId"
