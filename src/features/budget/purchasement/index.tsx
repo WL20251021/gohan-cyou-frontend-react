@@ -90,6 +90,7 @@ export function PurchasementModal({
         // 新規追加時は初期日付を設定
         if (initialDate) {
           form.setFieldsValue({
+            isInStock: true,
             purchaseDate: initialDate,
           })
         }
@@ -284,6 +285,7 @@ export function PurchasementModal({
             discountType: DISCOUNT_TYPES.FIXED,
             discountRate: 0,
             discountAmount: 0,
+            isInStock: true,
           }}
         >
           <Row gutter={16}>
