@@ -147,8 +147,6 @@ export function ConsumptionModal({
   return (
     <BookModal
       title={isEditMode ? `${PAGE_NAME}を編集` : `${PAGE_NAME}を追加`}
-      // width="80%"
-      // maskClosable={false}
       open={open}
       confirmLoading={confirmLoading}
       onOk={handleConfirm}
@@ -186,13 +184,13 @@ export function ConsumptionModal({
           />
         </Form.Item>
         <Form.Item
-          label={JPNames.purchasement}
+          label="在庫"
           name="purchasementId"
-          rules={[{ required: true, message: '支出記録を選択してください!' }]}
+          rules={[{ required: true, message: '在庫から選択してください!' }]}
         >
           <Select
             allowClear
-            placeholder="支出記録を選択（在庫あり）"
+            placeholder="在庫から選択してください"
             showSearch
             optionFilterProp="label"
             onChange={handlePurchasementChange}
@@ -208,23 +206,25 @@ export function ConsumptionModal({
             }))}
           />
         </Form.Item>
-        {selectedInventory && (
-          <Alert
-            message="在庫情報"
-            description={
+
+        <Form.Item
+          label={' '}
+          colon={false}
+        >
+          {selectedInventory && (
+            <div>
+              <h3>在庫情報</h3>
+              <div>商品: {selectedInventory.goods?.goodsName || '不明'}</div>
+              <div>店舗: {selectedInventory.store?.storeName || '不明'}</div>
               <div>
-                <div>商品: {selectedInventory.goods?.goodsName || '不明'}</div>
-                <div>店舗: {selectedInventory.store?.storeName || '不明'}</div>
-                <div style={{ fontWeight: 'bold', color: '#1890ff' }}>
-                  利用可能数量: {maxQuantity.toFixed(2)} {selectedInventory?.quantityUnit}
-                </div>
+                利用可能数量:{' '}
+                <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
+                  {maxQuantity.toFixed(2)} {selectedInventory?.quantityUnit}
+                </span>
               </div>
-            }
-            type="info"
-            showIcon
-            style={{ marginBottom: 16 }}
-          />
-        )}
+            </div>
+          )}
+        </Form.Item>
         <Form.Item label={JPNames.quantity}>
           <Form.Item
             name="quantity"

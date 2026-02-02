@@ -368,6 +368,20 @@ export function PurchasementModal({
               </Button>
             </Space.Compact>
           </Form.Item>
+          {/* 在庫に追加するかどうか */}
+          <Form.Item label={JPNames.isInStock}>
+            <Space.Compact style={{ width: '100%' }}>
+              <Form.Item
+                name="isInStock"
+                noStyle
+              >
+                <Radio.Group>
+                  <Radio value={true}>在庫に追加する</Radio>
+                  <Radio value={false}>在庫に追加しない</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Space.Compact>
+          </Form.Item>
           {/* quantity */}
           <Row gutter={16}>
             <Col span={12}>
@@ -623,6 +637,11 @@ export function PurchasementModal({
 
 import { useBookPage } from '@/hooks/useBookPage'
 
+// 画像URL生成
+function genImageUrl(imageName: string) {
+  return `http://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/images/${imageName}`
+}
+
 export default function Purchasement() {
   const {
     data,
@@ -755,7 +774,28 @@ export default function Purchasement() {
         rowJustify="start"
       >
         {detailRecord && (
-          <div className="flex flex-col gap-4">
+          <div
+            className="flex flex-col gap-4"
+            style={{
+              position: 'relative',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                right: 20,
+                border: '2px solid var(--color-ink-black)',
+                borderRadius: 'var(--radius-doodle-sm)',
+                boxShadow: '4px 4px 0px rgba(0,0,0,0.1)',
+                transform: 'rotate(2deg)',
+              }}
+            >
+              <img
+                src={genImageUrl((detailRecord.goods as any)?.imageName || '')}
+                alt="商品画像"
+                width={250}
+              />
+            </div>
             <DoodleCardRow
               label={JPNames.purchaseDate}
               value={
@@ -771,6 +811,10 @@ export default function Purchasement() {
             <DoodleCardRow
               label="店舗"
               value={detailRecord.store?.storeName || '-'}
+            />
+            <DoodleCardRow
+              label="在庫に追加"
+              value={detailRecord.isInStock ? 'する' : 'しない'}
             />
             <DoodleCardRow
               label={JPNames.unitPrice}

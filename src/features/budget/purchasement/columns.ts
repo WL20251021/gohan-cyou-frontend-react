@@ -85,6 +85,7 @@ export const JPNames = {
   discountType: '値引き種類',
   discountRate: '値引き率',
   discountAmount: '値引き額',
+  isInStock: '在庫に追加',
 
   createdAt: '作成日',
   updatedAt: '更新日',
@@ -111,6 +112,7 @@ export class PurchasementColumn {
   discountType: DiscountType | null = null
   discountRate: number | null = null
   discountAmount: number | null = null
+  isInStock: boolean = true
   createdAt: Date = new Date()
   updatedAt: Date = new Date()
 }
