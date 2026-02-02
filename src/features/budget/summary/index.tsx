@@ -327,18 +327,24 @@ export default function SummaryPage() {
 
   // カテゴリ別支出円グラフ
   const categoryPurchaseData = () => {
-    const categoryMap = new Map<string, number>()
+    const categoryMap = new Map<string, { totalPrice: number; color: string }>()
     expenseDetails.forEach((p) => {
       const category = p.goods?.category?.categoryName || '未分類'
-      categoryMap.set(category, (categoryMap.get(category) || 0) + (p.totalPrice || 0))
+      categoryMap.set(category, {
+        totalPrice: (categoryMap.get(category)?.totalPrice || 0) + (p.totalPrice || 0),
+        // グラフの色は、カテゴリに設定された色を使い、なければランダムに選択
+        color:
+          '#' + p.goods?.category?.color ||
+          CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)],
+      })
     })
 
     return {
       labels: Array.from(categoryMap.keys()),
       datasets: [
         {
-          data: Array.from(categoryMap.values()),
-          backgroundColor: CATEGORY_COLORS.slice(0, Array.from(categoryMap.keys()).length),
+          data: Array.from(categoryMap.values()).map((v) => v.totalPrice),
+          backgroundColor: Array.from(categoryMap.values()).map((v) => v.color),
         },
       ],
     }
@@ -346,19 +352,24 @@ export default function SummaryPage() {
 
   // カテゴリ別消費円グラフ
   const categoryConsumptionData = () => {
-    const categoryMap = new Map<string, number>()
+    const categoryMap = new Map<string, { totalPrice: number; color: string }>()
     consumptionDetails.forEach((c) => {
       const category = c.purchasement?.goods?.category?.categoryName || '未分類'
       const amount = c.quantity * (c.purchasement?.totalPrice || 0)
-      categoryMap.set(category, (categoryMap.get(category) || 0) + amount)
+      categoryMap.set(category, {
+        totalPrice: (categoryMap.get(category)?.totalPrice || 0) + amount,
+        color:
+          '#' + c.purchasement?.goods?.category?.color ||
+          CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)],
+      })
     })
 
     return {
       labels: Array.from(categoryMap.keys()),
       datasets: [
         {
-          data: Array.from(categoryMap.values()),
-          backgroundColor: CATEGORY_COLORS.slice(0, Array.from(categoryMap.keys()).length),
+          data: Array.from(categoryMap.values()).map((v) => v.totalPrice),
+          backgroundColor: Array.from(categoryMap.values()).map((v) => v.color),
         },
       ],
     }

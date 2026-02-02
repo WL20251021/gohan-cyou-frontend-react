@@ -1,3 +1,5 @@
+import { GoodsColumn } from '../goods/columns'
+
 // 課税区分の定義
 export const TAX_CATEGORIES = {
   STANDARD: 'STANDARD',
@@ -95,7 +97,7 @@ export const JPNames = {
 export class PurchasementColumn {
   id: number = 0
   goodsId: number | null = null
-  goods: { id: number; goodsName: string } | null = null
+  goods: GoodsColumn | null = null
   storeId: number | null = null
   store: { id: number; storeName: string } | null = null
   quantity: number = 0
