@@ -214,6 +214,9 @@ export function RecipeModal({
           return addRecipe(data).then((res) => res.data.id)
         }
       })
+      .then(() => {
+        return getRecipes()
+      })
       .then((res) => {
         message.success(`${PAGE_NAME}を${isEditMode ? '更新' : '追加'}しました`)
         form.resetFields()
