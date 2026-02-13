@@ -53,7 +53,7 @@ function CookModal({
   const [allInventoryList, setAllInventoryList] = useState<any[]>([])
   const [recipeList, setRecipeList] = useState<any[]>([])
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false)
-  const [recipeId, setRecipeId] = useState<number | null>(null)
+  // const [recipeId, setRecipeId] = useState<number | null>(null)
 
   // レシピ追加モーダルを開く
   const handleAddRecipe = () => {
@@ -328,6 +328,7 @@ function CookModal({
                     label: recipe.recipeName,
                     value: recipe.id,
                   }))}
+                  onChange={(value) => form.setFieldValue('recipeId', value)}
                 />
                 <Button
                   type="primary"
