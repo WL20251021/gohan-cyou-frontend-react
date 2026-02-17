@@ -4,7 +4,7 @@ import type { CookIngredient } from './cookIngredientColumns'
 export class CookColumn {
   id: number = 0
   cookName: string = ''
-  cookDate: Date | string = ''
+  cookDate: Date | null = null
   recipeId: number | null = null
   recipe: RecipeColumn | null = null
 

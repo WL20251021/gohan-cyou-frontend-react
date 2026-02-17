@@ -78,9 +78,17 @@ function CookModal({
     if (open) {
       fetchInventory()
       fetchRecipes()
-      if (isEditMode && editingRecord) {
+      if (!isEditMode) {
+        form.resetFields()
+        form.setFieldsValue({
+          cookDate: dayjs(),
+          servings: 1,
+        })
+        setUseIngredients([])
+      } else if (editingRecord) {
         form.setFieldsValue({
           cookName: editingRecord.cookName,
+          cookDate: editingRecord.cookDate ? dayjs(editingRecord.cookDate) : null,
           recipeId: editingRecord.recipeId,
           description: editingRecord.description,
           servings: editingRecord.servings,
@@ -95,7 +103,6 @@ function CookModal({
           }) || []) as CookIngredient[]
         )
       } else {
-        form.resetFields()
         setUseIngredients([])
       }
     }
@@ -493,6 +500,7 @@ function CookModal({
 
 import { useBookPage } from '@/hooks/useBookPage'
 import { RecipeModal } from '../recipe'
+import dayjs from 'dayjs'
 
 export default function Cook() {
   const {
