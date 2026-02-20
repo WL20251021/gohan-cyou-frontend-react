@@ -53,7 +53,7 @@ function CookModal({
   const [allInventoryList, setAllInventoryList] = useState<any[]>([])
   const [recipeList, setRecipeList] = useState<any[]>([])
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false)
-  // const [recipeId, setRecipeId] = useState<number | null>(null)
+  const [recipeId, setRecipeId] = useState<number | null>(null)
 
   // レシピ追加モーダルを開く
   const handleAddRecipe = () => {
@@ -67,11 +67,10 @@ function CookModal({
 
   // レシピ追加成功時
   const handleRecipeSuccess = (newRecipe: any) => {
-    // レシピリストを再取得
+    // ブランドリストを再取得
     fetchRecipes()
-    // 追加したレシピを選択状態にする
-    form.setFieldValue('recipeId', newRecipe.id)
-    fetchRecipes()
+    // 追加したブランドを選択状態にする
+    setRecipeId(newRecipe.id)
   }
 
   useEffect(() => {
@@ -89,13 +88,13 @@ function CookModal({
         form.setFieldsValue({
           cookName: editingRecord.cookName,
           cookDate: editingRecord.cookDate ? dayjs(editingRecord.cookDate) : null,
-          recipeId: editingRecord.recipeId,
           description: editingRecord.description,
           servings: editingRecord.servings,
           preTime: editingRecord.preTime,
           cookTime: editingRecord.cookTime,
           totalTime: editingRecord.totalTime,
         })
+        setRecipeId(editingRecord.recipeId || null)
         setUseIngredients(
           (editingRecord.useIngredients.map((v) => {
             v.inventoryId = v.inventory?.id || v.inventoryId
@@ -222,7 +221,8 @@ function CookModal({
       .then((values) => {
         const data: any = {}
         data.cookName = values.cookName || ''
-        data.recipeId = values.recipeId || null
+        data.recipeId = recipeId || null
+        data.cookDate = values.cookDate ? dayjs(values.cookDate).format('YYYY-MM-DD') : null
         data.description = values.description || ''
         data.useIngredients = useIngredients.map((ing) => {
           const ingData: any = {}
@@ -327,6 +327,7 @@ function CookModal({
                   placeholder="レシピを選択（任意）"
                   allowClear
                   showSearch
+                  value={recipeId}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -335,7 +336,10 @@ function CookModal({
                     label: recipe.recipeName,
                     value: recipe.id,
                   }))}
-                  onChange={(value) => form.setFieldValue('recipeId', value)}
+                  onChange={(value) => {
+                    setRecipeId(value)
+                    form.setFieldValue('recipeId', value)
+                  }}
                 />
                 <Button
                   type="primary"
